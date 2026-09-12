@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSessionUser } from "@/lib/auth";
 import { MarginIntentForm } from "@/components/margin-intent-form";
+import { OnceUponConnectButton } from "@/components/crypto/connect";
+import { ArcQuoteRow } from "@/components/crypto/headless";
+import { OnceUponBuyUsdc } from "@/components/crypto/widgets";
 
 export const metadata = { title: "The Margin" };
 
@@ -40,6 +43,20 @@ export default async function MarginPage() {
           </Card>
         ))}
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading">Fund on Arc first</CardTitle>
+          <CardDescription>
+            Jupiter still holds the perp. Buy pool USDC here, then record the intent.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ArcQuoteRow />
+          <OnceUponConnectButton />
+          <OnceUponBuyUsdc />
+        </CardContent>
+      </Card>
 
       {profile ? <MarginIntentForm /> : null}
     </div>

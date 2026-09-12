@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { StoryTradePanel } from "@/components/crypto/story-trade";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -57,7 +57,10 @@ export default async function StoryPage({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p>Author { (story.author_bps / 100).toFixed(2) }% · protocol {(story.protocol_bps / 100).toFixed(2)}%</p>
+            <p>
+              Author {(story.author_bps / 100).toFixed(2)}% · protocol{" "}
+              {(story.protocol_bps / 100).toFixed(2)}%
+            </p>
             <p>Quote {story.pair_label}</p>
             {story.engine === "onceuponers" ? (
               <p>Vault {story.vault_address ?? "deploys at launch"}</p>
@@ -78,15 +81,22 @@ export default async function StoryPage({
             ) : (
               <p>Unknown OnceUponer</p>
             )}
-            <p className="mt-3 text-sm text-parchment/60">
-              Buy and sell land here after the factory is live on 5042002.
-            </p>
-            <Button className="mt-4" variant="outline" disabled>
-              Trade (Phase 1)
-            </Button>
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-heading">Trade</CardTitle>
+          <CardDescription>
+            Swap and buy use the thirdweb playground widgets, themed for OnceUpon. The Story token
+            itself trades after Phase 1.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StoryTradePanel pairLabel={story.pair_label} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

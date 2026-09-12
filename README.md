@@ -4,7 +4,7 @@ A token launchpad on Circle Arc. Authors write Stories. Fees either push to the 
 
 OnceUponers write the stories. The chain keeps the receipts.
 
-This is Phase 0: the Desk shell, X identity on a **new** Supabase project, Arc testnet config, and Foundry fee-cap helpers. Factory, vault, and bonding curve come next.
+This is Phase 0: the Desk shell, X identity on a **new** Supabase project, Arc testnet config, Foundry fee-cap helpers, and the thirdweb playground crypto widgets themed for OnceUpon. Factory, vault, and bonding curve come next.
 
 ## What this repo is not
 
@@ -38,12 +38,13 @@ Required env:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (avatar copier only)
 - `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` (from https://thirdweb.com/create-api-key — allow `localhost:43147`)
 
 ## Stack
 
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
-- wagmi / viem against Arc testnet `5042002`
+- thirdweb v5 crypto UI (Connect, Buy, Swap, Bridge, Checkout, Transaction, Token/Account/Chain/NFT) themed ink/gold against Arc testnet `5042002`
 - Foundry under `contracts/`
 
 ## Surfaces
@@ -52,6 +53,7 @@ Required env:
 | --- | --- |
 | `/` | The Desk |
 | `/write` | The Press |
+| `/wallet` | Playground crypto widgets on Arc |
 | `/story/[slug]` | A Story |
 | `/shelf/[handle]` | Profile |
 | `/ledger` | The Piece claims |

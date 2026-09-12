@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAccount, useConnect, useSignMessage } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { MODE_COPY, RIGHTS_TICK, RWA_GATE, feeExample } from "@onceupon/config/copy";
-import { ARC_TESTNET, PROTOCOL } from "@onceupon/config/arc";
+import { PROTOCOL } from "@onceupon/config/arc";
+import { BindArcWallet } from "@/components/crypto/bind-wallet";
+import { ArcQuoteRow } from "@/components/crypto/headless";
 
 const PAIRS = [
   { id: "usdc", label: "USDC", listed: true },
@@ -43,39 +44,6 @@ export function PressForm({
   const example = useMemo(() => feeExample(1000, Math.min(authorBps, cap)), [authorBps, cap]);
   const selectedPair = PAIRS.find((p) => p.id === pair)!;
   const verifiedRecently = Boolean(verifiedAt);
-
-  const { address, isConnected } = useAccount();
-  const { connect, connectors, isPending: connecting } = useConnect();
-  const { signMessageAsync } = useSignMessage();
-
-  async function verifyWallet() {
-    setError(null);
-    const injected = connectors[0];
-    if (!isConnected) {
-      if (!injected) {
-        setError("No injected wallet found. Install MetaMask, Rabby, or Coinbase Wallet.");
-        return;
-      }
-      connect({ connector: injected });
-      return;
-    }
-    if (!address) return;
-    const issuedAt = new Date().toISOString();
-    const me = await fetch("/api/me").then((r) => r.json());
-    const message = `OnceUpon:${me.id}:${issuedAt}`;
-    const signature = await signMessageAsync({ message });
-    const res = await fetch("/api/wallets/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address, issuedAt, signature, chainCaip2: ARC_TESTNET.caip2 }),
-    });
-    const body = await res.json();
-    if (!res.ok) {
-      setError(body.error ?? "Wallet verification failed.");
-      return;
-    }
-    setStatus("Arc wallet bound. You may draft a Story.");
-  }
 
   async function saveDraft(event: React.FormEvent) {
     event.preventDefault();
@@ -216,16 +184,9 @@ export function PressForm({
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <p>OnceUponer @{handle}</p>
-            <p className="break-all text-parchment/70">
-              Primary: {primaryWallet ?? address ?? "none yet"}
-            </p>
-            {verifiedRecently ? (
-              <Badge>Verified this day</Badge>
-            ) : (
-              <Button type="button" variant="secondary" onClick={verifyWallet} disabled={connecting}>
-                {isConnected ? "Sign OnceUpon message" : "Connect Arc wallet"}
-              </Button>
-            )}
+            <ArcQuoteRow />
+            {verifiedRecently ? <Badge>Wallet already bound</Badge> : null}
+            <BindArcWallet verifiedAt={verifiedAt} primaryWallet={primaryWallet} />
           </CardContent>
         </Card>
         {error ? (

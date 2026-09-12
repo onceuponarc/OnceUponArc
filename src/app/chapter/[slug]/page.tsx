@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { POSITIONING } from "@onceupon/config/copy";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArcQuoteRow } from "@/components/crypto/headless";
+import { OnceUponConnectButton } from "@/components/crypto/connect";
 
 export async function generateMetadata({
   params,
@@ -42,9 +44,13 @@ export default async function ChapterPage({
           Opens {new Date(chapter.opens_at).toUTCString()}
         </p>
       ) : null}
-      <Button asChild>
-        <Link href="/write">Write into this Chapter</Link>
-      </Button>
+      <ArcQuoteRow />
+      <div className="flex flex-wrap gap-3">
+        <Button asChild>
+          <Link href="/write">Write into this Chapter</Link>
+        </Button>
+        <OnceUponConnectButton />
+      </div>
     </article>
   );
 }

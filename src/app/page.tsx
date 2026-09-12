@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth";
 import { ARC_TESTNET } from "@onceupon/config/arc";
 import { POSITIONING } from "@onceupon/config/copy";
 import Link from "next/link";
+import { ArcQuoteRow } from "@/components/crypto/headless";
 
 export default async function DeskPage() {
   const supabase = await createClient();
@@ -39,6 +40,9 @@ export default async function DeskPage() {
               <Link href="/write">Write a Story</Link>
             </Button>
             <Button variant="outline" asChild>
+              <Link href="/wallet">Connect Arc wallet</Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/chapter/the-first-chapter">Open The First Chapter</Link>
             </Button>
           </div>
@@ -52,7 +56,8 @@ export default async function DeskPage() {
             <p>
               {ARC_TESTNET.name} · chain {ARC_TESTNET.chainId}
             </p>
-            <p>Gas is native USDC (18 decimals). Pools use ERC-20 USDC (6 decimals).</p>
+            <p>Gas is native USDC (18 decimals). Pools use the 6-decimal ERC-20.</p>
+            <ArcQuoteRow />
             <p>
               <a className="text-gold hover:underline" href={ARC_TESTNET.explorer}>
                 ArcScan
@@ -61,6 +66,10 @@ export default async function DeskPage() {
               <a className="text-gold hover:underline" href={ARC_TESTNET.faucet}>
                 Faucet
               </a>
+              {" · "}
+              <Link href="/wallet" className="text-gold hover:underline">
+                Wallet
+              </Link>
             </p>
             {profile ? (
               <p className="text-parchment/70">

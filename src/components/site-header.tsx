@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { SignInButton } from "@/components/sign-in-button";
+import { WalletBar } from "@/components/wallet-bar";
 import type { OnceUponer } from "@/lib/auth";
 
 const NAV = [
   { href: "/", label: "The Desk" },
   { href: "/write", label: "The Press" },
+  { href: "/wallet", label: "Wallet" },
   { href: "/chapter/the-first-chapter", label: "The First Chapter" },
   { href: "/ledger", label: "The Ledger" },
   { href: "/margin", label: "The Margin" },
@@ -40,6 +42,7 @@ export function SiteHeader({
           <p className="text-xs text-parchment/60">
             {onlineCount} OnceUponers in the book
           </p>
+          <WalletBar />
           <SignInButton profile={profile} />
         </div>
       </div>
