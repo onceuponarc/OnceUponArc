@@ -39,7 +39,7 @@ export function OnceUponConnectButton() {
         wallets={onceUponWallets}
         theme={onceUponThirdwebTheme}
         appMetadata={onceUponAppMetadata}
-        connectButton={{ label: "Connect Arc wallet" }}
+        connectButton={{ label: "Connect wallet" }}
         connectModal={connectModal}
         detailsButton={{
           displayBalanceToken: {
@@ -74,7 +74,7 @@ function OnceUponConnectEmbedLive() {
       theme={onceUponThirdwebTheme}
       appMetadata={onceUponAppMetadata}
       showThirdwebBranding={false}
-      header={{ title: "Bind an Arc wallet" }}
+      header={{ title: "Connect a wallet" }}
     />
   );
 }

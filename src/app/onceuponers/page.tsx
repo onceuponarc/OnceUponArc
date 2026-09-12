@@ -25,7 +25,7 @@ export default async function OnceUponersPage() {
       ) : !people?.length ? (
         <EmptyPad
           title="No one is here yet"
-          body="Be the first X login. Your handle becomes your identity on Arc."
+          body="Be the first X login. Your handle becomes your identity on the pad."
         />
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

@@ -35,9 +35,18 @@ export async function POST(request: Request) {
     rightsAttested?: boolean;
   };
 
+  if (body.chain === "arc") {
+    return NextResponse.json(
+      {
+        error:
+          "Arc testnet is live for wallets and quotes. The token factory is not deployed yet. Launch on Solana mainnet.",
+      },
+      { status: 400 },
+    );
+  }
   if (body.chain && body.chain !== "solana") {
     return NextResponse.json(
-      { error: "That chain is coming soon. Launch on Solana devnet today." },
+      { error: "That chain is coming soon. Launch on Solana mainnet today." },
       { status: 400 },
     );
   }

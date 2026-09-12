@@ -17,8 +17,8 @@ export default async function WalletPage() {
         <h1 className="font-heading mt-2 text-4xl font-extrabold">Pad wallet first. Connect if you want.</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
           Sign in with X and the pad creates a Solana wallet for this chain. Export the secret anytime.
-          Connecting MetaMask / Phantom is optional — launches sign with the pad wallet so testnet mints
-          actually land.
+          Connecting MetaMask / Phantom is optional — launches sign with the pad wallet so mainnet mints
+          actually land. Fund it with real SOL. There is no faucet.
         </p>
       </section>
       {profile ? (

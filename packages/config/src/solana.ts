@@ -1,10 +1,9 @@
 export const SOLANA = {
-  name: "Solana Devnet",
-  cluster: "devnet" as const,
-  caip2: "solana:devnet",
+  name: "Solana Mainnet",
+  cluster: "mainnet-beta" as const,
+  caip2: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
   explorer: "https://explorer.solana.com",
-  faucet: "https://faucet.solana.com",
-  rpcUrl: "https://api.devnet.solana.com",
+  rpcUrl: "https://api.mainnet-beta.solana.com",
   nativeSymbol: "SOL",
   defaultDecimals: 6,
   nftDecimals: 0,
@@ -12,7 +11,8 @@ export const SOLANA = {
   bondingGraduationSol: 2,
   virtualQuoteSol: 30,
   protocolBpsDefault: 20,
-  usdcMint: "4zMMC9ssti5q5wW1rP4mw57rSpsFxcPgdQ2kY5aDxVkw",
+  /** Circle USDC on Solana mainnet. */
+  usdcMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
 } as const;
 
 export const ROBINHOOD_CHAIN = {
@@ -32,6 +32,7 @@ export const CHAINS: {
   id: LaunchChain;
   title: string;
   live: boolean;
+  prints: boolean;
   badge: string;
   body: string;
 }[] = [
@@ -39,20 +40,23 @@ export const CHAINS: {
     id: "solana",
     title: "Solana",
     live: true,
-    badge: "Live · devnet",
-    body: "SPL coins, NFTs, Pump.fun-style curves, and Pons-style pairs. Real testnet mints.",
+    prints: true,
+    badge: "Live · mainnet",
+    body: "SPL coins, NFTs, Pump.fun-style curves, and Pons-style pairs. Real mainnet mints. Fund the pad wallet with SOL.",
   },
   {
     id: "arc",
     title: "Circle Arc",
-    live: false,
-    badge: "Coming soon",
-    body: "Same engines and venues, quoted in USDC / EURC, when official mainnet RPC lands.",
+    live: true,
+    prints: false,
+    badge: "Live · testnet",
+    body: "Arc testnet is live for wallets, gas USDC, pool USDC, and EURC. The token factory is not deployed yet — print Stories on Solana mainnet.",
   },
   {
     id: "robinhood",
     title: "Robinhood Chain",
     live: false,
+    prints: false,
     badge: "Coming soon",
     body: "Native Pons factory for tokenized-name quotes. Prepare the same launch here; it prints when the chain is wired.",
   },
@@ -80,7 +84,7 @@ export const VENUES: {
     id: "pumpfun",
     title: "Pump.fun",
     headline: "Pump-style curve on Solana",
-    body: "Same buy/sell shape as Pump.fun. Prints on Solana devnet today. Mainnet PumpPortal stays opt-in.",
+    body: "Same buy/sell shape as Pump.fun. Prints on Solana mainnet today. PumpPortal stays opt-in.",
   },
   {
     id: "pons",

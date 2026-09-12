@@ -57,7 +57,7 @@ export function CurveTrade({
   return (
     <div className="space-y-4">
       <p className="text-sm text-parchment/70">
-        Quote is {pairLabel}. Buys and sells settle on Solana devnet from your pad wallet.
+        Quote is {pairLabel}. Buys and sells settle on Solana mainnet from your pad wallet.
       </p>
       <div className="flex gap-2">
         <Button type="button" variant={side === "buy" ? "default" : "outline"} onClick={() => setSide("buy")}>

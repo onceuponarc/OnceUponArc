@@ -17,11 +17,11 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: {
-    default: "OnceUpon — Launchpad on Arc",
+    default: "OnceUpon — Launchpad",
     template: "%s · OnceUpon",
   },
   description:
-    "A token launchpad. Solana is live. Launch SPL, NFT, Pump-style, or Pons-style. Arc is next.",
+    "A token launchpad. Solana mainnet is live. Launch SPL, NFT, Pump-style, or Pons-style. Arc testnet is live for wallets.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

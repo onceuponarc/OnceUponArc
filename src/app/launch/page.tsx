@@ -31,9 +31,9 @@ export default async function LaunchPage() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Launchpad</p>
         <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">Print a real token.</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
-          Solana devnet is live. Pick SPL, NFT, Pump.fun-style, or Pons-style. Author or OnceUponers. Pair
-          SOL, USDC, any mint, or a tokenized name when that mint exists. Arc and Robinhood Chain use the
-          same flow when those rails go live.
+          Solana mainnet is live. Pick SPL, NFT, Pump.fun-style, or Pons-style. Author or OnceUponers. Pair
+          SOL, USDC, any mint, or a tokenized name when that mint exists. Arc testnet is live for wallets
+          and quotes. Robinhood Chain uses the same flow when that rail is wired.
         </p>
         <p className="mt-2 max-w-2xl text-sm text-parchment/55">{BONDING_COPY}</p>
         <div className="mt-5 flex flex-wrap gap-2 text-xs text-parchment/60">
@@ -64,7 +64,7 @@ export default async function LaunchPage() {
       <section className="space-y-4" id="compose">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Compose</p>
-          <h2 className="font-heading mt-1 text-3xl font-bold">Launch on Solana</h2>
+          <h2 className="font-heading mt-1 text-3xl font-bold">Launch on Solana mainnet</h2>
         </div>
         {!profile ? (
           <div className="glass rounded-2xl border border-gold/25 p-8 text-center">

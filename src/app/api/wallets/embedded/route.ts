@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { airdropIfNeeded, ensureSolanaWallet, solBalance } from "@/lib/wallets/embedded";
+import { ensureSolanaWallet, solBalance } from "@/lib/wallets/embedded";
 import { redactWalletError } from "@/lib/crypto/secret-box";
 import { explorerAddress } from "@/lib/solana/connection";
 
@@ -29,8 +29,10 @@ export async function POST(request: Request) {
   try {
     const wallet = await ensureSolanaWallet(user.id);
     if (body.action === "airdrop") {
-      const result = await airdropIfNeeded(wallet.address, 0.9);
-      return NextResponse.json({ address: wallet.address, ...result });
+      return NextResponse.json(
+        { error: "Solana mainnet has no faucet. Send SOL to this pad wallet." },
+        { status: 400 },
+      );
     }
     return NextResponse.json({ address: wallet.address, created: wallet.created });
   } catch (error) {

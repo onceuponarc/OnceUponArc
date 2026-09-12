@@ -50,7 +50,8 @@ export function LaunchStudio({
   const [status, setStatus] = useState<string | null>(null);
 
   const cap = engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap;
-  const live = CHAINS.find((item) => item.id === chain)?.live ?? false;
+  const selectedChain = CHAINS.find((item) => item.id === chain);
+  const canPrint = selectedChain?.prints ?? false;
   const selectedQuote = QUOTES.find((item) => item.id === quoteKind)!;
   const example = useMemo(() => feeExample(1000, Math.min(authorBps, cap)), [authorBps, cap]);
   const needsMint = quoteKind === "meme" || quoteKind === "custom" || quoteKind === "stock";
@@ -292,13 +293,21 @@ export function LaunchStudio({
             {balance != null ? `· ${balance.toFixed(3)} SOL` : null}
           </p>
           <p className="mt-1">
-            {venue === "nft"
-              ? "Mints a real Token on Solana devnet."
-              : `Bonds until ${SOLANA.bondingGraduationSol} SOL, then marks bonded.`}
+            {chain === "arc"
+              ? "Arc testnet is live for wallets. The token factory is not deployed yet — print on Solana mainnet."
+              : venue === "nft"
+                ? "Mints a real token on Solana mainnet. Needs SOL in the pad wallet."
+                : `Bonds until ${SOLANA.bondingGraduationSol} SOL on mainnet, then marks bonded.`}
           </p>
         </div>
-        <Button type="submit" size="lg" className="h-11 w-full sm:w-auto" disabled={busy || !rights || !live}>
-          {busy ? "Printing on Solana…" : live ? "Launch on Solana devnet" : "This chain is coming soon"}
+        <Button type="submit" size="lg" className="h-11 w-full sm:w-auto" disabled={busy || !rights || !canPrint}>
+          {busy
+            ? "Printing on Solana…"
+            : canPrint
+              ? "Launch on Solana mainnet"
+              : chain === "arc"
+                ? "Arc factory not deployed yet"
+                : "This chain is coming soon"}
         </Button>
         {error ? (
           <Alert variant="destructive">

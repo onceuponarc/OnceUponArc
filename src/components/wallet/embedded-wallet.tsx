@@ -17,6 +17,7 @@ export function EmbeddedWalletCard() {
   const [busy, setBusy] = useState(false);
   const [secret, setSecret] = useState<string | null>(null);
   const [secretArray, setSecretArray] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function load() {
     const res = await fetch("/api/wallets/embedded");
@@ -33,23 +34,14 @@ export function EmbeddedWalletCard() {
     load().catch(() => setError("Could not load the pad wallet."));
   }, []);
 
-  async function airdrop() {
-    setBusy(true);
-    setError(null);
+  async function copyAddress() {
+    if (!wallet) return;
     try {
-      const res = await fetch("/api/wallets/embedded", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "airdrop" }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        setError(body.error ?? "Airdrop failed.");
-        return;
-      }
-      await load();
-    } finally {
-      setBusy(false);
+      await navigator.clipboard.writeText(wallet.address);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Could not copy the address.");
     }
   }
 
@@ -80,8 +72,8 @@ export function EmbeddedWalletCard() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">Pad wallet</p>
         <h2 className="font-heading mt-1 text-2xl font-bold">Solana · created with your X account</h2>
         <p className="mt-2 text-sm text-parchment/65">
-          You can still connect an external wallet. This key is yours. Export it anytime. The pad never
-          prints it in logs.
+          This key is yours on {SOLANA.name}. Export it anytime. The pad never prints it in logs. Send real
+          SOL here before you launch or trade — there is no faucet.
         </p>
       </div>
       {wallet ? (
@@ -96,13 +88,8 @@ export function EmbeddedWalletCard() {
         <p className="text-sm text-parchment/60">Loading pad wallet…</p>
       )}
       <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={airdrop} disabled={busy}>
-          {busy ? "Working…" : "Airdrop 1 SOL"}
-        </Button>
-        <Button type="button" variant="outline" asChild>
-          <a href={SOLANA.faucet} target="_blank" rel="noreferrer">
-            Open faucet
-          </a>
+        <Button type="button" onClick={copyAddress} disabled={!wallet}>
+          {copied ? "Copied" : "Copy address"}
         </Button>
         <Button type="button" variant="secondary" onClick={exportKeys} disabled={busy || !wallet}>
           Export secret key

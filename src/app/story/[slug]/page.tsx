@@ -129,7 +129,7 @@ export default async function StoryPage({
       <Card>
         <CardHeader>
           <CardTitle>Trade</CardTitle>
-          <CardDescription>Real Solana devnet buys and sells from your pad wallet.</CardDescription>
+          <CardDescription>Real Solana mainnet buys and sells from your pad wallet.</CardDescription>
         </CardHeader>
         <CardContent>
           <CurveTrade

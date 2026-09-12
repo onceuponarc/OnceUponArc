@@ -75,7 +75,7 @@ export default async function HomePage() {
         <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold">
-              Solana devnet · Arc coming soon
+              Solana mainnet · Arc testnet
             </p>
             <h1 className="font-heading mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
               Launch it.
@@ -124,15 +124,15 @@ export default async function HomePage() {
             </dl>
             <div className="mt-5 space-y-2 text-xs text-parchment/55">
               <p>
-                {SOLANA.name} live · {ARC_TESTNET.name} coming soon
+                {SOLANA.name} live · {ARC_TESTNET.name} live
               </p>
               <p>
                 <a className="text-gold hover:underline" href={SOLANA.explorer} target="_blank" rel="noreferrer">
                   Solana Explorer
                 </a>
                 {" · "}
-                <a className="text-gold hover:underline" href={SOLANA.faucet} target="_blank" rel="noreferrer">
-                  Faucet
+                <a className="text-gold hover:underline" href={ARC_TESTNET.explorer} target="_blank" rel="noreferrer">
+                  Arc explorer
                 </a>
               </p>
               <ArcQuoteRow />
@@ -154,7 +154,7 @@ export default async function HomePage() {
           </div>
           <h2 className="font-heading mt-2 text-2xl font-bold">{chapter?.title ?? "The First Chapter"}</h2>
           <p className="mt-1 max-w-xl text-sm text-parchment/65">
-            The first official window on the pad. Factory is still coming — drafts are open on Arc testnet.
+            The first official window on the pad. Solana mainnet prints tokens. Arc testnet is live for wallets.
           </p>
         </div>
         <Button variant="secondary" asChild>

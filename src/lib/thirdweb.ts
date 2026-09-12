@@ -33,7 +33,7 @@ export const onceUponWallets = [
 export const onceUponAppMetadata = {
   name: "OnceUpon",
   url: process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:43147",
-  description: "A token launchpad on Circle Arc.",
+  description: "A token launchpad. Solana mainnet prints. Arc testnet is live for wallets.",
 };
 
 /** Playground custom theme, remapped to OnceUpon ink / parchment / gold. */

@@ -20,7 +20,7 @@ import { SOLANA } from "@onceupon/config/solana";
 import { PROTOCOL } from "@onceupon/config/arc";
 import { solanaConnection, explorerTx } from "@/lib/solana/connection";
 import { generateKeypair, protocolKeypair, sealKeypair } from "@/lib/solana/keys";
-import { airdropIfNeeded, loadUserKeypair } from "@/lib/wallets/embedded";
+import { loadUserKeypair, requireSolBalance } from "@/lib/wallets/embedded";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { LaunchVenue, QuoteKind } from "@onceupon/config/solana";
 
@@ -52,7 +52,7 @@ function slugify(input: string) {
 
 export async function launchOnSolana(input: LaunchInput) {
   const user = await loadUserKeypair(input.userId);
-  await airdropIfNeeded(user.publicKey.toBase58(), 0.5);
+  await requireSolBalance(user.publicKey.toBase58(), 0.05);
 
   const isNft = input.venue === "nft";
   const decimals = isNft ? SOLANA.nftDecimals : SOLANA.defaultDecimals;

@@ -11,12 +11,16 @@ export function solanaConnection(): Connection {
   return connection;
 }
 
+function explorerQuery(): string {
+  return SOLANA.cluster === "mainnet-beta" ? "" : `?cluster=${SOLANA.cluster}`;
+}
+
 export function explorerTx(signature: string): string {
-  return `${SOLANA.explorer}/tx/${signature}?cluster=${SOLANA.cluster}`;
+  return `${SOLANA.explorer}/tx/${signature}${explorerQuery()}`;
 }
 
 export function explorerAddress(address: string): string {
-  return `${SOLANA.explorer}/address/${address}?cluster=${SOLANA.cluster}`;
+  return `${SOLANA.explorer}/address/${address}${explorerQuery()}`;
 }
 
 export function solToLamports(sol: number): bigint {

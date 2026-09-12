@@ -4,7 +4,6 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { SOLANA } from "@onceupon/config/solana";
 import { solanaConnection } from "@/lib/solana/connection";
 import { generateKeypair, openKeypair, sealKeypair } from "@/lib/solana/keys";
-import { redactWalletError } from "@/lib/crypto/secret-box";
 
 const SOLANA_CAIP = SOLANA.caip2;
 
@@ -54,6 +53,12 @@ async function upsertPublicWallet(userId: string, address: string) {
     },
     { onConflict: "chain_caip2,address" },
   );
+  await service
+    .from("user_wallets")
+    .delete()
+    .eq("user_id", userId)
+    .eq("address", address)
+    .eq("chain_caip2", "solana:devnet");
 }
 
 export async function loadUserKeypair(userId: string): Promise<Keypair> {
@@ -89,28 +94,18 @@ export async function exportUserSecret(userId: string): Promise<{
   };
 }
 
-export async function airdropIfNeeded(address: string, minSol = 0.4): Promise<{ balance: number; airdropped: boolean }> {
+export async function requireSolBalance(address: string, minSol = 0.05): Promise<{ balance: number }> {
   const connection = solanaConnection();
   const { PublicKey } = await import("@solana/web3.js");
   const pubkey = new PublicKey(address);
   const balance = await connection.getBalance(pubkey);
   const min = minSol * LAMPORTS_PER_SOL;
-  if (balance >= min) {
-    return { balance: balance / LAMPORTS_PER_SOL, airdropped: false };
+  if (balance < min) {
+    throw new Error(
+      `Pad wallet needs at least ${minSol} SOL on ${SOLANA.name}. Send SOL to ${address.slice(0, 4)}…${address.slice(-4)}.`,
+    );
   }
-  try {
-    const sig = await connection.requestAirdrop(pubkey, LAMPORTS_PER_SOL);
-    await connection.confirmTransaction(sig, "confirmed");
-  } catch (error) {
-    const still = await connection.getBalance(pubkey);
-    if (still < min) {
-      throw new Error(
-        `Devnet airdrop failed (${redactWalletError(error)}). Fund ${address.slice(0, 4)}… from ${SOLANA.faucet}.`,
-      );
-    }
-  }
-  const next = await connection.getBalance(pubkey);
-  return { balance: next / LAMPORTS_PER_SOL, airdropped: true };
+  return { balance: balance / LAMPORTS_PER_SOL };
 }
 
 export async function solBalance(address: string): Promise<number> {

@@ -1,11 +1,11 @@
 /** Canonical OnceUpon copy. Keep this file free of forbidden offering language. */
 
 export const POSITIONING =
-  "OnceUpon is a token launchpad. Solana is live on devnet. Circle Arc and Robinhood Chain (Pons) use the same engines when those networks are wired. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
+  "OnceUpon is a token launchpad. Solana is live on mainnet. Circle Arc testnet is live for wallets and quotes. Robinhood Chain (Pons) uses the same engines when that network is wired. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
 
 export const TAGLINE = "OnceUponers write the stories. The chain keeps the receipts.";
 
-export const PAD_TAGLINE = "Launch on Solana. Arc is next. Fees that actually move.";
+export const PAD_TAGLINE = "Launch on Solana mainnet. Arc testnet is live. Fees that actually move.";
 
 export const MODE_COPY = {
   author: {
@@ -31,7 +31,7 @@ export const LAUNCH_TYPES = [
       "Pick an author fee from 0% to 3.00%. The choice is locked when you launch.",
       "Every swap pushes that cut to your pad wallet in the same transaction. No claim button.",
       "Protocol takes about 0.20% on top. That cut is not yours to set.",
-      "Same engine on Solana now, Arc and Robinhood Chain when those rails go live.",
+      "Same engine on Solana mainnet now. Arc testnet is live for wallets. Robinhood Chain when those rails go live.",
     ],
   },
   {
@@ -67,13 +67,13 @@ export const PAIR_TYPES = [
     id: "sol" as const,
     label: "SOL",
     listed: true,
-    body: "The live Solana quote. Bonding, Pump-style, and Pons-style launches all clear in SOL on devnet.",
+    body: "The live Solana quote. Bonding, Pump-style, and Pons-style launches all clear in SOL on mainnet.",
   },
   {
     id: "usdc" as const,
     label: "USDC",
     listed: true,
-    body: "Solana devnet USDC, or Arc pool USDC when that chain is live.",
+    body: "Solana mainnet USDC, or Arc testnet pool USDC for that chain’s wallets and quotes.",
   },
   {
     id: "meme" as const,
@@ -90,7 +90,7 @@ export const PAIR_TYPES = [
 ] as const;
 
 export const BONDING_COPY =
-  "Solana launches open on a bonding curve. At 2 SOL on devnet the Story marks bonded. Pump.fun-style and Pons-style use the same curve with extra snipe tax. Arc still graduates at 5,000 USDC when that factory ships.";
+  "Solana launches open on a bonding curve. At 2 SOL on mainnet the Story marks bonded. Pump.fun-style and Pons-style use the same curve with extra snipe tax. Arc still graduates at 5,000 USDC when that factory ships.";
 
 export const PIECE_EXPLAINER =
   "The Piece is a protocol fee split among current holders of a Story. It is not a dividend, not profit-sharing, and not a return on investment.";
