@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+
+const CALLBACK = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/callback`;
 
 export default async function AuthErrorPage({
   searchParams,
@@ -13,17 +16,23 @@ export default async function AuthErrorPage({
       <Alert>
         <AlertTitle>Sign in with X failed</AlertTitle>
         <AlertDescription>
-          {message ?? "Supabase could not finish the X handshake."} If this is the first
-          OnceUpon login, add{" "}
-          <code className="text-gold">
-            https://txrdfjypnuvlyseefclj.supabase.co/auth/v1/callback
-          </code>{" "}
-          to the existing X app callback list. Do not change the OrbitX product.
+          {message ??
+            "X refused the app. That almost always means the callback below is missing from User authentication settings."}{" "}
+          Keep the OrbitX callback. Add:
+          <code className="mt-2 block break-all text-gold">{CALLBACK}</code>
+          Also turn on Request email from users, set Website URL to{" "}
+          <code className="text-gold">http://127.0.0.1:43147</code>, and if the X project is in
+          Development, add your account as a tester.
         </AlertDescription>
       </Alert>
-      <Link href="/" className="text-gold hover:underline">
-        Return to The Desk
-      </Link>
+      <div className="flex flex-wrap gap-3">
+        <Button asChild>
+          <Link href="/auth/login">Try again</Link>
+        </Button>
+        <Link href="/" className="text-gold hover:underline">
+          Return to The Desk
+        </Link>
+      </div>
     </div>
   );
 }

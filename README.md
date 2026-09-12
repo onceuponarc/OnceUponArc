@@ -14,11 +14,20 @@ OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney
 
 Identity and Postgres live on a dedicated Supabase project named **OnceUpon** (`txrdfjypnuvlyseefclj`).
 
-The existing OrbitX/Soltools project is untouched. X OAuth credentials were copied onto the new project only. Add this callback on the existing X developer app (do not rotate the OrbitX callback):
+The existing OrbitX/Soltools project is untouched. X OAuth credentials were copied onto the new project only. On the **existing** X developer app (do not rotate the OrbitX callback), add this second callback:
 
 ```
 https://txrdfjypnuvlyseefclj.supabase.co/auth/v1/callback
 ```
+
+Also required on that X app:
+
+- Type of App: Web App
+- Website URL: `http://127.0.0.1:43147`
+- Request email from users: on (Supabase always sends `users.email`)
+- If the X project is in Development, your X account must be a listed tester
+
+That X error — “You weren't able to give access to the App” — is X rejecting the callback or email permission before OnceUpon runs.
 
 Dashboard: https://supabase.com/dashboard/project/txrdfjypnuvlyseefclj
 

@@ -8,7 +8,6 @@ export async function GET(request: Request) {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "x",
     options: {
-      scopes: "tweet.read users.read users.email",
       redirectTo: `${origin}/auth/callback`,
     },
   });
