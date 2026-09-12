@@ -1,29 +1,27 @@
-import { PressForm } from "@/components/press-form";
+import { LaunchStudio } from "@/components/launch/launch-studio";
+import { EmbeddedWalletCard } from "@/components/wallet/embedded-wallet";
 import { LaunchTypeGrid, PairStrip } from "@/components/pad/launch-types";
 import { getSessionUser } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
 import { BONDING_COPY } from "@onceupon/config/copy";
-import { PROTOCOL } from "@onceupon/config/arc";
+import { VENUES } from "@onceupon/config/solana";
 import { Button } from "@/components/ui/button";
 import { XMark } from "@/components/x-mark";
+import { ensureSolanaWallet, solBalance } from "@/lib/wallets/embedded";
 
 export const metadata = { title: "Launch" };
 
 export default async function LaunchPage() {
   const { user, profile } = await getSessionUser();
-  const supabase = await createClient();
-  let primaryWallet: string | null = null;
-  let verifiedAt: string | null = null;
-
+  let walletAddress: string | null = null;
+  let balance: number | null = null;
   if (user) {
-    const { data } = await supabase
-      .from("user_wallets")
-      .select("address, verified_at, is_primary")
-      .eq("user_id", user.id)
-      .eq("is_primary", true)
-      .maybeSingle();
-    primaryWallet = data?.address ?? null;
-    verifiedAt = data?.verified_at ?? null;
+    try {
+      const wallet = await ensureSolanaWallet(user.id);
+      walletAddress = wallet.address;
+      balance = await solBalance(wallet.address);
+    } catch {
+      walletAddress = null;
+    }
   }
 
   return (
@@ -31,44 +29,49 @@ export default async function LaunchPage() {
       <section className="glass relative overflow-hidden rounded-3xl border border-gold/25 px-6 py-10 sm:px-10">
         <div className="pointer-events-none absolute -right-10 top-0 size-56 rounded-full bg-burgundy/25 blur-3xl" />
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Launchpad</p>
-        <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">Pick the engine. Print the token.</h1>
+        <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">Print a real token.</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
-          Two fee paths, locked forever at launch. Author keeps the flow. OnceUponers share it through The Piece.
-          Tokenized RWA pairs stay gated until they actually list on Arc.
+          Solana devnet is live. Pick SPL, NFT, Pump.fun-style, or Pons-style. Author or OnceUponers. Pair
+          SOL, USDC, any mint, or a tokenized name when that mint exists. Arc and Robinhood Chain use the
+          same flow when those rails go live.
         </p>
         <p className="mt-2 max-w-2xl text-sm text-parchment/55">{BONDING_COPY}</p>
+        <div className="mt-5 flex flex-wrap gap-2 text-xs text-parchment/60">
+          {VENUES.map((venue) => (
+            <span key={venue.id} className="rounded-full border border-gold/25 px-3 py-1">
+              {venue.title}
+            </span>
+          ))}
+        </div>
       </section>
 
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Launch types</p>
-          <h2 className="font-heading mt-1 text-3xl font-bold">How each one works</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Engines</p>
+          <h2 className="font-heading mt-1 text-3xl font-bold">How each fee path works</h2>
         </div>
         <LaunchTypeGrid detailed />
       </section>
 
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Quote pairs</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Pairs</p>
           <h2 className="font-heading mt-1 text-3xl font-bold">What you launch against</h2>
         </div>
         <PairStrip />
-        <p className="text-sm text-parchment/55">
-          Bonding graduates at {PROTOCOL.bondingGraduationUsdc.toLocaleString("en-US")} USDC. Protocol is about{" "}
-          {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}% on every swap.
-        </p>
       </section>
 
       <section className="space-y-4" id="compose">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Compose</p>
-          <h2 className="font-heading mt-1 text-3xl font-bold">Ready when you are</h2>
+          <h2 className="font-heading mt-1 text-3xl font-bold">Launch on Solana</h2>
         </div>
         {!profile ? (
           <div className="glass rounded-2xl border border-gold/25 p-8 text-center">
             <h3 className="font-heading text-2xl font-bold">Sign in with X to launch</h3>
             <p className="mx-auto mt-2 max-w-md text-sm text-parchment/65">
-              Identity is your X handle. After sign-in you bind an Arc wallet, then save a draft.
+              Your X handle is identity. Sign-in mints a fresh Solana wallet for this pad. You can export
+              the key anytime, or connect an external wallet later.
             </p>
             <Button asChild size="lg" className="mt-6 h-11 px-5">
               <a href="/auth/login">
@@ -78,11 +81,10 @@ export default async function LaunchPage() {
             </Button>
           </div>
         ) : (
-          <PressForm
-            handle={profile.handle}
-            primaryWallet={primaryWallet}
-            verifiedAt={verifiedAt}
-          />
+          <div className="space-y-6">
+            <EmbeddedWalletCard />
+            <LaunchStudio handle={profile.handle} walletAddress={walletAddress} balance={balance} />
+          </div>
         )}
       </section>
     </div>

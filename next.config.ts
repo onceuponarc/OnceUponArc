@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   transpilePackages: ["thirdweb"],
-  serverExternalPackages: ["pino-pretty", "lokijs", "encoding"],
+  serverExternalPackages: ["pino-pretty", "lokijs", "encoding", "@solana/web3.js", "bigint-buffer"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },

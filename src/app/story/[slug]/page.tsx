@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StoryTradePanel } from "@/components/crypto/story-trade";
+import { CurveTrade } from "@/components/pad/curve-trade";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
+import { SOLANA } from "@onceupon/config/solana";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { tickerHue } from "@/lib/feed";
+import { explorerAddress, explorerTx } from "@/lib/solana/connection";
 
 export async function generateMetadata({
   params,
@@ -26,7 +28,7 @@ export default async function StoryPage({
   const { data: story } = await supabase
     .from("stories")
     .select(
-      "title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, users:author_user_id(handle, display_name, portrait_url)",
+      "title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, users:author_user_id(handle, display_name, portrait_url)",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -36,6 +38,7 @@ export default async function StoryPage({
   const hue = tickerHue(story.ticker);
   const engineLabel = story.engine === "author" ? "Author" : "OnceUponers";
   const statusLabel = story.status === "graduated" ? "Bonded" : story.status;
+  const chain = story.chain ?? "solana";
 
   return (
     <div className="space-y-8">
@@ -54,8 +57,10 @@ export default async function StoryPage({
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge>{engineLabel}</Badge>
+            <Badge variant="outline">{story.venue ?? "spl"}</Badge>
             <Badge variant="outline">{story.pair_label}</Badge>
             <Badge variant="secondary">{statusLabel}</Badge>
+            <Badge variant="outline">{chain}</Badge>
           </div>
         </div>
       </section>
@@ -74,11 +79,35 @@ export default async function StoryPage({
               {(story.protocol_bps / 100).toFixed(2)}%
             </p>
             <p>Quote {story.pair_label}</p>
+            {story.auto_buy_rewards ? <p>Vault auto-buys the pair on each OnceUponers cut.</p> : null}
             {story.engine === "onceuponers" ? (
-              <p>Vault {story.vault_address ?? "deploys at launch"}</p>
+              <p>Vault {story.vault_address ?? "n/a"}</p>
             ) : (
               <p>No claim button. Fees push on each swap.</p>
             )}
+            {story.token_address ? (
+              <p>
+                Mint{" "}
+                <a
+                  className="break-all text-gold hover:underline"
+                  href={explorerAddress(story.token_address)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {story.token_address}
+                </a>
+              </p>
+            ) : null}
+            {story.created_tx ? (
+              <p>
+                <a className="text-gold hover:underline" href={explorerTx(story.created_tx)} target="_blank" rel="noreferrer">
+                  Launch transaction
+                </a>
+              </p>
+            ) : null}
+            <p>
+              Curve {Number(story.curve_quote_lamports ?? 0) / 1_000_000_000} / {SOLANA.bondingGraduationSol} SOL
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -100,12 +129,16 @@ export default async function StoryPage({
       <Card>
         <CardHeader>
           <CardTitle>Trade</CardTitle>
-          <CardDescription>
-            Swap and buy use Arc-themed widgets. The Story token itself trades after the factory ships.
-          </CardDescription>
+          <CardDescription>Real Solana devnet buys and sells from your pad wallet.</CardDescription>
         </CardHeader>
         <CardContent>
-          <StoryTradePanel pairLabel={story.pair_label} />
+          <CurveTrade
+            slug={slug}
+            venue={story.venue ?? "spl"}
+            engine={story.engine}
+            pairLabel={story.pair_label}
+            decimals={Number(story.mint_decimals ?? 6)}
+          />
         </CardContent>
       </Card>
     </div>

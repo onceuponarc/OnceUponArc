@@ -4,6 +4,7 @@ import { FeedBoard } from "@/components/pad/feed-board";
 import { LaunchTypeStrip } from "@/components/pad/launch-types";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
+import { SOLANA } from "@onceupon/config/solana";
 import { ARC_TESTNET, PROTOCOL } from "@onceupon/config/arc";
 import { BONDING_COPY, PAD_TAGLINE } from "@onceupon/config/copy";
 import type { FeedLaunch } from "@/lib/feed";
@@ -21,6 +22,8 @@ function mapStory(row: {
   cover_url: string | null;
   status: FeedLaunch["status"];
   created_at: string;
+  chain?: string | null;
+  venue?: string | null;
   users:
     | { handle: string }
     | { handle: string }[]
@@ -39,6 +42,8 @@ function mapStory(row: {
     coverUrl: row.cover_url,
     handle: author && "handle" in author ? String(author.handle) : null,
     createdAt: row.created_at,
+    chain: row.chain ?? "solana",
+    venue: row.venue ?? "spl",
   };
 }
 
@@ -51,7 +56,7 @@ export default async function HomePage() {
     supabase
       .from("stories")
       .select(
-        "slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, users:author_user_id(handle)",
+        "slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, users:author_user_id(handle)",
       )
       .in("status", ["live", "graduated"])
       .order("created_at", { ascending: false })
@@ -70,7 +75,7 @@ export default async function HomePage() {
         <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold">
-              Circle Arc · Testnet
+              Solana devnet · Arc coming soon
             </p>
             <h1 className="font-heading mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
               Launch it.
@@ -108,9 +113,7 @@ export default async function HomePage() {
               </div>
               <div>
                 <dt className="text-parchment/50">Bond at</dt>
-                <dd className="font-heading text-2xl font-bold">
-                  {PROTOCOL.bondingGraduationUsdc.toLocaleString("en-US")}
-                </dd>
+                <dd className="font-heading text-2xl font-bold">{SOLANA.bondingGraduationSol} SOL</dd>
               </div>
               <div>
                 <dt className="text-parchment/50">Protocol</dt>
@@ -121,18 +124,18 @@ export default async function HomePage() {
             </dl>
             <div className="mt-5 space-y-2 text-xs text-parchment/55">
               <p>
-                {ARC_TESTNET.name} · chain {ARC_TESTNET.chainId}
+                {SOLANA.name} live · {ARC_TESTNET.name} coming soon
               </p>
-              <ArcQuoteRow />
               <p>
-                <a className="text-gold hover:underline" href={ARC_TESTNET.explorer}>
-                  ArcScan
+                <a className="text-gold hover:underline" href={SOLANA.explorer} target="_blank" rel="noreferrer">
+                  Solana Explorer
                 </a>
                 {" · "}
-                <a className="text-gold hover:underline" href={ARC_TESTNET.faucet}>
+                <a className="text-gold hover:underline" href={SOLANA.faucet} target="_blank" rel="noreferrer">
                   Faucet
                 </a>
               </p>
+              <ArcQuoteRow />
               {profile ? (
                 <p className="text-parchment/70">Signed in as @{profile.handle}</p>
               ) : (

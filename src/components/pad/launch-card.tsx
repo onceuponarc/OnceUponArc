@@ -37,11 +37,12 @@ export function LaunchCard({ launch }: { launch: FeedLaunch }) {
               {launch.title}
             </h3>
             <p className="mt-1 line-clamp-2 text-sm text-parchment/65">
-              {launch.blurb || "A launch on Arc."}
+              {launch.blurb || "A launch on Solana."}
             </p>
           </div>
           <div className="mt-auto flex flex-wrap items-center gap-1.5">
             <Badge variant="outline">{engineLabel}</Badge>
+            {launch.venue ? <Badge variant="outline">{launch.venue}</Badge> : null}
             <Badge variant="secondary">{launch.pairLabel}</Badge>
             <span className="text-xs text-gold/90">{(launch.authorBps / 100).toFixed(2)}% author</span>
           </div>

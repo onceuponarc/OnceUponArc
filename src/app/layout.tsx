@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s · OnceUpon",
   },
   description:
-    "A token launchpad on Circle Arc. Launch Author or OnceUponers. Trade in USDC. Claim The Piece.",
+    "A token launchpad. Solana is live. Launch SPL, NFT, Pump-style, or Pons-style. Arc is next.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

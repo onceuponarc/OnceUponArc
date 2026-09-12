@@ -1,10 +1,22 @@
 # OnceUpon
 
-A token launchpad on Circle Arc. Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
+A token launchpad. Solana is live on devnet. Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
 
-Launch on Arc. Trade in USDC. Fees that actually move.
+This is a working Solana launchpad: X identity, an encrypted pad wallet per account, and real SPL / NFT mints on Solana devnet. Circle Arc and Robinhood Chain (Pons) share the same launch types and go live when those rails are wired.
 
-This is Phase 0 of the pad: glass launchpad UI, X identity on a dedicated Supabase project, Arc testnet config, Foundry fee-cap helpers, and Arc-themed trade widgets. Factory, vault, and bonding curve come next.
+## Launch types
+
+- **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
+- **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%). Optional auto-buy converts each vault cut into the pair you chose.
+- **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every chain.
+- **Quotes** — SOL, USDC, any meme/SPL mint, or a tokenized name when that mint exists (otherwise gated).
+- Solana bonding graduates at **2 SOL** on devnet. Arc still uses **5,000 USDC** when that factory ships.
+
+## Pad wallet
+
+Sign-in with X creates a fresh Solana keypair. The secret is AES-256-GCM encrypted at rest in a table the browser cannot read. Export is an explicit POST. The pad never logs the key.
+
+You can still connect an external wallet. Launches sign with the pad wallet so testnet mints actually land.
 
 ## What this repo is not
 
@@ -47,7 +59,9 @@ Required env:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (avatar copier only)
 - `NEXT_PUBLIC_APP_URL`
-- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` (from https://thirdweb.com/create-api-key — allow `localhost:43147` and `once-upon-arc.vercel.app`)
+- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` (optional, Arc widgets)
+- `SOLANA_RPC_URL` (optional, defaults to public devnet)
+- `EMBEDDED_WALLET_SECRET` (optional extra entropy for pad-wallet encryption)
 
 Production: https://once-upon-arc.vercel.app/
 
@@ -55,7 +69,8 @@ Production: https://once-upon-arc.vercel.app/
 
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
-- thirdweb v5 crypto UI themed ink/gold against Arc testnet `5042002`
+- `@solana/web3.js` + `@solana/spl-token` for real devnet mints
+- thirdweb v5 crypto UI themed ink/gold against Arc testnet `5042002` (coming soon)
 - Foundry under `contracts/`
 
 ## Surfaces
@@ -63,9 +78,9 @@ Production: https://once-upon-arc.vercel.app/
 | Path | Job |
 | --- | --- |
 | `/` | Home feed — new, trending, on the curve, recently bonded |
-| `/launch` | Launch types + compose (Author, OnceUponers, gated RWA) |
+| `/launch` | Working Solana launch studio (SPL, NFT, Pump-style, Pons-style) |
+| `/wallet` | Pad wallet, export, airdrop, optional external connect |
 | `/write` | Redirects to `/launch` |
-| `/wallet` | Trade — connect, buy, swap, bridge on Arc |
 | `/story/[slug]` | A live launch |
 | `/shelf/[handle]` | Profile |
 | `/ledger` | The Piece claims |
@@ -83,7 +98,11 @@ Production: https://once-upon-arc.vercel.app/
 
 ## Network
 
-Arc Testnet — chain ID `5042002`, RPC `https://rpc.testnet.arc.io`, explorer `https://testnet.arcscan.app`. Native gas USDC is 18 decimals. Pool USDC is the ERC-20 at `0x3600…0000` with 6 decimals. Do not mix them.
+**Solana Devnet (live)** — RPC `https://api.devnet.solana.com`, explorer `https://explorer.solana.com/?cluster=devnet`, faucet `https://faucet.solana.com`.
+
+**Circle Arc (coming soon)** — chain ID `5042002`, RPC `https://rpc.testnet.arc.io`, explorer `https://testnet.arcscan.app`. Native gas USDC is 18 decimals. Pool USDC is the ERC-20 at `0x3600…0000` with 6 decimals. Do not mix them.
+
+**Robinhood Chain / Pons (coming soon)** — factory `0x7ed598…`, router `0xe33e9e…`. Same launch form; prints when public RPC is wired.
 
 ## Apply schema
 

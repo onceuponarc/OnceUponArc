@@ -10,6 +10,8 @@ export type FeedLaunch = {
   coverUrl: string | null;
   handle: string | null;
   createdAt: string;
+  chain?: string;
+  venue?: string;
 };
 
 export type FeedTab = "new" | "trending" | "curve" | "bonded";
@@ -17,7 +19,7 @@ export type FeedTab = "new" | "trending" | "curve" | "bonded";
 export const FEED_TABS: { id: FeedTab; label: string; hint: string }[] = [
   { id: "new", label: "New launches", hint: "Just printed on the pad." },
   { id: "trending", label: "Trending", hint: "What the pad is watching." },
-  { id: "curve", label: "On the curve", hint: "Still bonding. 5,000 USDC to graduate." },
+  { id: "curve", label: "On the curve", hint: "Still bonding. 2 SOL on Solana devnet to graduate." },
   { id: "bonded", label: "Recently bonded", hint: "Cleared the curve. In the pool." },
 ];
 
