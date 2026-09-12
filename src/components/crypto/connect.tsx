@@ -1,5 +1,6 @@
 "use client";
 
+import { ClientOnly } from "@/components/client-only";
 import { WalletAccountCard } from "@/components/crypto/headless";
 import {
   ConnectButton,
@@ -23,25 +24,42 @@ const connectModal = {
 
 export function OnceUponConnectButton() {
   return (
-    <ConnectButton
-      client={thirdwebClient}
-      chain={arcChain}
-      chains={[arcChain]}
-      wallets={onceUponWallets}
-      theme={onceUponThirdwebTheme}
-      appMetadata={onceUponAppMetadata}
-      connectButton={{ label: "Connect Arc wallet" }}
-      connectModal={connectModal}
-      detailsButton={{
-        displayBalanceToken: {
-          [arcChain.id]: ARC_USDC_ERC20,
-        },
-      }}
-    />
+    <ClientOnly
+      fallback={
+        <span
+          className="inline-block h-[50px] min-w-[165px] rounded-lg border border-gold/20 bg-card"
+          aria-hidden
+        />
+      }
+    >
+      <ConnectButton
+        client={thirdwebClient}
+        chain={arcChain}
+        chains={[arcChain]}
+        wallets={onceUponWallets}
+        theme={onceUponThirdwebTheme}
+        appMetadata={onceUponAppMetadata}
+        connectButton={{ label: "Connect Arc wallet" }}
+        connectModal={connectModal}
+        detailsButton={{
+          displayBalanceToken: {
+            [arcChain.id]: ARC_USDC_ERC20,
+          },
+        }}
+      />
+    </ClientOnly>
   );
 }
 
 export function OnceUponConnectEmbed() {
+  return (
+    <ClientOnly fallback={<span className="block min-h-48 rounded-xl border border-gold/20 bg-card" />}>
+      <OnceUponConnectEmbedLive />
+    </ClientOnly>
+  );
+}
+
+function OnceUponConnectEmbedLive() {
   const account = useActiveAccount();
   if (account) {
     return <WalletAccountCard address={account.address} />;

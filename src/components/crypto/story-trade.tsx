@@ -1,11 +1,20 @@
 "use client";
 
+import { ClientOnly } from "@/components/client-only";
 import { ArcQuoteRow, WalletAccountCard } from "@/components/crypto/headless";
 import { OnceUponSwap } from "@/components/crypto/widgets";
 import { OnceUponConnectButton } from "@/components/crypto/connect";
 import { useActiveAccount } from "thirdweb/react";
 
 export function StoryTradePanel({ pairLabel }: { pairLabel: string }) {
+  return (
+    <ClientOnly fallback={<div className="min-h-64 rounded-xl border border-gold/20 bg-card" />}>
+      <StoryTradePanelLive pairLabel={pairLabel} />
+    </ClientOnly>
+  );
+}
+
+function StoryTradePanelLive({ pairLabel }: { pairLabel: string }) {
   const account = useActiveAccount();
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import { ClientOnly } from "@/components/client-only";
 import {
   BridgeWidget,
   BuyWidget,
@@ -20,47 +21,53 @@ import {
 
 export function OnceUponBuyUsdc() {
   return (
-    <BuyWidget
-      client={thirdwebClient}
-      chain={arcChain}
-      tokenAddress={ARC_USDC_ERC20}
-      amount="20"
-      title="Buy Arc USDC"
-      description="Quote asset for Stories. Pools use the 6-decimal ERC-20, not native gas."
-      buttonLabel="Buy USDC"
-      theme={onceUponThirdwebTheme}
-      showThirdwebBranding={false}
-      currency="USD"
-    />
+    <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
+      <BuyWidget
+        client={thirdwebClient}
+        chain={arcChain}
+        tokenAddress={ARC_USDC_ERC20}
+        amount="20"
+        title="Buy Arc USDC"
+        description="Quote asset for Stories. Pools use the 6-decimal ERC-20, not native gas."
+        buttonLabel="Buy USDC"
+        theme={onceUponThirdwebTheme}
+        showThirdwebBranding={false}
+        currency="USD"
+      />
+    </ClientOnly>
   );
 }
 
 export function OnceUponSwap() {
   return (
-    <SwapWidget
-      client={thirdwebClient}
-      theme={onceUponThirdwebTheme}
-      showThirdwebBranding={false}
-      prefill={{
-        buyToken: {
-          chainId: arcChain.id,
-          tokenAddress: ARC_USDC_ERC20,
-        },
-        sellToken: {
-          chainId: arcChain.id,
-        },
-      }}
-    />
+    <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
+      <SwapWidget
+        client={thirdwebClient}
+        theme={onceUponThirdwebTheme}
+        showThirdwebBranding={false}
+        prefill={{
+          buyToken: {
+            chainId: arcChain.id,
+            tokenAddress: ARC_USDC_ERC20,
+          },
+          sellToken: {
+            chainId: arcChain.id,
+          },
+        }}
+      />
+    </ClientOnly>
   );
 }
 
 export function OnceUponBridge() {
   return (
-    <BridgeWidget
-      client={thirdwebClient}
-      theme={onceUponThirdwebTheme}
-      showThirdwebBranding={false}
-    />
+    <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
+      <BridgeWidget
+        client={thirdwebClient}
+        theme={onceUponThirdwebTheme}
+        showThirdwebBranding={false}
+      />
+    </ClientOnly>
   );
 }
 
@@ -120,16 +127,18 @@ export function OnceUponTxWidget() {
 
 export function OnceUponCheckout() {
   return (
-    <CheckoutWidget
-      client={thirdwebClient}
-      chain={arcChain}
-      tokenAddress={ARC_USDC_ERC20}
-      amount="1"
-      seller={ARC_TESTNET.gateway.wallet}
-      name="First Chapter rehearsal"
-      description="A playground checkout. This is not a Story purchase and not studio equity."
-      theme={onceUponThirdwebTheme}
-      showThirdwebBranding={false}
-    />
+    <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
+      <CheckoutWidget
+        client={thirdwebClient}
+        chain={arcChain}
+        tokenAddress={ARC_USDC_ERC20}
+        amount="1"
+        seller={ARC_TESTNET.gateway.wallet}
+        name="First Chapter rehearsal"
+        description="A playground checkout. This is not a Story purchase and not studio equity."
+        theme={onceUponThirdwebTheme}
+        showThirdwebBranding={false}
+      />
+    </ClientOnly>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { ClientOnly } from "@/components/client-only";
 import { OnceUponConnectButton, OnceUponConnectEmbed } from "@/components/crypto/connect";
 import { HeadlessArcConnect } from "@/components/crypto/headless-connect";
 import { ArcQuoteRow, WalletAccountCard } from "@/components/crypto/headless";
@@ -17,6 +18,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActiveAccount } from "thirdweb/react";
 
 export function CryptoPlayground() {
+  return (
+    <ClientOnly fallback={<div className="min-h-[24rem] rounded-xl border border-gold/20 bg-card" />}>
+      <CryptoPlaygroundLive />
+    </ClientOnly>
+  );
+}
+
+function CryptoPlaygroundLive() {
   const account = useActiveAccount();
 
   return (
