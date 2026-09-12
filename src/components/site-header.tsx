@@ -1,17 +1,65 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu } from "lucide-react";
 import { SignInButton } from "@/components/sign-in-button";
 import { WalletBar } from "@/components/wallet-bar";
 import type { OnceUponer } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/", label: "The Desk" },
-  { href: "/write", label: "The Press" },
-  { href: "/wallet", label: "Wallet" },
-  { href: "/chapter/the-first-chapter", label: "The First Chapter" },
-  { href: "/ledger", label: "The Ledger" },
-  { href: "/margin", label: "The Margin" },
-  { href: "/onceuponers", label: "OnceUponers" },
+  { href: "/", label: "Home" },
+  { href: "/launch", label: "Launch" },
+  { href: "/wallet", label: "Trade" },
+  { href: "/ledger", label: "Claims" },
+  { href: "/onceuponers", label: "Crew" },
 ];
+
+const MORE = [
+  { href: "/margin", label: "Margin" },
+  { href: "/chapter/the-first-chapter", label: "First Chapter" },
+];
+
+function NavLinks({
+  onNavigate,
+  pathname,
+}: {
+  onNavigate?: () => void;
+  pathname: string;
+}) {
+  return (
+    <>
+      {NAV.map((item) => {
+        const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-sm transition",
+              active
+                ? "bg-gold/15 text-gold"
+                : "text-parchment/75 hover:bg-white/5 hover:text-gold",
+            )}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
 
 export function SiteHeader({
   profile,
@@ -20,30 +68,55 @@ export function SiteHeader({
   profile: OnceUponer | null;
   onlineCount: number;
 }) {
+  const pathname = usePathname();
+
   return (
-    <header className="border-b border-gold/20 bg-ink/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-baseline gap-3">
-          <Link href="/" className="font-heading text-2xl tracking-tight text-parchment">
+    <header className="glass-nav sticky top-0 z-50">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <Link href="/" className="flex min-w-0 items-baseline gap-2">
+          <span className="font-heading text-xl font-bold tracking-tight text-parchment sm:text-2xl">
             OnceUpon
-          </Link>
-          <span className="hidden text-xs uppercase tracking-[0.2em] text-gold/80 sm:inline">
-            on Arc
           </span>
-        </div>
-        <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-parchment/80">
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-gold">
-              {item.label}
-            </Link>
-          ))}
+          <span className="hidden text-[10px] font-semibold uppercase tracking-[0.22em] text-gold/85 sm:inline">
+            Launchpad
+          </span>
+        </Link>
+
+        <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
+          <NavLinks pathname={pathname} />
         </nav>
-        <div className="flex items-center gap-3">
-          <p className="text-xs text-parchment/60">
-            {onlineCount} OnceUponers in the book
+
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <p className="hidden text-[11px] text-parchment/55 md:block">
+            {onlineCount} online
           </p>
           <WalletBar />
           <SignInButton profile={profile} />
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open menu">
+                <Menu />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="glass border-gold/20">
+              <SheetHeader>
+                <SheetTitle className="font-heading">OnceUpon</SheetTitle>
+                <SheetDescription>Navigate the launchpad.</SheetDescription>
+              </SheetHeader>
+              <nav className="mt-6 flex flex-col gap-2">
+                <NavLinks pathname={pathname} />
+                {MORE.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-full px-3 py-1.5 text-sm text-parchment/75 hover:text-gold"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

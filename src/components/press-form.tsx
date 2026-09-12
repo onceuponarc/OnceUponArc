@@ -13,6 +13,7 @@ import { MODE_COPY, RIGHTS_TICK, RWA_GATE, feeExample } from "@onceupon/config/c
 import { PROTOCOL } from "@onceupon/config/arc";
 import { BindArcWallet } from "@/components/crypto/bind-wallet";
 import { ArcQuoteRow } from "@/components/crypto/headless";
+import { cn } from "@/lib/utils";
 
 const PAIRS = [
   { id: "usdc", label: "USDC", listed: true },
@@ -77,8 +78,8 @@ export function PressForm({
   }
 
   return (
-    <form onSubmit={saveDraft} className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-      <div className="space-y-6">
+    <form onSubmit={saveDraft} className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="glass space-y-6 rounded-2xl border border-gold/20 p-5 sm:p-6">
         <div className="grid gap-3 sm:grid-cols-2">
           {(
             [
@@ -93,19 +94,22 @@ export function PressForm({
                 setEngine(id);
                 setAuthorBps((bps) => Math.min(bps, id === "author" ? 300 : 100));
               }}
-              className={`rounded-xl border p-4 text-left ${
-                engine === id ? "border-gold bg-gold/10" : "border-gold/20 bg-card"
-              }`}
+              className={cn(
+                "rounded-2xl border p-4 text-left transition",
+                engine === id
+                  ? "border-gold bg-gold/15 shadow-[0_0_28px_rgb(201_162_39_/_22%)]"
+                  : "border-gold/15 bg-white/5 hover:border-gold/35",
+              )}
             >
-              <p className="text-xs uppercase tracking-[0.2em] text-gold">{copy.title}</p>
-              <p className="font-heading mt-1 text-xl">{copy.headline}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold">{copy.title}</p>
+              <p className="font-heading mt-1 text-xl font-bold">{copy.headline}</p>
               <p className="mt-1 text-sm text-parchment/70">{copy.body}</p>
             </button>
           ))}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
+          <Label htmlFor="title">Name</Label>
           <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
         <div className="space-y-2">
@@ -119,7 +123,7 @@ export function PressForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="blurb">Blurb</Label>
+          <Label htmlFor="blurb">Pitch</Label>
           <Textarea id="blurb" value={blurb} onChange={(e) => setBlurb(e.target.value)} rows={4} />
         </div>
 
@@ -169,7 +173,7 @@ export function PressForm({
           <span>{RIGHTS_TICK}</span>
         </label>
 
-        <Button type="submit" disabled={busy || !rights}>
+        <Button type="submit" size="lg" className="h-11 w-full sm:w-auto" disabled={busy || !rights}>
           {busy ? "Saving draft…" : "Save draft"}
         </Button>
       </div>
@@ -177,9 +181,9 @@ export function PressForm({
       <div className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle className="font-heading">Arc wallet</CardTitle>
+            <CardTitle>Arc wallet</CardTitle>
             <CardDescription>
-              Launching requires X plus a verified wallet signature in the last 24 hours. Drafts can wait.
+              Launching needs X plus a verified wallet signature in the last 24 hours. Drafts can wait.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -191,13 +195,13 @@ export function PressForm({
         </Card>
         {error ? (
           <Alert variant="destructive">
-            <AlertTitle>The Press stopped</AlertTitle>
+            <AlertTitle>Launch blocked</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
         {status ? (
           <Alert>
-            <AlertTitle>Noted</AlertTitle>
+            <AlertTitle>Draft saved</AlertTitle>
             <AlertDescription>{status}</AlertDescription>
           </Alert>
         ) : null}

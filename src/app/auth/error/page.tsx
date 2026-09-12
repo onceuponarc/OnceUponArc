@@ -1,9 +1,8 @@
-import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { XMark } from "@/components/x-mark";
 
-const CALLBACK = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/callback`;
+export const metadata = { title: "Sign in failed" };
 
 export default async function AuthErrorPage({
   searchParams,
@@ -11,28 +10,28 @@ export default async function AuthErrorPage({
   searchParams: Promise<{ message?: string }>;
 }) {
   const { message } = await searchParams;
+  const friendly =
+    message && !/callback|tester|email|orbitx|portal|website url/i.test(message)
+      ? message
+      : "X did not complete sign-in. Try again in a moment.";
+
   return (
-    <div className="mx-auto max-w-lg space-y-4">
-      <h1 className="font-heading text-3xl">The door did not open</h1>
-      <Alert>
-        <AlertTitle>Sign in with X failed</AlertTitle>
-        <AlertDescription>
-          {message ??
-            "X refused the app. That almost always means the callback below is missing from User authentication settings."}{" "}
-          Keep the OrbitX callback. Add:
-          <code className="mt-2 block break-all text-gold">{CALLBACK}</code>
-          Also turn on Request email from users, set Website URL to{" "}
-          <code className="text-gold">{PUBLIC_SITE_URL}/</code>, and if the X project is in
-          Development, add your account as a tester.
-        </AlertDescription>
-      </Alert>
-      <div className="flex flex-wrap gap-3">
-        <Button asChild>
-          <Link href="/auth/login">Try again</Link>
-        </Button>
-        <Link href="/" className="text-gold hover:underline">
-          Return to The Desk
-        </Link>
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-8">
+      <div className="glass rounded-3xl border border-gold/25 p-8 sm:p-10">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">OnceUpon</p>
+        <h1 className="font-heading mt-3 text-3xl font-bold">Sign in did not finish</h1>
+        <p className="mt-3 text-parchment/75">{friendly}</p>
+        <div className="mt-8 flex flex-col gap-3">
+          <Button asChild size="lg" className="h-11 w-full text-base">
+            <Link href="/auth/login">
+              <XMark className="size-4" />
+              Try X again
+            </Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/">Back to the pad</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

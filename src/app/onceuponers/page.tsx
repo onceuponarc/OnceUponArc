@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { EmptyPad } from "@/components/pad/launch-card";
 import Link from "next/link";
 
-export const metadata = { title: "OnceUponers" };
+export const metadata = { title: "Crew" };
 
 export default async function OnceUponersPage() {
   const supabase = await createClient();
@@ -14,15 +15,18 @@ export default async function OnceUponersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs uppercase tracking-[0.28em] text-gold">The club</p>
-        <h1 className="font-heading mt-2 text-4xl">OnceUponers</h1>
-        <p className="mt-2 text-parchment/70">A directory of handles, not a leaderboard of PnL.</p>
-      </div>
+      <section className="glass rounded-3xl border border-gold/25 p-6 sm:p-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Crew</p>
+        <h1 className="font-heading mt-2 text-4xl font-extrabold">OnceUponers</h1>
+        <p className="mt-2 text-parchment/70">Handles on the pad — not a PnL leaderboard.</p>
+      </section>
       {error ? (
-        <p className="text-burgundy">Could not read the shelf: {error.message}</p>
+        <p className="text-burgundy">Could not load the crew: {error.message}</p>
       ) : !people?.length ? (
-        <p className="text-parchment/60">No one has signed the book yet. Be the first X login.</p>
+        <EmptyPad
+          title="No one is here yet"
+          body="Be the first X login. Your handle becomes your identity on Arc."
+        />
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {people.map((person) => {
@@ -31,7 +35,7 @@ export default async function OnceUponersPage() {
               <li key={person.handle}>
                 <Link
                   href={`/shelf/${person.handle}`}
-                  className="flex items-center gap-3 rounded-xl border border-gold/20 bg-card p-3 hover:border-gold/50"
+                  className="glass flex items-center gap-3 rounded-2xl border border-gold/20 p-3 transition hover:border-gold/50"
                 >
                   <Avatar>
                     {portrait ? <AvatarImage src={portrait} alt="" /> : null}

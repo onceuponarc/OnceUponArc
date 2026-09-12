@@ -1,13 +1,14 @@
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PIECE_EXPLAINER } from "@onceupon/config/copy";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OnceUponConnectButton } from "@/components/crypto/connect";
 import { ArcQuoteRow } from "@/components/crypto/headless";
+import { XMark } from "@/components/x-mark";
 import Link from "next/link";
 
-export const metadata = { title: "The Ledger" };
+export const metadata = { title: "Claims" };
 
 export default async function LedgerPage() {
   const { profile } = await getSessionUser();
@@ -21,35 +22,36 @@ export default async function LedgerPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs uppercase tracking-[0.28em] text-gold">The Ledger</p>
-        <h1 className="font-heading mt-2 text-4xl">Claimable Pieces</h1>
+      <section className="glass rounded-3xl border border-gold/25 p-6 sm:p-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">The Piece</p>
+        <h1 className="font-heading mt-2 text-4xl font-extrabold">Claims</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">{PIECE_EXPLAINER}</p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <ArcQuoteRow />
           <OnceUponConnectButton />
         </div>
-      </div>
+      </section>
 
       {!profile ? (
-        <Alert>
-          <AlertTitle>Sign in to see your claims</AlertTitle>
-          <AlertDescription>
-            <Link href="/auth/login" className="text-gold hover:underline">
+        <div className="glass rounded-2xl border border-gold/20 p-6">
+          <h2 className="font-heading text-xl font-bold">Sign in to see your claims</h2>
+          <Button asChild className="mt-4">
+            <Link href="/auth/login">
+              <XMark className="size-3.5" />
               Sign in with X
             </Link>
-          </AlertDescription>
-        </Alert>
+          </Button>
+        </div>
       ) : null}
 
       {!live?.length ? (
         <Card>
           <CardHeader>
-            <CardTitle className="font-heading">No vaults yet</CardTitle>
+            <CardTitle>No vaults yet</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-parchment/70">
-            OnceUponers-mode Stories will appear here with one claim button per Story. The vault has no
-            owner. Staff cannot skim it.
+            OnceUponers-mode launches appear here with one claim per Story. The vault has no owner.
+            Staff cannot skim it.
           </CardContent>
         </Card>
       ) : (
@@ -57,10 +59,13 @@ export default async function LedgerPage() {
           {live.map((story) => (
             <Card key={story.slug}>
               <CardHeader>
-                <CardTitle className="font-heading">{story.title}</CardTitle>
+                <CardTitle className="flex items-center justify-between gap-3">
+                  <span>{story.title}</span>
+                  <span className="text-sm text-gold">${story.ticker}</span>
+                </CardTitle>
               </CardHeader>
-              <CardContent className="text-sm">
-                Vault {story.vault_address} — claim lands after Phase 2 contracts.
+              <CardContent className="text-sm text-parchment/70">
+                Vault {story.vault_address ?? "pending"} — claim lands after Phase 2 contracts.
               </CardContent>
             </Card>
           ))}

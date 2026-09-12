@@ -7,7 +7,7 @@ import { OnceUponConnectButton } from "@/components/crypto/connect";
 import { ArcQuoteRow } from "@/components/crypto/headless";
 import { OnceUponBuyUsdc } from "@/components/crypto/widgets";
 
-export const metadata = { title: "The Margin" };
+export const metadata = { title: "Margin" };
 
 const MARKETS = [
   { id: "BTC-PERP", label: "BTC", href: "https://jup.ag" },
@@ -20,17 +20,17 @@ export default async function MarginPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-xs uppercase tracking-[0.28em] text-gold">The Margin</p>
-        <h1 className="font-heading mt-2 text-4xl">Longs and shorts on Jupiter</h1>
+      <section className="glass rounded-3xl border border-gold/25 p-6 sm:p-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Perps doorway</p>
+        <h1 className="font-heading mt-2 text-4xl font-extrabold">Margin</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">{MARGIN_DISCLAIMER}</p>
-      </div>
+      </section>
 
       <div className="grid gap-4 sm:grid-cols-3">
         {MARKETS.map((market) => (
           <Card key={market.id}>
             <CardHeader>
-              <CardTitle className="font-heading">{market.label}</CardTitle>
+              <CardTitle>{market.label}</CardTitle>
               <CardDescription>{market.id}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -46,7 +46,7 @@ export default async function MarginPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-heading">Fund on Arc first</CardTitle>
+          <CardTitle>Fund on Arc first</CardTitle>
           <CardDescription>
             Jupiter still holds the perp. Buy pool USDC here, then record the intent.
           </CardDescription>

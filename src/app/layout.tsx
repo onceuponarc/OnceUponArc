@@ -1,7 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { Providers } from "@/components/providers";
 import type { Metadata } from "next";
-import { Geist, Newsreader } from "next/font/google";
+import { Geist, Syne } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -9,25 +9,26 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
+const syne = Syne({
+  variable: "--font-syne",
   subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "OnceUpon — The Desk",
+    default: "OnceUpon — Launchpad on Arc",
     template: "%s · OnceUpon",
   },
   description:
-    "A token launchpad on Circle Arc. Authors write Stories. OnceUponers claim The Piece.",
+    "A token launchpad on Circle Arc. Launch Author or OnceUponers. Trade in USDC. Claim The Piece.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${newsreader.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${syne.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ink text-parchment">
         <Providers>

@@ -31,26 +31,28 @@ export default async function ChapterPage({
   if (!chapter) notFound();
 
   return (
-    <article className="mx-auto max-w-2xl space-y-6">
-      <p className="text-xs uppercase tracking-[0.28em] text-gold">A Chapter</p>
-      <h1 className="font-heading text-5xl">{chapter.title}</h1>
-      <p className="text-lg text-parchment/80">{POSITIONING}</p>
-      <p className="text-parchment/70">
-        This is the first official launch window on OnceUpon. Tokens mint on Circle Arc. The desk is
-        parchment; the receipts are USDC. The First Chapter is not studio equity.
-      </p>
-      {chapter.opens_at ? (
-        <p className="text-sm text-gold">
-          Opens {new Date(chapter.opens_at).toUTCString()}
+    <div className="space-y-8">
+      <section className="glass relative overflow-hidden rounded-3xl border border-gold/25 px-6 py-12 sm:px-12">
+        <div className="pointer-events-none absolute -right-8 top-0 size-64 rounded-full bg-gold/20 blur-3xl" />
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Featured window</p>
+        <h1 className="font-heading mt-3 text-5xl font-extrabold sm:text-6xl">{chapter.title}</h1>
+        <p className="mt-4 max-w-2xl text-lg text-parchment/80">{POSITIONING}</p>
+        <p className="mt-3 max-w-2xl text-parchment/65">
+          First official launch window on OnceUpon. Tokens mint on Circle Arc. This is not studio equity.
         </p>
-      ) : null}
-      <ArcQuoteRow />
-      <div className="flex flex-wrap gap-3">
-        <Button asChild>
-          <Link href="/write">Write into this Chapter</Link>
-        </Button>
-        <OnceUponConnectButton />
-      </div>
-    </article>
+        {chapter.opens_at ? (
+          <p className="mt-4 text-sm text-gold">Opens {new Date(chapter.opens_at).toUTCString()}</p>
+        ) : null}
+        <div className="mt-6 space-y-4">
+          <ArcQuoteRow />
+          <div className="flex flex-wrap gap-3">
+            <Button size="lg" className="h-11 px-5" asChild>
+              <Link href="/launch">Launch into this window</Link>
+            </Button>
+            <OnceUponConnectButton />
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }

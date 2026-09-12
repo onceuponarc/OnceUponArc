@@ -22,7 +22,7 @@ export function WalletSocialProfiles() {
   if (!hasThirdwebClientId) {
     return (
       <p className="text-sm text-parchment/60">
-        ENS, Lens, and Farcaster load after a thirdweb client ID is set. The Shelf still uses the X
+        ENS, Lens, and Farcaster load after a thirdweb client ID is set. Your profile still uses the X
         handle.
       </p>
     );
@@ -44,7 +44,7 @@ export function WalletSocialProfiles() {
   if (!data?.length) {
     return (
       <p className="text-sm text-parchment/60">
-        No public social profiles on this address yet. The Shelf still uses the X handle.
+        No public social profiles on this address yet. Your profile still uses the X handle.
       </p>
     );
   }

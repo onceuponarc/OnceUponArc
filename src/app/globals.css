@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-sans);
-  --font-heading: var(--font-newsreader);
+  --font-heading: var(--font-syne);
   --color-ink: #0b0a12;
   --color-parchment: #f6efe2;
   --color-gold: #c9a227;
@@ -56,15 +56,15 @@
 :root {
   --background: #0b0a12;
   --foreground: #f6efe2;
-  --card: #14131c;
+  --card: rgb(20 19 28 / 52%);
   --card-foreground: #f6efe2;
-  --popover: #14131c;
+  --popover: rgb(16 15 24 / 88%);
   --popover-foreground: #f6efe2;
   --primary: #c9a227;
   --primary-foreground: #0b0a12;
   --secondary: #2a6b62;
   --secondary-foreground: #f6efe2;
-  --muted: #1c1b24;
+  --muted: rgb(28 27 36 / 72%);
   --muted-foreground: #cbbfa8;
   --accent: #6b1d2a;
   --accent-foreground: #f6efe2;
@@ -77,7 +77,7 @@
   --chart-3: #6b1d2a;
   --chart-4: #f6efe2;
   --chart-5: #8a7a4a;
-  --radius: 0.625rem;
+  --radius: 1rem;
   --sidebar: #14131c;
   --sidebar-foreground: #f6efe2;
   --sidebar-primary: #c9a227;
@@ -91,15 +91,15 @@
 .dark {
   --background: #0b0a12;
   --foreground: #f6efe2;
-  --card: #14131c;
+  --card: rgb(20 19 28 / 52%);
   --card-foreground: #f6efe2;
-  --popover: #14131c;
+  --popover: rgb(16 15 24 / 88%);
   --popover-foreground: #f6efe2;
   --primary: #c9a227;
   --primary-foreground: #0b0a12;
   --secondary: #2a6b62;
   --secondary-foreground: #f6efe2;
-  --muted: #1c1b24;
+  --muted: rgb(28 27 36 / 72%);
   --muted-foreground: #cbbfa8;
   --accent: #6b1d2a;
   --accent-foreground: #f6efe2;
@@ -114,12 +114,47 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-ink text-foreground;
   }
   html {
     @apply font-sans;
   }
-  h1, h2, h3, .font-heading {
-    font-family: var(--font-heading), ui-serif, Georgia, serif;
+  h1,
+  h2,
+  h3,
+  .font-heading {
+    font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.03em;
+  }
+}
+
+@layer components {
+  .glass {
+    background: rgb(14 12 22 / 48%);
+    backdrop-filter: blur(22px) saturate(1.35);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 6%) inset,
+      0 18px 50px rgb(0 0 0 / 35%);
+  }
+
+  .glass-nav {
+    background: rgb(11 10 18 / 62%);
+    backdrop-filter: blur(28px) saturate(1.4);
+    box-shadow: 0 1px 0 rgb(201 162 39 / 18%);
+  }
+
+  .pad-vignette {
+    background:
+      radial-gradient(1200px 600px at 80% 0%, rgb(201 162 39 / 14%), transparent 55%),
+      radial-gradient(900px 500px at 8% 88%, rgb(107 29 42 / 22%), transparent 50%),
+      radial-gradient(700px 420px at 70% 80%, rgb(42 107 98 / 16%), transparent 55%);
+  }
+
+  [data-slot="card"] {
+    background: rgb(16 14 24 / 52%);
+    backdrop-filter: blur(20px) saturate(1.25);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 5%) inset,
+      0 16px 40px rgb(0 0 0 / 28%);
   }
 }

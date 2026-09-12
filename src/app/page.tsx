@@ -1,151 +1,166 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { FeedBoard } from "@/components/pad/feed-board";
+import { LaunchTypeStrip } from "@/components/pad/launch-types";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
-import { ARC_TESTNET } from "@onceupon/config/arc";
-import { POSITIONING } from "@onceupon/config/copy";
+import { ARC_TESTNET, PROTOCOL } from "@onceupon/config/arc";
+import { BONDING_COPY, PAD_TAGLINE } from "@onceupon/config/copy";
+import type { FeedLaunch } from "@/lib/feed";
 import Link from "next/link";
 import { ArcQuoteRow } from "@/components/crypto/headless";
 
-export default async function DeskPage() {
+function mapStory(row: {
+  slug: string;
+  title: string;
+  ticker: string;
+  blurb: string | null;
+  engine: "author" | "onceuponers";
+  pair_label: string;
+  author_bps: number;
+  cover_url: string | null;
+  status: FeedLaunch["status"];
+  created_at: string;
+  users:
+    | { handle: string }
+    | { handle: string }[]
+    | null;
+}): FeedLaunch {
+  const author = Array.isArray(row.users) ? row.users[0] : row.users;
+  return {
+    slug: row.slug,
+    title: row.title,
+    ticker: row.ticker,
+    blurb: row.blurb ?? "",
+    engine: row.engine,
+    pairLabel: row.pair_label,
+    authorBps: row.author_bps,
+    status: row.status,
+    coverUrl: row.cover_url,
+    handle: author && "handle" in author ? String(author.handle) : null,
+    createdAt: row.created_at,
+  };
+}
+
+export default async function HomePage() {
   const supabase = await createClient();
   const { profile } = await getSessionUser();
 
-  const { data: chapter } = await supabase
-    .from("chapters")
-    .select("slug, title, opens_at")
-    .eq("slug", "the-first-chapter")
-    .maybeSingle();
+  const [{ data: chapter }, { data: stories }] = await Promise.all([
+    supabase.from("chapters").select("slug, title, opens_at").eq("slug", "the-first-chapter").maybeSingle(),
+    supabase
+      .from("stories")
+      .select(
+        "slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, users:author_user_id(handle)",
+      )
+      .in("status", ["live", "graduated"])
+      .order("created_at", { ascending: false })
+      .limit(48),
+  ]);
 
-  const { data: stories, error } = await supabase
-    .from("stories")
-    .select("slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, users:author_user_id(handle)")
-    .in("status", ["live", "graduated"])
-    .order("created_at", { ascending: false })
-    .limit(24);
+  const launches = (stories ?? []).map(mapStory);
+  const liveCount = launches.filter((item) => item.status === "live").length;
+  const bondedCount = launches.filter((item) => item.status === "graduated").length;
 
   return (
-    <div className="space-y-10">
-      <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-        <div className="space-y-4">
-          <p className="text-xs uppercase tracking-[0.28em] text-gold">The Desk</p>
-          <h1 className="font-heading text-4xl leading-tight sm:text-5xl">
-            Childhood is the feeling.
-            <span className="block text-gold">The Piece is a protocol reward.</span>
-          </h1>
-          <p className="max-w-2xl text-parchment/75">{POSITIONING}</p>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild>
-              <Link href="/write">Write a Story</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/wallet">Connect Arc wallet</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/chapter/the-first-chapter">Open The First Chapter</Link>
-            </Button>
+    <div className="space-y-12">
+      <section className="glass relative overflow-hidden rounded-3xl border border-gold/25 px-6 py-10 sm:px-10 sm:py-14">
+        <div className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full bg-gold/15 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 left-10 size-64 rounded-full bg-teal/15 blur-3xl" />
+        <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold">
+              Circle Arc · Testnet
+            </p>
+            <h1 className="font-heading mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
+              Launch it.
+              <span className="block bg-gradient-to-r from-gold via-parchment to-teal bg-clip-text text-transparent">
+                Own the fee path.
+              </span>
+            </h1>
+            <p className="mt-4 max-w-xl text-base text-parchment/75 sm:text-lg">{PAD_TAGLINE}</p>
+            <p className="mt-2 max-w-xl text-sm text-parchment/55">{BONDING_COPY}</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="h-11 px-5 text-base">
+                <Link href="/launch">Launch a token</Link>
+              </Button>
+              {profile ? (
+                <Button variant="outline" size="lg" className="h-11 px-5 text-base" asChild>
+                  <Link href="/wallet">Open trade</Link>
+                </Button>
+              ) : (
+                <Button variant="outline" size="lg" className="h-11 px-5 text-base" asChild>
+                  <a href="/auth/login">Sign in with X</a>
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="glass rounded-2xl border border-gold/20 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">Pad stats</p>
+            <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <dt className="text-parchment/50">Live</dt>
+                <dd className="font-heading text-2xl font-bold">{liveCount}</dd>
+              </div>
+              <div>
+                <dt className="text-parchment/50">Bonded</dt>
+                <dd className="font-heading text-2xl font-bold">{bondedCount}</dd>
+              </div>
+              <div>
+                <dt className="text-parchment/50">Bond at</dt>
+                <dd className="font-heading text-2xl font-bold">
+                  {PROTOCOL.bondingGraduationUsdc.toLocaleString("en-US")}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-parchment/50">Protocol</dt>
+                <dd className="font-heading text-2xl font-bold">
+                  {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%
+                </dd>
+              </div>
+            </dl>
+            <div className="mt-5 space-y-2 text-xs text-parchment/55">
+              <p>
+                {ARC_TESTNET.name} · chain {ARC_TESTNET.chainId}
+              </p>
+              <ArcQuoteRow />
+              <p>
+                <a className="text-gold hover:underline" href={ARC_TESTNET.explorer}>
+                  ArcScan
+                </a>
+                {" · "}
+                <a className="text-gold hover:underline" href={ARC_TESTNET.faucet}>
+                  Faucet
+                </a>
+              </p>
+              {profile ? (
+                <p className="text-parchment/70">Signed in as @{profile.handle}</p>
+              ) : (
+                <p>A OnceUponer is an X account. There is no email signup.</p>
+              )}
+            </div>
           </div>
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-heading">Network</CardTitle>
-            <CardDescription>Ship on testnet until official mainnet RPC exists.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>
-              {ARC_TESTNET.name} · chain {ARC_TESTNET.chainId}
-            </p>
-            <p>Gas is native USDC (18 decimals). Pools use the 6-decimal ERC-20.</p>
-            <ArcQuoteRow />
-            <p>
-              <a className="text-gold hover:underline" href={ARC_TESTNET.explorer}>
-                ArcScan
-              </a>
-              {" · "}
-              <a className="text-gold hover:underline" href={ARC_TESTNET.faucet}>
-                Faucet
-              </a>
-              {" · "}
-              <Link href="/wallet" className="text-gold hover:underline">
-                Wallet
-              </Link>
-            </p>
-            {profile ? (
-              <p className="text-parchment/70">
-                Signed in as @{profile.handle}. Connect an Arc wallet on The Press before a launch.
-              </p>
-            ) : (
-              <p className="text-parchment/70">A OnceUponer is an X account. There is no email signup.</p>
-            )}
-          </CardContent>
-        </Card>
       </section>
 
-      <section className="rounded-xl border border-gold/25 bg-parchment/5 p-6">
-        <p className="text-xs uppercase tracking-[0.28em] text-gold">Chapter</p>
-        <h2 className="font-heading mt-2 text-3xl">{chapter?.title ?? "The First Chapter"}</h2>
-        <p className="mt-2 max-w-2xl text-parchment/75">
-          The first official launch on the pad. No live Story yet — the Press is open for rehearsal on
-          Arc testnet.
-        </p>
-        <Button className="mt-4" variant="secondary" asChild>
-          <Link href="/chapter/the-first-chapter">Read the landing</Link>
+      <section className="glass flex flex-col gap-4 rounded-2xl border border-gold/20 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Badge>Featured</Badge>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">First Chapter</p>
+          </div>
+          <h2 className="font-heading mt-2 text-2xl font-bold">{chapter?.title ?? "The First Chapter"}</h2>
+          <p className="mt-1 max-w-xl text-sm text-parchment/65">
+            The first official window on the pad. Factory is still coming — drafts are open on Arc testnet.
+          </p>
+        </div>
+        <Button variant="secondary" asChild>
+          <Link href="/chapter/the-first-chapter">Open the window</Link>
         </Button>
       </section>
 
-      <section className="space-y-4">
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="font-heading text-2xl">Live Stories</h2>
-          <Badge variant="outline">Arc testnet</Badge>
-        </div>
-        {error ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>The shelf could not be read</CardTitle>
-              <CardDescription>{error.message}</CardDescription>
-            </CardHeader>
-          </Card>
-        ) : !stories?.length ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-heading">The desk is set. The ink is still wet.</CardTitle>
-              <CardDescription>
-                No live Stories yet. Write the first one from The Press. Author fees push themselves.
-                OnceUponers fees sit in an ownerless vault.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {stories.map((story) => {
-              const author = Array.isArray(story.users) ? story.users[0] : story.users;
-              return (
-                <Link key={story.slug} href={`/story/${story.slug}`}>
-                  <Card className="h-full transition hover:border-gold/50">
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-2">
-                        <CardTitle className="font-heading">{story.title}</CardTitle>
-                        <Badge>{story.ticker}</Badge>
-                      </div>
-                      <CardDescription>
-                        {story.engine === "author" ? "Author fees" : "The Piece"} · {story.pair_label} ·{" "}
-                        {(story.author_bps / 100).toFixed(2)}%
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-sm text-parchment/70">
-                      <p>{story.blurb || "A Story on Arc."}</p>
-                      {author && "handle" in author ? (
-                        <p className="mt-3 text-xs text-gold">@{String(author.handle)}</p>
-                      ) : null}
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </section>
+      <FeedBoard launches={launches} />
+      <LaunchTypeStrip />
     </div>
   );
 }

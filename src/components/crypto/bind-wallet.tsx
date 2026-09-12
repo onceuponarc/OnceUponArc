@@ -63,7 +63,7 @@ export function BindArcWallet({
         Connected: {account?.address ?? "none"}
       </p>
       <p className="break-all text-sm text-parchment/70">
-        Primary on The Shelf: {primaryWallet ?? "none yet"}
+        Primary on your profile: {primaryWallet ?? "none yet"}
       </p>
       {verifiedAt ? (
         <p className="text-xs text-gold">Last bound {verifiedAt}</p>

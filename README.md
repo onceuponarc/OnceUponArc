@@ -1,10 +1,10 @@
 # OnceUpon
 
-A token launchpad on Circle Arc. Authors write Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
+A token launchpad on Circle Arc. Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
 
-OnceUponers write the stories. The chain keeps the receipts.
+Launch on Arc. Trade in USDC. Fees that actually move.
 
-This is Phase 0: the Desk shell, X identity on a **new** Supabase project, Arc testnet config, Foundry fee-cap helpers, and the thirdweb playground crypto widgets themed for OnceUpon. Factory, vault, and bonding curve come next.
+This is Phase 0 of the pad: glass launchpad UI, X identity on a dedicated Supabase project, Arc testnet config, Foundry fee-cap helpers, and Arc-themed trade widgets. Factory, vault, and bonding curve come next.
 
 ## What this repo is not
 
@@ -55,22 +55,31 @@ Production: https://once-upon-arc.vercel.app/
 
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
-- thirdweb v5 crypto UI (Connect, Buy, Swap, Bridge, Checkout, Transaction, Token/Account/Chain/NFT) themed ink/gold against Arc testnet `5042002`
+- thirdweb v5 crypto UI themed ink/gold against Arc testnet `5042002`
 - Foundry under `contracts/`
 
 ## Surfaces
 
 | Path | Job |
 | --- | --- |
-| `/` | The Desk |
-| `/write` | The Press |
-| `/wallet` | Playground crypto widgets on Arc |
-| `/story/[slug]` | A Story |
+| `/` | Home feed — new, trending, on the curve, recently bonded |
+| `/launch` | Launch types + compose (Author, OnceUponers, gated RWA) |
+| `/write` | Redirects to `/launch` |
+| `/wallet` | Trade — connect, buy, swap, bridge on Arc |
+| `/story/[slug]` | A live launch |
 | `/shelf/[handle]` | Profile |
 | `/ledger` | The Piece claims |
 | `/margin` | Jupiter doorway |
-| `/chapter/the-first-chapter` | First Chapter landing |
-| `/onceuponers` | Handle directory |
+| `/chapter/the-first-chapter` | First Chapter window |
+| `/onceuponers` | Crew directory |
+| `/auth/login` | Sign in with X |
+
+## Launch types
+
+- **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
+- **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%).
+- **Tokenized RWA / single-name** — Gated until a licensed issuer lists that name on Arc.
+- Quotes: **USDC** and **EURC** are listed. Bonding graduates at **5,000 USDC**.
 
 ## Network
 

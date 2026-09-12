@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const dest = new URL("/auth/error", origin);
     dest.searchParams.set(
       "message",
-      error?.message ?? "X would not open the door.",
+      error?.message ?? "X sign-in could not start.",
     );
     return NextResponse.redirect(dest);
   }

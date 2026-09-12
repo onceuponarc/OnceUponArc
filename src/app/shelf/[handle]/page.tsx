@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-in-button";
 import { getSessionUser } from "@/lib/auth";
+import { EmptyPad } from "@/components/pad/launch-card";
 
 export async function generateMetadata({
   params,
@@ -48,37 +49,42 @@ export default async function ShelfPage({
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <section className="glass flex flex-col gap-4 rounded-3xl border border-gold/25 p-6 sm:flex-row sm:items-center">
         <Avatar size="lg" className="size-20">
           {portrait ? <AvatarImage src={portrait} alt="" /> : null}
           <AvatarFallback>{user.handle.slice(0, 1).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <p className="text-xs uppercase tracking-[0.28em] text-gold">The Shelf</p>
-          <h1 className="font-heading text-4xl">{user.display_name}</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Profile</p>
+          <h1 className="font-heading text-4xl font-extrabold">{user.display_name}</h1>
           <p className="text-gold">@{user.handle}</p>
           <p className="mt-2 max-w-xl text-parchment/75">{user.bio || "No bio copied from X yet."}</p>
         </div>
         {isSelf ? <SignOutButton /> : null}
-      </div>
+      </section>
 
       <section>
-        <h2 className="font-heading text-2xl">Stories written</h2>
+        <h2 className="font-heading text-2xl font-bold">Launches</h2>
         {!stories?.length ? (
-          <p className="mt-3 text-parchment/60">This OnceUponer has not gone to The Press yet.</p>
+          <EmptyPad
+            className="mt-4"
+            title="No launches yet"
+            body="This OnceUponer has not printed a token on the pad."
+          />
         ) : (
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {stories.map((story) => (
               <Link key={story.slug} href={`/story/${story.slug}`}>
-                <Card>
+                <Card className="transition hover:border-gold/50">
                   <CardHeader>
-                    <CardTitle className="font-heading flex items-center justify-between">
+                    <CardTitle className="flex items-center justify-between">
                       {story.title}
                       <Badge>{story.ticker}</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-parchment/70">
-                    {story.engine} · {story.status}
+                    {story.engine === "author" ? "Author" : "OnceUponers"} ·{" "}
+                    {story.status === "graduated" ? "bonded" : story.status}
                   </CardContent>
                 </Card>
               </Link>
@@ -88,7 +94,7 @@ export default async function ShelfPage({
       </section>
 
       <section>
-        <h2 className="font-heading text-2xl">Pieces claimed</h2>
+        <h2 className="font-heading text-2xl font-bold">Pieces claimed</h2>
         <p className="mt-2 text-sm text-parchment/60">
           {claims?.length
             ? `${claims.length} claim receipt${claims.length === 1 ? "" : "s"} mirrored from chain.`

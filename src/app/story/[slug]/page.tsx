@@ -5,6 +5,7 @@ import { StoryTradePanel } from "@/components/crypto/story-trade";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { tickerHue } from "@/lib/feed";
 
 export async function generateMetadata({
   params,
@@ -32,26 +33,37 @@ export default async function StoryPage({
 
   if (!story) notFound();
   const author = Array.isArray(story.users) ? story.users[0] : story.users;
+  const hue = tickerHue(story.ticker);
+  const engineLabel = story.engine === "author" ? "Author" : "OnceUponers";
+  const statusLabel = story.status === "graduated" ? "Bonded" : story.status;
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-gold">The Story</p>
-          <h1 className="font-heading mt-2 text-4xl">{story.title}</h1>
-          <p className="mt-2 text-parchment/70">{story.blurb}</p>
+      <section
+        className="relative overflow-hidden rounded-3xl border border-gold/25 p-6 sm:p-10"
+        style={{
+          background: `linear-gradient(135deg, hsl(${hue} 40% 12% / 0.9), rgb(11 10 18 / 0.7))`,
+        }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgb(201_162_39_/_25%),transparent_40%)]" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">${story.ticker}</p>
+            <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">{story.title}</h1>
+            <p className="mt-3 max-w-2xl text-parchment/75">{story.blurb}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Badge>{engineLabel}</Badge>
+            <Badge variant="outline">{story.pair_label}</Badge>
+            <Badge variant="secondary">{statusLabel}</Badge>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Badge>{story.ticker}</Badge>
-          <Badge variant="outline">{story.engine === "author" ? "Author" : "OnceUponers"}</Badge>
-          <Badge variant="secondary">{story.status}</Badge>
-        </div>
-      </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="font-heading">Fees</CardTitle>
+            <CardTitle>Fees</CardTitle>
             <CardDescription>
               {story.engine === "author" ? AUTHOR_FEE_EXPLAINER : PIECE_EXPLAINER}
             </CardDescription>
@@ -71,7 +83,7 @@ export default async function StoryPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="font-heading">Author</CardTitle>
+            <CardTitle>Author</CardTitle>
           </CardHeader>
           <CardContent>
             {author && "handle" in author ? (
@@ -87,10 +99,9 @@ export default async function StoryPage({
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-heading">Trade</CardTitle>
+          <CardTitle>Trade</CardTitle>
           <CardDescription>
-            Swap and buy use the thirdweb playground widgets, themed for OnceUpon. The Story token
-            itself trades after Phase 1.
+            Swap and buy use Arc-themed widgets. The Story token itself trades after the factory ships.
           </CardDescription>
         </CardHeader>
         <CardContent>
