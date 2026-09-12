@@ -1,3 +1,4 @@
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export default async function AuthErrorPage({
           Keep the OrbitX callback. Add:
           <code className="mt-2 block break-all text-gold">{CALLBACK}</code>
           Also turn on Request email from users, set Website URL to{" "}
-          <code className="text-gold">http://127.0.0.1:43147</code>, and if the X project is in
+          <code className="text-gold">{PUBLIC_SITE_URL}/</code>, and if the X project is in
           Development, add your account as a tester.
         </AlertDescription>
       </Alert>

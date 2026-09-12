@@ -14,7 +14,8 @@ export function ThirdwebKeyNotice({ surface }: { surface?: string }) {
         <a className="text-gold hover:underline" href="https://thirdweb.com/create-api-key">
           thirdweb.com/create-api-key
         </a>
-        , allow <span className="font-mono">localhost:43147</span>, and set{" "}
+        , allow <span className="font-mono">localhost:43147</span> and{" "}
+        <span className="font-mono">once-upon-arc.vercel.app</span>, and set{" "}
         <span className="font-mono">NEXT_PUBLIC_THIRDWEB_CLIENT_ID</span>. Connect still lists Arc
         wallets. Buy, Swap, Bridge, and Checkout wait on the key.
       </AlertDescription>

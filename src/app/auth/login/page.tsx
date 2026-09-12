@@ -1,3 +1,4 @@
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
@@ -40,7 +41,7 @@ export default function LoginPage() {
           Callback URI must include the URL above, exactly, with no trailing slash.
         </li>
         <li>
-          Website URL: <code className="text-gold">http://127.0.0.1:43147</code>
+          Website URL: <code className="text-gold">{PUBLIC_SITE_URL}/</code>
         </li>
         <li>
           Turn on <span className="text-parchment">Request email from users</span>. Supabase always asks

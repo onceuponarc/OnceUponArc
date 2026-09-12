@@ -23,7 +23,7 @@ https://txrdfjypnuvlyseefclj.supabase.co/auth/v1/callback
 Also required on that X app:
 
 - Type of App: Web App
-- Website URL: `http://127.0.0.1:43147`
+- Website URL: `https://once-upon-arc.vercel.app/`
 - Request email from users: on (Supabase always sends `users.email`)
 - If the X project is in Development, your X account must be a listed tester
 
@@ -47,7 +47,9 @@ Required env:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (avatar copier only)
 - `NEXT_PUBLIC_APP_URL`
-- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` (from https://thirdweb.com/create-api-key — allow `localhost:43147`)
+- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` (from https://thirdweb.com/create-api-key — allow `localhost:43147` and `once-upon-arc.vercel.app`)
+
+Production: https://once-upon-arc.vercel.app/
 
 ## Stack
 
