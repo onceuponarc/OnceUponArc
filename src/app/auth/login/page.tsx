@@ -11,7 +11,7 @@ export default function LoginPage() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">OnceUpon</p>
         <h1 className="font-heading mt-3 text-4xl font-bold">Sign in with X</h1>
         <p className="mt-3 text-parchment/75">
-          Your X handle is your identity on the pad. Bind an Arc wallet when you are ready to launch.
+          Your X handle is your identity. Sign-in creates a Solana pad wallet you can export anytime.
         </p>
         <div className="mt-8 flex flex-col gap-3">
           <Button asChild size="lg" className="h-11 w-full text-base">

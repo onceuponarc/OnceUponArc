@@ -17,7 +17,7 @@ import {
 } from "@/lib/thirdweb";
 
 const connectModal = {
-  title: "Bind an Arc wallet",
+  title: "Connect a wallet",
   size: "compact" as const,
   showThirdwebBranding: false,
 };
