@@ -1,20 +1,29 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { thirdwebClient } from "@/lib/thirdweb";
+import { hasThirdwebClientId, thirdwebClient } from "@/lib/thirdweb";
 import { useActiveAccount, useSocialProfiles } from "thirdweb/react";
 
 export function WalletSocialProfiles() {
   const account = useActiveAccount();
   const { data, isLoading, error } = useSocialProfiles({
     client: thirdwebClient,
-    address: account?.address,
+    address: hasThirdwebClientId ? account?.address : undefined,
   });
 
   if (!account) {
     return (
       <p className="text-sm text-parchment/60">
         Connect an Arc wallet to load ENS, Lens, and Farcaster names for that address.
+      </p>
+    );
+  }
+
+  if (!hasThirdwebClientId) {
+    return (
+      <p className="text-sm text-parchment/60">
+        ENS, Lens, and Farcaster load after a thirdweb client ID is set. The Shelf still uses the X
+        handle.
       </p>
     );
   }

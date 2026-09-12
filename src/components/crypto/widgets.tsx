@@ -15,12 +15,19 @@ import { ARC_TESTNET } from "@onceupon/config/arc";
 import {
   ARC_USDC_ERC20,
   arcChain,
+  hasThirdwebClientId,
   onceUponThirdwebTheme,
   thirdwebClient,
 } from "@/lib/thirdweb";
+import { ThirdwebKeyNotice } from "@/components/crypto/key-notice";
+
+function gated(node: React.ReactNode) {
+  if (!hasThirdwebClientId) return <ThirdwebKeyNotice surface="This widget" />;
+  return node;
+}
 
 export function OnceUponBuyUsdc() {
-  return (
+  return gated(
     <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
       <BuyWidget
         client={thirdwebClient}
@@ -39,7 +46,7 @@ export function OnceUponBuyUsdc() {
 }
 
 export function OnceUponSwap() {
-  return (
+  return gated(
     <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
       <SwapWidget
         client={thirdwebClient}
@@ -60,7 +67,7 @@ export function OnceUponSwap() {
 }
 
 export function OnceUponBridge() {
-  return (
+  return gated(
     <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
       <BridgeWidget
         client={thirdwebClient}
@@ -101,6 +108,7 @@ export function OnceUponFaucetTx() {
 
 export function OnceUponTxWidget() {
   const account = useActiveAccount();
+  if (!hasThirdwebClientId) return <ThirdwebKeyNotice surface="TransactionWidget" />;
   if (!account) {
     return (
       <p className="text-sm text-parchment/60">
@@ -126,7 +134,7 @@ export function OnceUponTxWidget() {
 }
 
 export function OnceUponCheckout() {
-  return (
+  return gated(
     <ClientOnly fallback={<div className="min-h-80 rounded-xl border border-gold/20 bg-card" />}>
       <CheckoutWidget
         client={thirdwebClient}

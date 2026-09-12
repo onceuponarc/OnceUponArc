@@ -1,4 +1,5 @@
 import { CryptoPlayground } from "@/components/crypto/playground";
+import { ThirdwebKeyNotice } from "@/components/crypto/key-notice";
 import { ArcQuoteRow } from "@/components/crypto/headless";
 
 export const metadata = { title: "Wallet" };
@@ -14,8 +15,9 @@ export default function WalletPage() {
           OnceUponer is still an X account. The wallet is the second step — MetaMask, Rabby,
           Coinbase, Rainbow. No in-app email login.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 space-y-4">
           <ArcQuoteRow />
+          <ThirdwebKeyNotice />
         </div>
       </div>
       <CryptoPlayground />

@@ -4,10 +4,17 @@ import { createWallet } from "thirdweb/wallets";
 import { darkTheme } from "thirdweb/react";
 import { ARC_TESTNET } from "@onceupon/config/arc";
 
+const PLACEHOLDER_CLIENT_ID = "onceupon_replace_me";
+
+export const thirdwebClientId =
+  process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || PLACEHOLDER_CLIENT_ID;
+
+export const hasThirdwebClientId =
+  Boolean(process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID) &&
+  process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID !== PLACEHOLDER_CLIENT_ID;
+
 export const thirdwebClient = createThirdwebClient({
-  clientId:
-    process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID ||
-    "onceupon_replace_me",
+  clientId: thirdwebClientId,
 });
 
 export const arcChain = arcTestnet;
