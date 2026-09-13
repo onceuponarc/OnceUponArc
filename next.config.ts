@@ -1,7 +1,22 @@
 import type { NextConfig } from "next";
 
+const bigintBufferStub = "./src/lib/solana/bigint-buffer-stub.cjs";
+
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pino-pretty", "lokijs", "encoding", "@solana/web3.js", "bigint-buffer"],
+  // Do not externalize @solana/web3.js — Vercel cannot load its native bigint-buffer addon.
+  serverExternalPackages: ["pino-pretty", "lokijs", "encoding"],
+  turbopack: {
+    resolveAlias: {
+      "bigint-buffer": bigintBufferStub,
+    },
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "bigint-buffer": bigintBufferStub,
+    };
+    return config;
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },

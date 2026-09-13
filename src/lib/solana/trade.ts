@@ -14,6 +14,7 @@ import { assertPayer, getBoundSolanaWallet } from "@/lib/wallets/bound";
 import { quoteOutForSell, splitBuyFees, tokensOutForBuy } from "@/lib/solana/curve";
 import { inspectMint, pushCreateAtaIfMissing, tokenBalance, transferCheckedIx, ataFor } from "@/lib/solana/mint";
 import { findQuoteByMint, graduationRaw, rawToUi, uiToRaw, virtualRaw } from "@onceupon/config/quotes";
+import { holderClaimShare } from "@/lib/solana/tokenomics";
 
 type StoryRow = {
   id: string;
@@ -38,6 +39,7 @@ type StoryRow = {
   quote_decimals: number | null;
   virtual_quote_raw: string | number | null;
   graduation_quote_raw: string | number | null;
+  supply: string | number | null;
 };
 
 async function loadStory(slug: string) {
@@ -45,7 +47,7 @@ async function loadStory(slug: string) {
   const { data, error } = await service
     .from("stories")
     .select(
-      "id, slug, engine, status, author_user_id, author_wallet, token_address, vault_address, author_bps, protocol_bps, snipe_tax_bps, created_at, curve_quote_lamports, curve_token_raw, auto_buy_rewards, reward_vault_lamports, venue, quote_mint, pair_label, quote_decimals, virtual_quote_raw, graduation_quote_raw",
+      "id, slug, engine, status, author_user_id, author_wallet, token_address, vault_address, author_bps, protocol_bps, snipe_tax_bps, created_at, curve_quote_lamports, curve_token_raw, auto_buy_rewards, reward_vault_lamports, venue, quote_mint, pair_label, quote_decimals, virtual_quote_raw, graduation_quote_raw, supply",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -111,9 +113,10 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
   }
 
   const quoteIn = uiToRaw(amountUi, meta.decimals);
+  const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
   const fees = splitBuyFees(
     quoteIn,
-    Number(story.author_bps),
+    authorBps,
     Number(story.protocol_bps),
     snipeBps(story),
   );
@@ -129,7 +132,7 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
   const userAta = await ensureStoryAta(payer, payer, mint, tx);
   const curveAta = getAssociatedTokenAddressSync(mint, curve.publicKey, false, TOKEN_PROGRAM_ID);
 
-  const vaultCut = story.engine === "onceuponers" ? fees.author : 0n;
+  const vaultCut = 0n;
   const authorCut = story.engine === "author" ? fees.author : 0n;
 
   if (!meta.mint) {
@@ -242,7 +245,8 @@ export async function sellOnCurve(
   const quoteReserve = BigInt(story.curve_quote_lamports);
   const tokenReserve = BigInt(story.curve_token_raw);
   const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn, meta.virtual);
-  const fees = splitBuyFees(quoteOut, Number(story.author_bps), Number(story.protocol_bps), 0);
+  const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
+  const fees = splitBuyFees(quoteOut, authorBps, Number(story.protocol_bps), 0);
   const userGets = fees.toCurve;
   if (userGets <= 0n) throw new Error(`Curve would return zero ${meta.symbol}.`);
 
@@ -347,11 +351,62 @@ export async function sellOnCurve(
   };
 }
 
+export async function fundHolderRewards(userId: string, slug: string, amountUi: number, payerAddress?: string) {
+  const story = await loadStory(slug);
+  if (story.engine !== "onceuponers") {
+    throw new Error("Creator-fee launches pay you on every trade. There is no holder pool to fund.");
+  }
+  if (story.author_user_id !== userId) throw new Error("Only the author can fund holder claims.");
+  if (story.status !== "live" && story.status !== "graduated") throw new Error("This launch is not live yet.");
+  const meta = quoteMeta(story);
+  if (amountUi <= 0 || amountUi > meta.maxBuy * 20) {
+    throw new Error(`Deposit must be between 0 and ${meta.maxBuy * 20} ${meta.symbol}.`);
+  }
+  const amount = uiToRaw(amountUi, meta.decimals);
+  if (amount <= 0n) throw new Error("Deposit rounds to zero.");
+  const payer = await assertPayer(userId, payerAddress);
+  const curve = await loadCurve(story.id);
+  const tx = new Transaction();
+  if (!meta.mint) {
+    tx.add(
+      SystemProgram.transfer({
+        fromPubkey: payer,
+        toPubkey: curve.publicKey,
+        lamports: Number(amount),
+      }),
+    );
+  } else {
+    const quote = await inspectMint(meta.mint);
+    const userQuote = ataFor(quote.mint, payer, quote.programId);
+    const held = await tokenBalance(userQuote, quote.programId);
+    if (held < amount) throw new Error(`Your wallet needs ${amountUi} ${meta.symbol} to fund claims.`);
+    const curveQuote = await pushCreateAtaIfMissing(tx, payer, curve.publicKey, quote.mint, quote.programId);
+    tx.add(
+      transferCheckedIx({
+        source: userQuote,
+        mint: quote.mint,
+        destination: curveQuote,
+        owner: payer,
+        amount,
+        decimals: quote.decimals,
+        programId: quote.programId,
+      }),
+    );
+  }
+  const prepared = await serializePartialTx(tx, payer, []);
+  return {
+    transaction: prepared.transaction,
+    side: "fund" as const,
+    amountUi,
+    quote: meta.symbol,
+  };
+}
+
 export async function claimPiece(userId: string, slug: string, payerAddress?: string) {
   const story = await loadStory(slug);
-  if (story.engine !== "onceuponers") throw new Error("Author launches push fees. There is nothing to claim.");
+  if (story.engine !== "onceuponers") throw new Error("Creator-fee launches push fees. There is nothing to claim.");
   const reward = BigInt(story.reward_vault_lamports);
-  if (reward <= 0n) throw new Error("The vault is empty.");
+  if (reward <= 0n) throw new Error("The author has not funded holder claims yet.");
   const meta = quoteMeta(story);
 
   const payer = await assertPayer(userId, payerAddress);
@@ -360,9 +415,15 @@ export async function claimPiece(userId: string, slug: string, payerAddress?: st
   const connection = solanaConnection();
   const userAta = getAssociatedTokenAddressSync(mint, payer, false, TOKEN_PROGRAM_ID);
   const held = await getAccount(connection, userAta).catch(() => null);
-  if (!held || held.amount === 0n) throw new Error("You need to hold the token to claim The Piece.");
+  if (!held || held.amount === 0n) throw new Error("You need to hold the token to claim.");
 
-  const share = (reward * held.amount) / (held.amount + BigInt(story.curve_token_raw));
+  const supply = story.supply != null ? BigInt(story.supply) : BigInt(story.curve_token_raw) + held.amount;
+  const share = holderClaimShare({
+    reward,
+    held: held.amount,
+    supply,
+    curveTokens: BigInt(story.curve_token_raw),
+  });
   if (share <= 0n) throw new Error("Your share rounds to zero.");
 
   const tx = new Transaction();
@@ -405,7 +466,7 @@ export async function confirmCurveTrade(
   userId: string,
   slug: string,
   signature: string,
-  side: "buy" | "sell" | "claim",
+  side: "buy" | "sell" | "claim" | "fund",
   amountUi: number,
   decimals: number,
   payerAddress?: string,
@@ -420,14 +481,14 @@ export async function confirmCurveTrade(
 
   if (side === "buy") {
     const quoteIn = uiToRaw(amountUi, meta.decimals);
-    const fees = splitBuyFees(quoteIn, Number(story.author_bps), Number(story.protocol_bps), snipeBps(story));
+    const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
+    const fees = splitBuyFees(quoteIn, authorBps, Number(story.protocol_bps), snipeBps(story));
     const quoteReserve = BigInt(story.curve_quote_lamports);
     const tokenReserve = BigInt(story.curve_token_raw);
     const tokensOut = tokensOutForBuy(quoteReserve, tokenReserve, fees.toCurve, meta.virtual);
     const nextQuote = quoteReserve + fees.toCurve;
     const nextTokens = tokenReserve - tokensOut;
-    let rewardVault = BigInt(story.reward_vault_lamports);
-    if (story.engine === "onceuponers") rewardVault += fees.author;
+    const rewardVault = BigInt(story.reward_vault_lamports);
     const graduated = nextQuote >= meta.graduation;
     await service
       .from("stories")
@@ -476,9 +537,10 @@ export async function confirmCurveTrade(
     const quoteReserve = BigInt(story.curve_quote_lamports);
     const tokenReserve = BigInt(story.curve_token_raw);
     const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn, meta.virtual);
-    const fees = splitBuyFees(quoteOut, Number(story.author_bps), Number(story.protocol_bps), 0);
+    const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
+    const fees = splitBuyFees(quoteOut, authorBps, Number(story.protocol_bps), 0);
     const userGets = fees.toCurve;
-    const rewardAdd = story.engine === "onceuponers" ? fees.author : 0n;
+    const rewardAdd = 0n;
     await service
       .from("stories")
       .update({
@@ -506,13 +568,35 @@ export async function confirmCurveTrade(
     };
   }
 
+  if (side === "fund") {
+    const amount = uiToRaw(amountUi, meta.decimals);
+    await service
+      .from("stories")
+      .update({
+        reward_vault_lamports: (BigInt(story.reward_vault_lamports) + amount).toString(),
+      })
+      .eq("id", story.id);
+    return {
+      signature,
+      explorer: explorerTx(signature),
+      amount: amountUi,
+      quote: meta.symbol,
+    };
+  }
+
   const reward = BigInt(story.reward_vault_lamports);
   const mint = new PublicKey(story.token_address);
   const userAta = getAssociatedTokenAddressSync(mint, new PublicKey(trader), false, TOKEN_PROGRAM_ID);
   const held = await getAccount(solanaConnection(), userAta).catch(() => null);
+  const supply = story.supply != null ? BigInt(story.supply) : BigInt(story.curve_token_raw) + (held?.amount ?? 0n);
   const share =
     held && held.amount > 0n
-      ? (reward * held.amount) / (held.amount + BigInt(story.curve_token_raw))
+      ? holderClaimShare({
+          reward,
+          held: held.amount,
+          supply,
+          curveTokens: BigInt(story.curve_token_raw),
+        })
       : 0n;
   await service
     .from("stories")

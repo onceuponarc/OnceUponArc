@@ -16,6 +16,8 @@ export function CurveTrade({
   pairLabel,
   decimals,
   quoteDecimals = 9,
+  isAuthor = false,
+  vaultRaw = 0,
 }: {
   slug: string;
   venue: string;
@@ -23,10 +25,13 @@ export function CurveTrade({
   pairLabel: string;
   decimals: number;
   quoteDecimals?: number;
+  isAuthor?: boolean;
+  vaultRaw?: number;
 }) {
   const { address, signAndSend } = useWalletSigner();
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState(pairLabel === "SOL" ? "0.1" : pairLabel.includes("USD") ? "10" : "0.25");
+  const [fundAmount, setFundAmount] = useState(pairLabel === "SOL" ? "0.25" : "25");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -39,7 +44,7 @@ export function CurveTrade({
     );
   }
 
-  async function submit(action: "buy" | "sell" | "claim") {
+  async function submit(action: "buy" | "sell" | "claim" | "fund") {
     if (!address) {
       setError("Connect a Solana wallet first.");
       return;
@@ -48,10 +53,11 @@ export function CurveTrade({
     setError(null);
     setResult(null);
     try {
+      const value = action === "fund" ? Number(fundAmount) : Number(amount);
       const res = await fetch(`/api/stories/${slug}/trade`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, amount: Number(amount), payer: address }),
+        body: JSON.stringify({ action, amount: value, payer: address }),
       });
       const body = await readApiJson<{ error?: string; transaction?: string }>(res);
       if (!res.ok) {
@@ -69,7 +75,7 @@ export function CurveTrade({
         body: JSON.stringify({
           action: "confirm",
           side: action,
-          amount: Number(amount),
+          amount: action === "fund" ? Number(fundAmount) : Number(amount),
           signature: sent.signature,
           payer: address,
         }),
@@ -118,10 +124,23 @@ export function CurveTrade({
         </Button>
         {engine === "onceuponers" ? (
           <Button type="button" variant="secondary" disabled={busy || !address} onClick={() => void submit("claim")}>
-            Claim The Piece
+            Claim holder share
           </Button>
         ) : null}
       </div>
+      {engine === "onceuponers" && isAuthor ? (
+        <div className="space-y-2 rounded-xl border border-arc/20 bg-arc/5 p-3">
+          <Label htmlFor="fund">Fund holder claims ({pairLabel})</Label>
+          <p className="text-xs text-parchment/55">
+            Deposit from your wallet into the Story vault. Holders claim in proportion to current holdings. Pool now:{" "}
+            {(Number(vaultRaw) / 10 ** quoteDecimals).toLocaleString("en-US", { maximumFractionDigits: 6 })} {pairLabel}
+          </p>
+          <Input id="fund" value={fundAmount} onChange={(e) => setFundAmount(e.target.value)} />
+          <Button type="button" variant="outline" disabled={busy || !address} onClick={() => void submit("fund")}>
+            {busy ? "Sending…" : `Deposit ${pairLabel}`}
+          </Button>
+        </div>
+      ) : null}
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Trade blocked</AlertTitle>

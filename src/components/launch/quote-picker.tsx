@@ -15,7 +15,9 @@ const GROUP_DEFAULT: Partial<Record<QuoteGroup, string>> = {
   stable: "usdc",
   meme: "bonk",
   stock: "nvdax",
+  etf: "spyx",
   treasury: "usdy",
+  bond: "ousg",
   custom: "custom",
 };
 
@@ -95,7 +97,13 @@ export function QuotePicker({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={group === "stock" ? "Search NVDAx, AAPLx, TSLAx…" : "Search a listed mint"}
+              placeholder={
+                group === "stock"
+                  ? "Search NVDAx, AAPLx, TSLAx…"
+                  : group === "etf"
+                    ? "Search SPYx, QQQx…"
+                    : "Search a listed mint"
+              }
             />
           ) : null}
           <div className="grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2">

@@ -1,5 +1,6 @@
 import {
   PublicKey,
+  SYSVAR_RENT_PUBKEY,
   SystemProgram,
   TransactionInstruction,
 } from "@solana/web3.js";
@@ -64,6 +65,7 @@ export function createMetadataV3Instruction(opts: {
       { pubkey: opts.payer, isSigner: true, isWritable: true },
       { pubkey: opts.updateAuthority, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
     ],
     data,
   });

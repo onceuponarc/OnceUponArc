@@ -6,6 +6,9 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { SOLANA } from "@onceupon/config/solana";
 import { redactWalletError } from "@/lib/crypto/secret-box";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 function bytesFromBase64(value: string) {
   return Uint8Array.from(Buffer.from(value, "base64"));
 }

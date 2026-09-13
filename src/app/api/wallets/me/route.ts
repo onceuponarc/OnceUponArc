@@ -4,6 +4,9 @@ import { getBoundSolanaWallet, solBalance } from "@/lib/wallets/bound";
 import { explorerAddress } from "@/lib/solana/explorer";
 import { redactWalletError } from "@/lib/crypto/secret-box";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const { user } = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });

@@ -103,8 +103,8 @@ export function PoolPicker({
       <p className="mt-2 text-sm text-parchment/65">
         {data?.launchPool.note ??
           (venue === "pumpfun"
-            ? "Pump.fun venue pairs a PumpSwap pool as the linked AMM. The mint still opens on the OnceUpon curve."
-            : "Your token opens on an OnceUpon launch pool against this quote. Pick the deep pool to attach — Raydium, Orca, PumpSwap, Uniswap, Aerodrome, Pons, or paste any pool.")}
+            ? "PumpSwap venue pairs a PumpSwap pool as the linked AMM. The mint is still a full SPL token on OnceUpon."
+            : "Your token opens as a full SPL mint on an OnceUpon launch pool against this quote. Pick the deep pool to attach — Raydium, Orca, PumpSwap, Uniswap, Aerodrome, Pons, or paste any pool.")}
       </p>
       {data ? (
         <p className="mt-2 text-xs text-parchment/45">

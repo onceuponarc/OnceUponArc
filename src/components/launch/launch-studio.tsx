@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   VENUES,
+  SOLANA,
   findChain,
   type LaunchVenue,
   type PrintableChain,
@@ -21,6 +22,7 @@ import { findQuote, type QuoteGroup } from "@onceupon/config/quotes";
 import { QuotePicker } from "@/components/launch/quote-picker";
 import { PoolPicker, type LinkedPoolPick } from "@/components/launch/pool-picker";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
+import { TokenomicsFields } from "@/components/launch/tokenomics-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +53,6 @@ export function LaunchStudio({
   const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>("sol");
   const [quoteId, setQuoteId] = useState("sol");
   const [quoteMint, setQuoteMint] = useState("");
-  const [autoBuy, setAutoBuy] = useState(true);
   const [title, setTitle] = useState("");
   const [ticker, setTicker] = useState("");
   const [blurb, setBlurb] = useState("");
@@ -62,6 +63,10 @@ export function LaunchStudio({
   const [authorBps, setAuthorBps] = useState<number>(PROTOCOL.authorModeSuggestedBps);
   const [snipeTaxBps, setSnipeTaxBps] = useState(0);
   const [nftSupply, setNftSupply] = useState(1);
+  const [supplyUi, setSupplyUi] = useState<number>(SOLANA.defaultSupply);
+  const [decimals, setDecimals] = useState<number>(SOLANA.defaultDecimals);
+  const [graduationUi, setGraduationUi] = useState<number>(SOLANA.bondingGraduationSol);
+  const [virtualUi, setVirtualUi] = useState<number>(SOLANA.virtualQuoteSol);
   const [rights, setRights] = useState(false);
   const [linkedPool, setLinkedPool] = useState<LinkedPoolPick | null>(null);
   const [busy, setBusy] = useState(false);
@@ -104,9 +109,13 @@ export function LaunchStudio({
           snipeTaxBps,
           quoteId,
           quoteMint: quoteMint.trim() || selectedQuote?.mint || undefined,
-          autoBuyRewards: engine === "onceuponers" && autoBuy,
+          autoBuyRewards: false,
           rewardMint: quoteMint.trim() || undefined,
           nftSupply,
+          supplyUi: venue === "nft" ? nftSupply : supplyUi,
+          decimals: venue === "nft" ? 0 : decimals,
+          graduationUi,
+          virtualUi,
           rightsAttested: rights,
           payer: address,
           poolAddress: linkedPool?.address,
@@ -211,8 +220,10 @@ export function LaunchStudio({
               onClick={() => {
                 setVenue(item.id);
                 const next = feesForVenue(item.id, engine);
-                setAuthorBps(Math.min(next.authorBps, engine === "author" ? 300 : 100));
-                setSnipeTaxBps(next.snipeTaxBps);
+                setAuthorBps(
+                  engine === "onceuponers" ? 0 : Math.min(next.authorBps, PROTOCOL.authorModeAuthorBpsCap),
+                );
+                setSnipeTaxBps(item.id === "spl" || item.id === "nft" ? 0 : next.snipeTaxBps);
               }}
               className={cn(
                 "rounded-xl border p-3 text-left transition",
@@ -228,7 +239,7 @@ export function LaunchStudio({
       </section>
 
       <section className="glass rounded-2xl border border-arc/20 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">2 · Fee engine</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">2 · Rewards</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {(["author", "onceuponers"] as const).map((id) => (
             <button
@@ -237,7 +248,7 @@ export function LaunchStudio({
               onClick={() => {
                 setEngine(id);
                 const next = feesForVenue(venue, id);
-                setAuthorBps(Math.min(next.authorBps, id === "author" ? 300 : 100));
+                setAuthorBps(id === "onceuponers" ? 0 : Math.min(next.authorBps, PROTOCOL.authorModeAuthorBpsCap));
               }}
               className={cn(
                 "rounded-xl border p-3 text-left transition",
@@ -256,8 +267,17 @@ export function LaunchStudio({
         group={quoteGroup}
         quoteId={quoteId}
         mint={quoteMint}
-        onGroup={setQuoteGroup}
-        onQuoteId={setQuoteId}
+        onGroup={(group) => {
+          setQuoteGroup(group);
+        }}
+        onQuoteId={(id) => {
+          setQuoteId(id);
+          const listed = findQuote(id);
+          if (listed) {
+            setGraduationUi(listed.graduationUi);
+            setVirtualUi(listed.virtualUi);
+          }
+        }}
         onMint={setQuoteMint}
       />
 
@@ -293,6 +313,19 @@ export function LaunchStudio({
           <Textarea id="blurb" value={blurb} onChange={(e) => setBlurb(e.target.value)} rows={3} />
         </div>
         <CoverField value={cover} required={needsArt} onChange={setCover} />
+        {venue !== "nft" ? (
+          <TokenomicsFields
+            symbol={selectedQuote?.symbol ?? "QUOTE"}
+            supplyUi={supplyUi}
+            decimals={decimals}
+            graduationUi={graduationUi}
+            virtualUi={virtualUi}
+            onSupply={setSupplyUi}
+            onDecimals={setDecimals}
+            onGraduation={setGraduationUi}
+            onVirtual={setVirtualUi}
+          />
+        ) : null}
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="twitter">X / Twitter</Label>
@@ -335,28 +368,39 @@ export function LaunchStudio({
             />
           </div>
         ) : null}
-        <div className="space-y-2">
-          <Label htmlFor="fee">
-            Author fee {engine === "author" ? "(0–3.00%)" : "(0–1.00% OnceUponers cap)"}
-          </Label>
-          <input
-            id="fee"
-            type="range"
-            min={0}
-            max={cap}
-            value={Math.min(authorBps, cap)}
-            onChange={(e) => setAuthorBps(Number(e.target.value))}
-            className="w-full accent-[#3ee0c6]"
-          />
-          <p className="text-sm text-arc">
-            {(Math.min(authorBps, cap) / 100).toFixed(2)}% · protocol {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%
-          </p>
-          <p className="text-sm text-parchment/65">{example}</p>
+        {engine === "author" ? (
+          <div className="space-y-2">
+            <Label htmlFor="fee">Creator fee (0–3.00%), paid to you on every trade</Label>
+            <input
+              id="fee"
+              type="range"
+              min={0}
+              max={cap}
+              value={Math.min(authorBps, cap)}
+              onChange={(e) => setAuthorBps(Number(e.target.value))}
+              className="w-full accent-[#3ee0c6]"
+            />
+            <p className="text-sm text-arc">
+              {(Math.min(authorBps, cap) / 100).toFixed(2)}% · protocol {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%
+            </p>
+            <p className="text-sm text-parchment/65">{example}</p>
+          </div>
+        ) : (
           <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-parchment/70">
+            <p className="font-medium text-parchment">Holder claims · you fund the pool</p>
+            <p className="mt-1">
+              Trades take only the {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}% protocol cut. After the mint is
+              live, deposit {selectedQuote?.symbol ?? "quote"} into the vault. Holders claim a share proportional to
+              what they hold. That is not a dividend.
+            </p>
+          </div>
+        )}
+        <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-parchment/70">
             <p className="font-medium text-parchment">{venueFees.headline}</p>
             <p className="mt-1">
-              Creator {(Math.min(authorBps, cap) / 100).toFixed(2)}% · protocol{" "}
-              {(venueFees.protocolBps / 100).toFixed(2)}% · LP {(venueFees.lpBps / 100).toFixed(2)}%
+              {engine === "author"
+                ? `Creator ${(Math.min(authorBps, cap) / 100).toFixed(2)}% · protocol ${(venueFees.protocolBps / 100).toFixed(2)}%`
+                : `Protocol ${(venueFees.protocolBps / 100).toFixed(2)}% on trades · holder pool funded by you`}
               {snipeTaxBps > 0 ? ` · snipe +${(snipeTaxBps / 100).toFixed(2)}% (15 min)` : ""}
             </p>
             <p className="mt-1">{venueFees.note}</p>
@@ -365,10 +409,9 @@ export function LaunchStudio({
                 Pump.fun’s own curve (reference): creator{" "}
                 {(PUMPFUN_CURVE_REFERENCE.creatorBps / 100).toFixed(2)}% · protocol{" "}
                 {(PUMPFUN_CURVE_REFERENCE.protocolBps / 100).toFixed(2)}% · total{" "}
-                {(PUMPFUN_CURVE_REFERENCE.totalBps / 100).toFixed(2)}%. This mint does not pay that protocol cut.
+                {(PUMPFUN_CURVE_REFERENCE.totalBps / 100).toFixed(2)}%. This mint is SPL on OnceUpon, not that program.
               </p>
             ) : null}
-          </div>
         </div>
         {venue === "pons" || venue === "pumpfun" ? (
           <div className="space-y-2">
@@ -385,12 +428,6 @@ export function LaunchStudio({
             <p className="text-sm text-arc">{(snipeTaxBps / 100).toFixed(2)}%</p>
           </div>
         ) : null}
-        {engine === "onceuponers" ? (
-          <label className="flex items-start gap-3 text-sm">
-            <Switch checked={autoBuy} onCheckedChange={setAutoBuy} />
-            <span>Auto-buy the quote with every vault cut. Holders claim that bag as The Piece.</span>
-          </label>
-        ) : null}
         <label className="flex items-start gap-3 text-sm">
           <Switch checked={rights} onCheckedChange={setRights} />
           <span>{RIGHTS_TICK}</span>
@@ -406,7 +443,7 @@ export function LaunchStudio({
             {venue === "nft"
               ? "Mints a real token on Solana mainnet with Metaplex metadata. Needs SOL in the connected wallet."
               : selectedQuote
-                ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool. Metadata JSON is stamped Created on ${PAD_NAME}.`
+                ? `SPL mint · ${supplyUi.toLocaleString("en-US")} supply · ${decimals} decimals · bonds at ${graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool.`
                 : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
           {linkedPool ? (
@@ -414,14 +451,14 @@ export function LaunchStudio({
               Linked pool: {linkedPool.label} · {linkedPool.dex} · {linkedPool.address.slice(0, 6)}…
               {linkedPool.address.slice(-4)}
               {venue === "pumpfun" && linkedPool.dex !== "pumpswap"
-                ? " · Pump.fun venue also binds the canonical PumpSwap SOL/USDC pool."
+                ? " · PumpSwap venue also binds the canonical PumpSwap SOL/USDC pool when the quote is SOL/USDC."
                 : ""}
             </p>
           ) : (
             <p className="mt-1">
               {venue === "pumpfun"
-                ? "Pump.fun venue auto-pairs PumpSwap. Pick or paste a PumpSwap pool above."
-                : "Pick or paste a live pool above. The mint still goes live on the OnceUpon curve."}
+                ? "PumpSwap venue auto-pairs PumpSwap for SOL/USDC quotes. Pick or paste a live pool above."
+                : "Pick or paste a live pool above. This is a full SPL mint on the OnceUpon curve."}
             </p>
           )}
         </div>

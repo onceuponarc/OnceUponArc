@@ -9,42 +9,43 @@ export const PAD_TAGLINE = "Launch on Arc. Pair any chain. Print into real liqui
 
 export const MODE_COPY = {
   author: {
-    title: "Author",
-    headline: "Keep the pen",
-    body: "Fees land in your wallet on every trade.",
+    title: "Creator fees",
+    headline: "Paid on every trade",
+    body: "Your cut lands in your connected wallet on every buy and sell. No claim button.",
   },
   onceuponers: {
-    title: "OnceUponers",
-    headline: "Share the book",
-    body: "Fees land in a vault no one owns. Holders claim The Piece.",
+    title: "Holder claims",
+    headline: "You fund the pool",
+    body: "Trades do not skim a creator cut. You deposit rewards. Holders claim a share proportional to what they hold.",
   },
 } as const;
 
 export const LAUNCH_TYPES = [
   {
     id: "author" as const,
-    title: "Author",
-    headline: "Keep the pen",
-    badge: "0–3.00% author fee",
-    summary: "Fees land in your wallet on every trade.",
+    title: "Creator fees",
+    headline: "Paid on every trade",
+    badge: "0–3.00% creator fee",
+    summary: "Your cut is pushed to your Solana wallet in the same transaction as the swap.",
     how: [
-      "Pick an author fee from 0% to 3.00%. The choice is locked when you launch.",
-      "Every swap pushes that cut to your connected Solana wallet in the same transaction. No claim button.",
-      "Protocol takes about 0.20% on top. That cut is not yours to set.",
-      "Same engine on every open chain including Arc. The mint lands on Solana mainnet today against the pair and live DEX pool you pick.",
+      "Pick a creator fee from 0% to 3.00%. The choice is locked when you launch.",
+      "Every buy and sell pushes that cut to your connected Solana wallet in the same transaction. No claim button.",
+      "Protocol takes 0.20% on top. That cut is not yours to set.",
+      "This is a full SPL mint. Pair against a stock, ETF, treasury, bond, SOL, or any live pool.",
     ],
   },
   {
     id: "onceuponers" as const,
-    title: "OnceUponers",
-    headline: "Share the book",
-    badge: "Author cap 1.00%",
-    summary: "Fees land in a vault no one owns. Holders claim The Piece.",
+    title: "Holder claims",
+    headline: "You fund the pool",
+    badge: "Manual deposits",
+    summary:
+      "Holders claim a share of a rewards pool you deposit. That is not a dividend and not a return on investment.",
     how: [
-      "Author fee caps at 1.00%. That cut sits in an ownerless vault.",
-      "Turn on auto-buy and the vault converts each cut into the pair you chose, then holders claim The Piece.",
-      "The Piece is a protocol fee split among current holders — not a dividend, not profit-sharing.",
-      "Selling before you claim forfeits unsaved accumulator. The vault has no owner to chase.",
+      "Trades take only the 0.20% protocol cut. There is no automatic creator skim.",
+      "You deposit quote tokens or SOL into the Story vault when you choose.",
+      "Holders claim in proportion to their current holding versus circulating supply.",
+      "Selling before you claim forfeits unsaved share. The Piece is a protocol split — not a dividend.",
     ],
   },
   {
@@ -53,10 +54,10 @@ export const LAUNCH_TYPES = [
     headline: "Pair against listed mints",
     badge: "Listed quotes",
     summary:
-      "Launch against SOL, stables, listed tokenized stocks, treasuries, or paste any mint. That is a quote pair, not studio equity.",
+      "Launch against SOL, stables, listed tokenized stocks, ETFs, treasuries, bonds, or paste any mint. That is a quote pair, not studio equity.",
     how: [
       "A Story can pair against a listed tokenized asset. That is a quote pair, not studio equity.",
-      "Pick USDC, a listed xStock, USDY/OUSG, or paste any mint. Buys and sells settle in that mint.",
+      "Pick USDC, a listed xStock or ETF, USDY/OUSG, or paste any mint. Buys and sells settle in that mint.",
       "Pairing against a tokenized mint is not a claim on the issuer and it is not studio equity.",
     ],
   },
@@ -67,7 +68,7 @@ export const PAIR_TYPES = [
     id: "sol" as const,
     label: "SOL",
     listed: true,
-    body: "Native Solana depth. Bonding, Pump-style, and Pons-style launches all clear in SOL on mainnet.",
+    body: "Native Solana depth. SPL launches clear in SOL on mainnet against the live pool you pick.",
   },
   {
     id: "btc" as const,
@@ -77,23 +78,23 @@ export const PAIR_TYPES = [
   },
   {
     id: "meme" as const,
-    label: "Memes + any mint",
+    label: "Memes + any pool",
     listed: true,
-    body: "BONK, WIF, JUP, PENGU, or paste any SPL mint — another chain’s wrap, a meme, anything on-chain.",
+    body: "BONK, WIF, JUP, PENGU, or paste any SPL mint and any pool address.",
   },
   {
     id: "rwa" as const,
-    label: "Stocks / treasuries",
+    label: "Stocks / ETFs / bonds",
     listed: true,
-    body: "Listed xStocks, Ondo USDY/OUSG, or paste any mint. Quote pair only — not studio equity and not a claim on the issuer.",
+    body: "Listed xStocks, SPYx/QQQx, Ondo USDY/OUSG, or paste any mint. Quote pair only — not studio equity.",
   },
 ] as const;
 
 export const BONDING_COPY =
-  "Launches open on a bonding curve against the pair you pick. SOL pairs bond at 2 SOL. Stables bond at 5,000 units. cbBTC bonds at 0.1. Listed xStocks bond at 10 of the quote mint. You pair into liquidity that already exists — you do not fund an empty pool. The Raydium, Orca, PumpSwap, Uniswap, or Pons pool you pick is bound on the Story from the first block.";
+  "SPL launches open on a bonding curve against the pair you pick. You set supply, decimals, and start price. SOL pairs default to bonding at 2 SOL. Stables default to 5,000 units. cbBTC defaults to 0.1. Listed xStocks and ETFs default to 10 of the quote mint. You pair into liquidity that already exists — you do not fund an empty pool. The Raydium, Orca, PumpSwap, Uniswap, or Pons pool you pick is bound on the Story from the first block.";
 
 export const PIECE_EXPLAINER =
-  "The Piece is a protocol fee split among current holders of a Story. It is not a dividend, not profit-sharing, and not a return on investment.";
+  "Holder claims pay a share of a rewards pool the author deposits. The share is proportional to current holdings. It is not a dividend, not profit-sharing, and not a return on investment.";
 
 export const AUTHOR_FEE_EXPLAINER =
   "Author fees are a configurable swap fee, pushed on the same transaction as the trade.";
@@ -105,7 +106,7 @@ export const MARGIN_DISCLAIMER =
   "The Margin is a doorway to Jupiter. OnceUpon does not custody margin, does not run a matching engine, and does not set your leverage. Longs and shorts live on Jupiter’s accounts.";
 
 export const QUOTE_DISCLAIMER =
-  "You pair into liquidity that already exists — SOL, Bitcoin (cbBTC), Ether, stables, listed stocks, memes, or any mint. Pick the live DEX pool at launch. You do not fund an empty pool. Pairing against a tokenized mint is a quote, not studio equity.";
+  "You pair into liquidity that already exists — SOL, Bitcoin (cbBTC), Ether, stables, listed stocks, ETFs, treasuries, bonds, memes, or any mint. Pick the live DEX pool at launch. You do not fund an empty pool. Pairing against a tokenized mint is a quote, not studio equity.";
 
 export const RWA_GATE =
   "Pick a listed quote mint, or paste any Solana mint. A gated name is not a waitlist for shares.";

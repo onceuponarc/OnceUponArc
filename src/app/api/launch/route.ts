@@ -40,6 +40,10 @@ type LaunchBody = {
   rewardMint?: string;
   autoBuyRewards?: boolean;
   nftSupply?: number;
+  supplyUi?: number;
+  decimals?: number;
+  graduationUi?: number;
+  virtualUi?: number;
   rightsAttested?: boolean;
   payer?: string;
   poolAddress?: string;
@@ -135,8 +139,12 @@ export async function POST(request: Request) {
       snipeTaxBps: Number(body.snipeTaxBps ?? venueFees.snipeTaxBps),
       quote,
       rewardMint: parseMint(body.rewardMint ?? quote.mint ?? null)?.toBase58() ?? null,
-      autoBuyRewards: Boolean(body.autoBuyRewards),
+      autoBuyRewards: false,
       nftSupply: Number(body.nftSupply ?? 1),
+      supplyUi: body.supplyUi == null ? undefined : Number(body.supplyUi),
+      decimals: body.decimals == null ? undefined : Number(body.decimals),
+      graduationUi: body.graduationUi == null ? undefined : Number(body.graduationUi),
+      virtualUi: body.virtualUi == null ? undefined : Number(body.virtualUi),
       payer: payer.toBase58(),
       linkedPool: parseLinkedPool({
         poolAddress: body.poolAddress,

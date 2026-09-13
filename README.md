@@ -1,22 +1,22 @@
 # OnceUpon
 
-A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as SPL on Solana mainnet so they are live immediately against deep pairs — SOL, Bitcoin (cbBTC), Ether, stables, listed tokenized stocks, memes, or any mint. Pick the live DEX pool at launch (Raydium, Orca, Meteora, Uniswap, Aerodrome, Pons, or paste any pair). You do not fund an empty pool. Other chains tag the Story and bind a destination-chain pool.
-
-Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
+A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as **full SPL** on Solana mainnet — you set supply, decimals, metadata, start price, and tokenomics — then pair into deep liquidity (SOL, Bitcoin, Ether, stables, stocks, ETFs, treasuries, bonds, memes, or any mint / pool). You do not fund an empty pool. Other chains tag the Story and bind a destination-chain pool.
 
 Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Phantom, Solflare, or Backpack). That address is bound to your handle in Supabase. There is no in-app keypair.
 
 ## Launch types
 
-- **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
-- **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%). Optional auto-buy converts each vault cut into the pair you chose.
-- **Venues** — SPL coin, NFT, Pump.fun-style curve (pairs a live **PumpSwap** pool `pAMMBay6…`), Pons-style pair launch. Same menu on every open chain, including Arc.
-- **Coin art** — Pump.fun-style launches require an image. Upload a PNG/JPEG/WebP or paste an IPFS CID. Set `PINATA_JWT` (or `NFT_STORAGE_TOKEN`) to pin to IPFS; otherwise the cover is stored in the public Supabase `covers` bucket.
-- **Metadata** — Each mint writes Metaplex Token Metadata on-chain. The URI is `https://once-upon-arc.vercel.app/api/token/<mint>/metadata` and the JSON includes `createdOn` OnceUpon, `showName`, image, and socials (X, Telegram, website).
-- **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks such as **NVDAx**), Ondo USDY/OUSG, or any mint. Buys settle in that quote. Pairing against a tokenized mint is a quote, not studio equity. An SPL launch against NVDAx binds the live Raydium NVDAx/USDC pool (`49iMatQ…`, ~$2.1M) — you do not seed a fresh empty pool.
-- **Linked pools** — Every launch binds the live DEX pool you pick. Solana uses Raydium / Orca / Meteora / PumpSwap. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory. Paste any pool on any chain.
-- Bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, **0.1** for cbBTC, and **10** of a listed xStock.
-- **Fees** — OnceUpon curve: author cut (Pump.fun venue defaults to 0.30% creator) plus 0.20% protocol. Pump.fun’s own curve is 0.30% creator + 0.95% protocol — this pad does not take that 0.95%. First 15 minutes can add a snipe tax on Pump.fun / Pons venues.
+- **SPL coin** — The default printer. Real Solana mint with Metaplex metadata. You set supply, decimals, virtual depth (start price), and bond target. Pair against a stock, ETF, treasury, bond, SOL, or any live pool. This is not Pump.fun.
+- **NFT** — Decimals zero, editions 1–10,000, no bonding curve.
+- **PumpSwap pair** — Still a real SPL mint. Linked AMM is PumpSwap (`pAMMBay6…`), not the Pump.fun program.
+- **Pons pair** — Still a real SPL mint, tagged for Robinhood Chain / Pons.
+- **Creator fees** — Your cut (0–3.00%) is pushed to your wallet on every buy and sell. Protocol takes 0.20% on top.
+- **Holder claims** — Trades take only the protocol cut. The author deposits quote/SOL into the vault. Holders claim a share proportional to circulating holdings. That is not a dividend.
+- **Coin art** — Required for PumpSwap-pair launches; optional (recommended) for SPL. Upload a PNG/JPEG/WebP or paste an IPFS CID.
+- **Metadata** — Each mint writes Metaplex Token Metadata on-chain. The URI is `https://once-upon-arc.vercel.app/api/token/<mint>/metadata`.
+- **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks such as **NVDAx**), ETFs (SPYx, QQQx), Ondo USDY/OUSG, or any mint. Pairing against a tokenized mint is a quote, not studio equity.
+- **Linked pools** — Every launch binds the live DEX pool you pick. Solana uses Raydium / Orca / Meteora / PumpSwap. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
+- Default bond targets: **2 SOL**, **5,000** stables, **0.1** cbBTC, **10** of a listed xStock/ETF — editable at print.
 
 ## Wallets
 
@@ -29,7 +29,7 @@ Curve keypairs (the bonding vault) stay encrypted in Supabase. They are not your
 
 ## What this repo is not
 
-OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else. Childhood language is aesthetic. The Piece is a protocol fee split among current holders.
+OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else. Childhood language is aesthetic. Holder claims are a share of an author-funded pool — not a dividend.
 
 ## Isolated backend
 

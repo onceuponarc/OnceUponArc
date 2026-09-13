@@ -16,9 +16,9 @@ import { explorerAddress, explorerTx } from "@/lib/solana/explorer";
 import { LaunchLinks } from "@/components/story/launch-links";
 
 const STORY_SELECT =
-  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, users:author_user_id(handle, display_name, portrait_url)";
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, users:author_user_id(handle, display_name, portrait_url)";
 const STORY_SELECT_MIN =
-  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, users:author_user_id(handle, display_name, portrait_url)";
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, supply, reward_vault_lamports, users:author_user_id(handle, display_name, portrait_url)";
 
 async function loadStory(slug: string) {
   const supabase = await createClient();
@@ -85,7 +85,7 @@ export default async function StoryPage({
 
   const author = Array.isArray(story.users) ? story.users[0] : story.users;
   const hue = tickerHue(story.ticker);
-  const engineLabel = story.engine === "author" ? "Author" : "OnceUponers";
+  const engineLabel = story.engine === "author" ? "Creator fees" : "Holder claims";
   const statusLabel = story.status === "graduated" ? "Bonded" : story.status;
   const chain = story.chain ?? "solana";
   const chainCard = findChain(chain);
@@ -172,10 +172,23 @@ export default async function StoryPage({
             <p>Quote {story.pair_label}</p>
             {story.auto_buy_rewards ? <p>Vault auto-buys the pair on each OnceUponers cut.</p> : null}
             {story.engine === "onceuponers" ? (
-              <p>Vault {story.vault_address ?? "n/a"}</p>
+              <p>
+                Holder pool{" "}
+                {(
+                  Number((story as { reward_vault_lamports?: number | string | null }).reward_vault_lamports ?? 0) /
+                  10 ** Number(story.quote_decimals ?? 9)
+                ).toLocaleString("en-US", { maximumFractionDigits: 6 })}{" "}
+                {story.pair_label}. Author funds it. Holders claim by share of circulating supply.
+              </p>
             ) : (
-              <p>No claim button. Fees push on each swap.</p>
+              <p>No claim button. Creator fees push on each swap.</p>
             )}
+            {(story as { supply?: number | string | null }).supply ? (
+              <p>
+                Supply {Number((story as { supply?: number | string | null }).supply).toLocaleString("en-US")} raw ·{" "}
+                {Number(story.mint_decimals ?? 6)} decimals
+              </p>
+            ) : null}
             {story.token_address ? (
               <p>
                 Mint{" "}
@@ -244,6 +257,8 @@ export default async function StoryPage({
               pairLabel={story.pair_label}
               decimals={Number(story.mint_decimals ?? 6)}
               quoteDecimals={Number(story.quote_decimals ?? 9)}
+              isAuthor={isAuthor}
+              vaultRaw={Number((story as { reward_vault_lamports?: number | string | null }).reward_vault_lamports ?? 0)}
             />
           ) : (
             <p className="text-sm text-parchment/70">This Story bonded. Spot now routes through Jupiter.</p>
@@ -268,8 +283,7 @@ export default async function StoryPage({
           <CardTitle>The Binding</CardTitle>
           <CardDescription>
             Primary liquidity is the Solana OnceUpon curve from T0. Linked pools are the live DEX venues you
-            attached at launch — PumpSwap for Pump.fun venue, plus Raydium, Orca, Meteora, Uniswap, Aerodrome,
-            Pons, or any pair you pasted.
+            attached at launch — Raydium, Orca, Meteora, PumpSwap, Uniswap, Aerodrome, Pons, or any pair you pasted.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">

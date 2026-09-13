@@ -30,10 +30,15 @@ import { generateKeypair, protocolKeypair, sealKeypair } from "@/lib/solana/keys
 import { parsePayer } from "@/lib/wallets/bound";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { QuoteAsset } from "@onceupon/config/quotes";
-import { graduationRaw, virtualRaw } from "@onceupon/config/quotes";
+import { uiToRaw } from "@onceupon/config/quotes";
 import { CHAIN_POOLS, bindingKindForDex, canonicalPoolsForQuote, type DexId } from "@onceupon/config/pools";
 import { type ResolvedPool } from "@/lib/pools/resolve";
 import { createMetadataV3Instruction } from "@/lib/solana/token-metadata";
+import {
+  clampDecimals,
+  clampPositiveUi,
+  clampSupplyUi,
+} from "@/lib/solana/tokenomics";
 
 export type LaunchInput = {
   userId: string;
@@ -50,6 +55,10 @@ export type LaunchInput = {
   rewardMint: string | null;
   autoBuyRewards: boolean;
   nftSupply: number;
+  supplyUi?: number;
+  decimals?: number;
+  graduationUi?: number;
+  virtualUi?: number;
   payer: string;
   linkedPool?: ResolvedPool | null;
   coverUrl?: string | null;
@@ -70,8 +79,8 @@ function slugify(input: string) {
 export async function launchOnSolana(input: LaunchInput) {
   const payer = parsePayer(input.payer);
   const isNft = input.venue === "nft";
-  const decimals = isNft ? SOLANA.nftDecimals : SOLANA.defaultDecimals;
-  const supplyUi = isNft ? Math.max(1, Math.min(input.nftSupply || 1, 10_000)) : SOLANA.defaultSupply;
+  const decimals = clampDecimals(input.decimals, isNft);
+  const supplyUi = clampSupplyUi(input.supplyUi, isNft, input.nftSupply);
   const rawSupply = BigInt(supplyUi) * 10n ** BigInt(decimals);
 
   const mint = generateKeypair();
@@ -146,11 +155,16 @@ export async function launchOnSolana(input: LaunchInput) {
 
   const protocol = protocolKeypair();
   const venueFees = feesForVenue(input.venue, input.engine);
-  const authorBps = Math.min(
-    Math.max(0, input.authorBps ?? venueFees.authorBps),
-    input.engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap,
-  );
+  const authorBps =
+    input.engine === "onceuponers"
+      ? 0
+      : Math.min(
+          Math.max(0, input.authorBps ?? venueFees.authorBps),
+          PROTOCOL.authorModeAuthorBpsCap,
+        );
   const protocolBps = venueFees.protocolBps;
+  const graduationUi = clampPositiveUi(input.graduationUi, input.quote.graduationUi);
+  const virtualUi = clampPositiveUi(input.virtualUi, input.quote.virtualUi);
 
   const slug = `${slugify(input.title) || slugify(input.ticker) || "launch"}-${Math.random().toString(36).slice(2, 6)}`;
   const pairClass = input.quote.pairClass;
@@ -193,15 +207,15 @@ export async function launchOnSolana(input: LaunchInput) {
     venue: input.venue,
     quote_mint: input.quote.mint,
     reward_mint: input.autoBuyRewards ? (input.rewardMint ?? input.quote.mint) : null,
-    auto_buy_rewards: input.autoBuyRewards,
+    auto_buy_rewards: false,
     curve_quote_lamports: 0,
     curve_token_raw: isNft ? 0 : rawSupply.toString(),
     mint_decimals: decimals,
-    snipe_tax_bps: Math.min(Math.max(0, input.snipeTaxBps ?? venueFees.snipeTaxBps), 500),
+    snipe_tax_bps: input.venue === "spl" || input.venue === "nft" ? 0 : Math.min(Math.max(0, input.snipeTaxBps ?? venueFees.snipeTaxBps), 500),
     reward_vault_lamports: 0,
     quote_decimals: input.quote.decimals,
-    virtual_quote_raw: virtualRaw(input.quote).toString(),
-    graduation_quote_raw: graduationRaw(input.quote).toString(),
+    virtual_quote_raw: uiToRaw(virtualUi, input.quote.decimals).toString(),
+    graduation_quote_raw: uiToRaw(graduationUi, input.quote.decimals).toString(),
     linked_pool_address: paired?.address ?? null,
     linked_pool_dex: paired?.dex ?? null,
     linked_pool_label: paired?.label ?? null,
@@ -272,6 +286,15 @@ export async function launchOnSolana(input: LaunchInput) {
     })),
     pad: PAD_NAME,
     metadataUri,
+    tokenomics: {
+      venue: input.venue,
+      rewardMode: input.engine === "author" ? "creator_stream" : "holder_claim",
+      supply: supplyUi,
+      decimals,
+      graduationUi,
+      virtualUi,
+      startPriceUi: supplyUi ? virtualUi / supplyUi : 0,
+    },
   };
 }
 

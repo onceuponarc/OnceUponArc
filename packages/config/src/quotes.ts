@@ -1,7 +1,7 @@
 import { SOLANA } from "./solana";
 
-export type QuoteGroup = "sol" | "btc" | "stable" | "meme" | "stock" | "treasury" | "custom";
-export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "custom";
+export type QuoteGroup = "sol" | "btc" | "stable" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
+export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
 export type PairClass = "sol" | "usdc" | "rwa_equity" | "rwa_other" | "other";
 
 export type QuoteAsset = {
@@ -231,7 +231,7 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
     mint: "A1KLoBrKBde8Ty9qtNQUtq3C2ortoC3u7twggz7sEto6",
     decimals: 6,
     group: "treasury",
-    kind: "stock",
+    kind: "treasury",
     pairClass: "rwa_other",
     graduationUi: 5_000,
     virtualUi: 30_000,
@@ -244,28 +244,31 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
     name: "Ondo Short-Term US Government Treasuries",
     mint: "i7u4r16TcsJTgq1kAG8opmVZyVnAKBwLKu6ZPMwzxNc",
     decimals: 6,
-    group: "treasury",
-    kind: "stock",
+    group: "bond",
+    kind: "bond",
     pairClass: "rwa_other",
     graduationUi: 50,
     virtualUi: 300,
     issuer: "Ondo",
     maxBuyUi: 10_000,
   },
-  ...XSTOCKS.map(([id, symbol, name, mint]) => ({
-    id,
-    symbol,
-    name,
-    mint,
-    decimals: 8,
-    group: "stock" as const,
-    kind: "stock" as const,
-    pairClass: "rwa_equity" as const,
-    graduationUi: 10,
-    virtualUi: 100,
-    issuer: "Backed",
-    maxBuyUi: 1_000,
-  })),
+  ...XSTOCKS.map(([id, symbol, name, mint]) => {
+    const etf = id === "spyx" || id === "qqqx" || id === "tqqqx" || id === "vtix" || id === "gldx";
+    return {
+      id,
+      symbol,
+      name,
+      mint,
+      decimals: 8,
+      group: (etf ? "etf" : "stock") as QuoteAsset["group"],
+      kind: (etf ? "etf" : "stock") as QuoteAsset["kind"],
+      pairClass: "rwa_equity" as const,
+      graduationUi: 10,
+      virtualUi: 100,
+      issuer: "Backed",
+      maxBuyUi: 1_000,
+    };
+  }),
 ];
 
 export const QUOTE_GROUPS: { id: QuoteGroup; label: string; hint: string }[] = [
@@ -274,8 +277,10 @@ export const QUOTE_GROUPS: { id: QuoteGroup; label: string; hint: string }[] = [
   { id: "stable", label: "Stables", hint: "USDC, USDT, PYUSD." },
   { id: "meme", label: "Memes", hint: "Pair into BONK, WIF, JUP, PENGU and other live mints." },
   { id: "stock", label: "Stocks", hint: "Listed xStocks such as NVDAx. Quote pair, not studio equity — you bind the live deep pool, you do not seed a fresh one." },
-  { id: "treasury", label: "Treasuries", hint: "Ondo USDY and OUSG." },
-  { id: "custom", label: "Any mint", hint: "Paste any SPL mint — another chain’s wrap, a meme, anything on-chain." },
+  { id: "etf", label: "ETFs", hint: "Listed index xStocks such as SPYx and QQQx. Quote pair only — not a claim on the fund." },
+  { id: "treasury", label: "Treasuries", hint: "Ondo USDY. Quote pair only — not a claim on the issuer." },
+  { id: "bond", label: "Bonds", hint: "Ondo OUSG short-term government bonds. Quote pair only." },
+  { id: "custom", label: "Any pool", hint: "Paste any SPL mint or pick Any mint, then link any live pool address." },
 ];
 
 export function findQuote(id: string): QuoteAsset | undefined {

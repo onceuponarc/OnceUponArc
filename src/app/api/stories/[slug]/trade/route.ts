@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { buyOnCurve, claimPiece, confirmCurveTrade, sellOnCurve } from "@/lib/solana/trade";
+import { buyOnCurve, claimPiece, confirmCurveTrade, fundHolderRewards, sellOnCurve } from "@/lib/solana/trade";
 import { redactWalletError } from "@/lib/crypto/secret-box";
 import { createClient } from "@/lib/supabase/server";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(
@@ -14,11 +16,11 @@ export async function POST(
   if (!user) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
   const { slug } = await context.params;
   const body = (await request.json()) as {
-    action?: "buy" | "sell" | "claim" | "confirm";
+    action?: "buy" | "sell" | "claim" | "fund" | "confirm";
     amount?: number;
     payer?: string;
     signature?: string;
-    side?: "buy" | "sell" | "claim";
+    side?: "buy" | "sell" | "claim" | "fund";
   };
 
   try {
@@ -53,6 +55,10 @@ export async function POST(
     }
     if (body.action === "claim") {
       const result = await claimPiece(user.id, slug, body.payer);
+      return NextResponse.json(result);
+    }
+    if (body.action === "fund") {
+      const result = await fundHolderRewards(user.id, slug, Number(body.amount ?? 0), body.payer);
       return NextResponse.json(result);
     }
     return NextResponse.json({ error: "Unknown action." }, { status: 400 });

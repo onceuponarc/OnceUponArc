@@ -4,7 +4,7 @@ import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import { PAD_CREATED_ON, PAD_NAME, metadataDescription, venueLabel } from "@onceupon/config/launchpad";
 
 const FULL =
-  "title, ticker, blurb, cover_url, image_uri, twitter_url, telegram_url, website_url, venue, chain, slug, users:author_user_id(handle)";
+  "title, ticker, blurb, cover_url, image_uri, twitter_url, telegram_url, website_url, venue, chain, slug, engine, supply, mint_decimals, author_bps, protocol_bps, pair_label, users:author_user_id(handle)";
 const MIN = "title, ticker, blurb, cover_url";
 
 export async function GET(
@@ -29,6 +29,12 @@ export async function GET(
   const telegram = data && "telegram_url" in data ? (data.telegram_url as string | null) : null;
   const website = data && "website_url" in data ? (data.website_url as string | null) : null;
   const venue = data && "venue" in data ? String(data.venue ?? "spl") : "spl";
+  const engine = data && "engine" in data ? String(data.engine ?? "author") : "author";
+  const supply = data && "supply" in data ? data.supply : null;
+  const mintDecimals = data && "mint_decimals" in data ? Number(data.mint_decimals ?? 6) : 6;
+  const authorBps = data && "author_bps" in data ? Number(data.author_bps ?? 0) : 0;
+  const protocolBps = data && "protocol_bps" in data ? Number(data.protocol_bps ?? 20) : 20;
+  const pairLabel = data && "pair_label" in data ? String(data.pair_label ?? "") : "";
 
   return NextResponse.json(
     {
@@ -43,6 +49,14 @@ export async function GET(
       website: website || undefined,
       launchpad: PAD_NAME,
       venue: venueLabel(venue),
+      decimals: mintDecimals,
+      supply: supply != null ? String(supply) : undefined,
+      tokenomics: {
+        rewardMode: engine === "onceuponers" ? "holder_claim" : "creator_stream",
+        creatorBps: authorBps,
+        protocolBps,
+        pair: pairLabel || undefined,
+      },
     },
     {
       headers: {

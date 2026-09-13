@@ -41,8 +41,8 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
       authorBps: 30,
       snipeTaxBps: 200,
       lpBps: 0,
-      headline: "Pump.fun-shaped creator cut on the OnceUpon curve",
-      note: "This mint trades on OnceUpon’s curve: 0.30% creator + 0.20% protocol. First 15 minutes add the snipe tax you set. Pump.fun’s own curve is 0.30% creator + 0.95% protocol — this pad does not take that 0.95%. The linked PumpSwap pool is the Pump.fun AMM (pAMMBay6…).",
+      headline: "PumpSwap-paired SPL on the OnceUpon curve",
+      note: "This is a real SPL mint. 0.30% creator + 0.20% protocol on OnceUpon’s curve. The linked AMM is PumpSwap (pAMMBay6…), not the Pump.fun program. Pump.fun’s own curve (0.30% + 0.95%) is reference only.",
     };
   }
   if (venue === "pons") {
@@ -60,8 +60,8 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
     authorBps: engine === "onceuponers" ? 100 : PROTOCOL.authorModeSuggestedBps,
     snipeTaxBps: 0,
     lpBps: 0,
-    headline: "OnceUpon curve fees",
-    note: "Your author cut plus 0.20% protocol on every buy. Locked at launch.",
+    headline: "OnceUpon SPL fees",
+    note: "Author mode pushes your cut to your wallet on every buy and sell. Holder-claim mode takes only the 0.20% protocol cut on trades — you fund the holder pool yourself.",
   };
 }
 
@@ -96,8 +96,8 @@ export function preferDexForVenue(venue: LaunchVenue): DexId | null {
 }
 
 export function venueLabel(venue: string | null | undefined) {
-  if (venue === "pumpfun") return "Pump.fun";
-  if (venue === "pons") return "Pons";
+  if (venue === "pumpfun") return "PumpSwap pair";
+  if (venue === "pons") return "Pons pair";
   if (venue === "nft") return "NFT";
   return "SPL";
 }

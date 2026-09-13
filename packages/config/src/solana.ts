@@ -56,7 +56,7 @@ export const BASE = {
 export type LaunchChain = "arc" | "solana" | "ethereum" | "base" | "robinhood";
 export type PrintableChain = LaunchChain;
 export type LaunchVenue = "spl" | "nft" | "pumpfun" | "pons";
-export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "custom";
+export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
 
 export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = [
   "arc",
@@ -97,7 +97,7 @@ export const CHAINS: ChainCard[] = [
     live: true,
     prints: true,
     badge: "Live printer",
-    body: "The working printer. SPL coins, NFTs, Pump.fun-style curves, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, memes, stocks, or any mint, and link a live Raydium, Orca, Meteora, or PumpSwap pool.",
+    body: "The working printer. Full SPL coins, NFTs, optional PumpSwap pairing, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, memes, stocks, ETFs, treasuries, bonds, or any mint, and link a live Raydium, Orca, Meteora, or PumpSwap pool.",
     caip2: SOLANA.caip2,
     accent: "from-[#9945ff]/40 to-[#14f195]/25",
     printNote:
@@ -150,26 +150,26 @@ export const VENUES: {
   {
     id: "spl",
     title: "SPL coin",
-    headline: "Mint a real Solana token",
-    body: "Fixed supply on an OnceUpon bonding curve. Trade against SOL, a meme mint, or a custom mint.",
+    headline: "Full Solana token",
+    body: "The real printer. You set supply, decimals, metadata, start price, and tokenomics. Pair against a stock, ETF, treasury, bond, SOL, or any live pool. This is not Pump.fun.",
   },
   {
     id: "nft",
     title: "NFT",
     headline: "1/1 or editions",
-    body: "Decimals zero. Supply one for a 1/1, or more for editions. Metadata lives with the mint.",
+    body: "Decimals zero. Supply one for a 1/1, or more for editions. Metaplex metadata lives with the mint. No bonding curve.",
   },
   {
     id: "pumpfun",
-    title: "Pump.fun",
-    headline: "Pump-style curve · PumpSwap pair",
-    body: "Same buy/sell shape as Pump.fun. Prints on OnceUpon, links a PumpSwap pool (pAMMBay6…) as the paired AMM, ships image + Metaplex metadata, and stamps Created on OnceUpon.",
+    title: "PumpSwap pair",
+    headline: "SPL mint · PumpSwap AMM",
+    body: "Still a real SPL token on OnceUpon. The linked AMM is PumpSwap (pAMMBay6…), not the Pump.fun program. Use SPL unless you specifically want that pair.",
   },
   {
     id: "pons",
-    title: "Pons",
-    headline: "Pons-style pair launch",
-    body: "Bonding plus a quote/reward pair — meme, custom mint, or a tokenized name. Native Pons is Robinhood Chain; Solana runs the same flow now.",
+    title: "Pons pair",
+    headline: "SPL mint · Pons pool",
+    body: "Still a real SPL token. Tagged for Robinhood Chain / Pons. Bind a Pons pool at print; native Pons lives on Robinhood Chain.",
   },
 ];
 
