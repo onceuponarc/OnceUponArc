@@ -20,7 +20,7 @@ export async function serializePartialTx(
   if (extraSigners.length) tx.partialSign(...extraSigners);
   const raw = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
   if (raw.length > MAX_TX_BYTES) {
-    throw new Error("Mint transaction is too large for Solana. Shorten the name or ticker and retry.");
+    throw new Error("Transaction is too large for Solana. Retry with a smaller deposit.");
   }
   return {
     transaction: raw.toString("base64"),

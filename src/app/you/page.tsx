@@ -60,7 +60,7 @@ export default async function YouPage() {
 
       <section className="grid gap-3 sm:grid-cols-2">
         {[
-          { href: "/bindings", label: "Link LP", body: "Bind NVDAx/USDC or paste a pool you opened for your mint after launch." },
+          { href: "/bindings", label: "Link LP", body: "Tag an existing pool. Sign and pay PumpSwap from the Story." },
           { href: "/margin", label: "Margin", body: "Doorway to Jupiter perps. OnceUpon does not custody leverage." },
           { href: "/onceuponers", label: "Crew", body: "Handles on the pad — not a PnL board." },
           { href: "/chapter/the-first-chapter", label: "First Chapter", body: "The first official launch window." },

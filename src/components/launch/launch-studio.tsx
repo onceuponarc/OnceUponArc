@@ -463,7 +463,7 @@ export function LaunchStudio({
             {venue === "nft"
               ? "Mints a real token on Solana mainnet with Metaplex metadata. Your wallet signs and pays rent."
               : selectedQuote
-                ? `SPL mint · ${supplyUi.toLocaleString("en-US")} supply · ${decimals} decimals · bonds at ${graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool.`
+                ? `SPL mint · ${supplyUi.toLocaleString("en-US")} supply · ${decimals} decimals · bonds at ${graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. After print, sign and pay PumpSwap LP in ${selectedQuote.symbol}, SOL, or USDC.`
                 : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
           {linkedPool ? (

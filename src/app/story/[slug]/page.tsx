@@ -16,9 +16,9 @@ import { LaunchLinks } from "@/components/story/launch-links";
 import { LinkLp } from "@/components/story/link-lp";
 
 const STORY_SELECT =
-  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
 const STORY_SELECT_MIN =
-  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, supply, reward_vault_lamports, quote_mint, users:author_user_id(handle, display_name, portrait_url)";
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, supply, reward_vault_lamports, quote_mint, users:author_user_id(handle, display_name, portrait_url)";
 
 async function loadStory(slug: string) {
   const supabase = await createClient();
@@ -287,16 +287,15 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>The Binding</CardTitle>
           <CardDescription>
-            Primary liquidity is the Solana OnceUpon curve from T0. Linked pools are live DEX venues — the quote
-            depth you launched against (NVDAx/USDC, SOL/USDC, and others) and any ${story.ticker} LP you open after
-            print.
+            The curve is the launch pool from T0. DexScreener and Jupiter need a PumpSwap pool with both sides
+            deposited. The Author signs, pays gas, and seeds that LP from this page.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {!bindings?.length ? (
             <p className="text-parchment/65">
-              No pool linked yet. Launching against {story.pair_label} does not automatically put this mint in that
-              LP. Bind the quote pool or paste your own pool below.
+              No AMM yet. Launching against {story.pair_label} does not put this mint in that LP. Sign and pay to
+              open PumpSwap below.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -338,6 +337,9 @@ export default async function StoryPage({
                 quoteMint={(story as { quote_mint?: string | null }).quote_mint ?? null}
                 pairLabel={story.pair_label}
                 boundAddresses={bindings.map((item) => item.pool_address)}
+                venue={story.venue ?? "spl"}
+                curveTokenRaw={(story as { curve_token_raw?: string | number | null }).curve_token_raw ?? 0}
+                mintDecimals={Number(story.mint_decimals ?? 6)}
               />
             </div>
           ) : null}

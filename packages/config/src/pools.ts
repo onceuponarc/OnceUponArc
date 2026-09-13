@@ -384,6 +384,12 @@ export function createLpLinks(baseMint: string, quoteMint: string | null) {
   const quote = quoteMint && quoteMint.length >= 32 ? quoteMint : SOLANA.usdcMint;
   return [
     {
+      id: "pumpswap" as const,
+      name: "PumpSwap",
+      href: `https://swap.pump.fun/?inputMint=${quote}&outputMint=${baseMint}`,
+      note: "Open from the Story with sign-and-pay. This link is the live swap UI after the pool exists.",
+    },
+    {
       id: "raydium" as const,
       name: "Raydium",
       href: "https://raydium.io/liquidity/create-pool/",

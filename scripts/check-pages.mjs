@@ -9,6 +9,7 @@ const FORBIDDEN = [
   '@/lib/solana/launch',
   '@/lib/solana/trade',
   '@/lib/solana/mint',
+  '@/lib/solana/pumpswap-pool',
 ];
 
 function walk(dir, acc = []) {

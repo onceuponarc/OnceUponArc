@@ -20,10 +20,12 @@
     "check:read-json": "node --experimental-strip-types --no-warnings scripts/check-read-json.ts"
   },
   "dependencies": {
+    "@pump-fun/pump-swap-sdk": "^1.20.0",
     "@solana/spl-token": "^0.4.15",
     "@solana/web3.js": "^1.99.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.116.0",
+    "bn.js": "^5.2.2",
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.0",
@@ -39,6 +41,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bn.js": "^5.2.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

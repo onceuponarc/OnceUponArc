@@ -101,7 +101,7 @@ export const CHAINS: ChainCard[] = [
     caip2: SOLANA.caip2,
     accent: "from-[#9945ff]/40 to-[#14f195]/25",
     printNote:
-      "Mints a real SPL token on Solana mainnet. Your connected wallet pays rent. The curve is the launch pool; the Raydium, Orca, Meteora, or PumpSwap pool you pick is bound on the Story from T0.",
+      "Mints a real SPL token on Solana mainnet. Your connected wallet pays rent. After print, sign and pay PumpSwap create_pool so the mint has on-chain LP.",
   },
   {
     id: "ethereum",
@@ -163,7 +163,7 @@ export const VENUES: {
     id: "pumpfun",
     title: "PumpSwap pair",
     headline: "SPL mint · PumpSwap AMM",
-    body: "Still a real SPL token on OnceUpon. The linked AMM is PumpSwap (pAMMBay6…), not the Pump.fun program. Use SPL unless you specifically want that pair.",
+    body: "Still a real SPL token on OnceUpon. After print, sign and pay PumpSwap create_pool (pAMMBay6…). That is not the Pump.fun program. Use SPL unless you specifically want that pair.",
   },
   {
     id: "pons",

@@ -1,6 +1,6 @@
 # OnceUpon
 
-A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as **full SPL** on Solana mainnet — you set supply, decimals, metadata, start price, and tokenomics — then pair into deep liquidity (SOL, Bitcoin, Ether, stables, stocks, ETFs, treasuries, bonds, memes, or any mint / pool). You do not fund an empty pool. Other chains tag the Story and bind a destination-chain pool.
+A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as **full SPL** on Solana mainnet — you set supply, decimals, metadata, start price, and tokenomics — then **sign and pay** PumpSwap `create_pool` so DexScreener and Jupiter see real LP. Other chains tag the Story and bind a destination-chain pool.
 
 Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Phantom, Solflare, or Backpack). That address is bound to your handle in Supabase. There is no in-app keypair.
 
@@ -15,7 +15,8 @@ Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Pha
 - **Coin art** — Required for PumpSwap-pair launches; optional (recommended) for SPL. Upload a PNG/JPEG/WebP or paste an IPFS CID.
 - **Metadata** — Each mint writes Metaplex Token Metadata on-chain. The URI is `https://once-upon-arc.vercel.app/api/token/<mint>/metadata`.
 - **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks such as **NVDAx**), ETFs (SPYx, QQQx), Ondo USDY/OUSG, or any mint. Pairing against a tokenized mint is a quote, not studio equity.
-- **Linked pools** — Every launch can bind the live DEX pool you pick. After print, open the Story (or `/bindings`) to bind NVDAx/USDC-style quote depth or paste an LP you created for your mint. Solana uses Raydium / Orca / Meteora / PumpSwap. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
+- **PumpSwap LP** — After print, the Author opens the Story and **signs and pays** PumpSwap `create_pool`. The curve vault moves base tokens; the connected wallet deposits SOL, USDC, or the Story quote (including NVDAx) and pays rent + gas. That is the on-chain pool DexScreener and Jupiter index. Binding an existing NVDAx/USDC (or SOL/USDC) market only tags quote depth — it does not put your mint in that pool.
+- **Linked pools** — Optional tags for Raydium / Orca / Meteora / Uniswap / Pons pools you already created. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
 - Default bond targets: **2 SOL**, **5,000** stables, **0.1** cbBTC, **10** of a listed xStock/ETF — editable at print.
 
 ## Wallets
@@ -23,7 +24,7 @@ Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Pha
 1. Sign in with X through Supabase.
 2. Connect Phantom, Solflare, or Backpack.
 3. Approve a short message (`OnceUpon:{userId}:{issuedAt}`). The pad stores that address on `user_wallets` as `kind: connected`.
-4. Launch, curve trades, and Jupiter swaps are extra-signed on the server, then your wallet **signs and pays** them (`signAndSendTransaction` in Phantom, Solflare, or Backpack). The browser fetches a recent blockhash so Vercel does not have to talk to public Solana RPC just to print.
+4. Launch, curve trades, PumpSwap `create_pool`, and Jupiter swaps are extra-signed on the server, then your wallet **signs and pays** them (`signAndSendTransaction` in Phantom, Solflare, or Backpack). PumpSwap pairing spends rent, gas, and the quote you deposit. The browser fetches a recent blockhash so Vercel does not have to talk to public Solana RPC just to print.
 
 Curve keypairs (the bonding vault) stay encrypted in Supabase. They are not your wallet.
 
@@ -77,7 +78,7 @@ Production: https://once-upon-arc.vercel.app/
 
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
-- `@solana/web3.js` + `@solana/spl-token` for real mainnet mints
+- `@solana/web3.js` + `@solana/spl-token` + `@pump-fun/pump-swap-sdk` for real mainnet mints and PumpSwap `create_pool`
 - Injected Solana wallets bound through Supabase
 - Jupiter Metis routing for quotes and swaps (`lite-api.jup.ag`)
 - Foundry under `contracts/`
@@ -96,7 +97,7 @@ Production: https://once-upon-arc.vercel.app/
 | `/shelf` | Own profile, or the crew if signed out |
 | `/shelf/[handle]` | Public profile |
 | `/ledger` | The Piece claims |
-| `/bindings` | Author links a quote pool (NVDAx/USDC, …) or pastes an LP opened after print |
+| `/bindings` | Tag an existing pool. Real PumpSwap LP is signed from the Story |
 | `/margin` | Jupiter doorway |
 | `/chapter/the-first-chapter` | First Chapter window |
 | `/onceuponers` | Crew directory |

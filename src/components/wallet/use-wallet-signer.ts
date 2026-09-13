@@ -48,7 +48,7 @@ function walletError(err: unknown): Error {
   const record = err as { code?: number; message?: string };
   const message = record?.message ?? (err instanceof Error ? err.message : "");
   if (record?.code === 4001 || /reject|denied|cancel/i.test(message)) {
-    return new Error("Wallet closed the sign-and-pay prompt. Approve the mint to print.");
+    return new Error("Wallet closed the sign-and-pay prompt. Approve it to pay gas and continue.");
   }
   if (err instanceof Error) return err;
   return new Error(message || "Wallet did not sign and pay.");

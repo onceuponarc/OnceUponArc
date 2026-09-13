@@ -143,8 +143,15 @@ export function BindingForm({
           </select>
           {selectedStory?.pairLabel ? (
             <p className="text-xs text-parchment/50">
-              This launch quotes {selectedStory.pairLabel}. Bind that live pool, or paste a ${selectedStory.ticker} LP
-              you opened after print.
+              This launch quotes {selectedStory.pairLabel}. Tag that live market here, or open the Story to sign and
+              pay PumpSwap LP.
+            </p>
+          ) : null}
+          {storySlug ? (
+            <p className="text-xs">
+              <a className="text-gold hover:underline" href={`/story/${storySlug}`}>
+                Sign and pay PumpSwap from the Story
+              </a>
             </p>
           ) : null}
         </div>

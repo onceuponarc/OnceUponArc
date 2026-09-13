@@ -1,7 +1,7 @@
 /** Canonical OnceUpon copy. Keep this file free of forbidden offering language. */
 
 export const POSITIONING =
-  "OnceUpon is a token launchpad centered on Arc, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print on Solana mainnet so they are live immediately against deep pairs — SOL, Bitcoin (cbBTC), Ether, stables, listed tokenized stocks, memes, or any mint. You pick the live DEX pool at launch. You do not fund an empty pool. Other chains tag the Story and bind a destination-chain pool. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
+  "OnceUpon is a token launchpad centered on Arc, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print on Solana mainnet so they are live immediately. After print, the Author signs and pays PumpSwap create_pool — the wallet deposits quote (SOL, USDC, or the Story mint such as NVDAx) and the curve seeds the base. Binding an existing quote market tags depth; it does not put your mint in that LP. Other chains tag the Story and bind a destination-chain pool. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
 
 export const TAGLINE = "OnceUponers write the stories. The chain keeps the receipts.";
 
@@ -91,7 +91,7 @@ export const PAIR_TYPES = [
 ] as const;
 
 export const BONDING_COPY =
-  "SPL launches open on a bonding curve against the pair you pick. You set supply, decimals, and start price. SOL pairs default to bonding at 2 SOL. Stables default to 5,000 units. cbBTC defaults to 0.1. Listed xStocks and ETFs default to 10 of the quote mint. You pair into liquidity that already exists — you do not fund an empty pool. The Raydium, Orca, PumpSwap, Uniswap, or Pons pool you pick is bound on the Story from the first block.";
+  "SPL launches open on a bonding curve against the pair you pick. You set supply, decimals, and start price. SOL pairs default to bonding at 2 SOL. Stables default to 5,000 units. cbBTC defaults to 0.1. Listed xStocks and ETFs default to 10 of the quote mint. The curve is the live launch pool. DexScreener and Jupiter see liquidity after you sign and pay to open PumpSwap LP — your wallet deposits quote and the curve seeds the base. Binding an existing NVDAx/USDC or SOL/USDC pool tags quote depth; it does not put your mint in that LP. Pairing against a tokenized mint is a quote, not studio equity.";
 
 export const PIECE_EXPLAINER =
   "Holder claims pay a share of a rewards pool the author deposits. The share is proportional to current holdings. It is not a dividend, not profit-sharing, and not a return on investment.";
@@ -106,7 +106,7 @@ export const MARGIN_DISCLAIMER =
   "The Margin is a doorway to Jupiter. OnceUpon does not custody margin, does not run a matching engine, and does not set your leverage. Longs and shorts live on Jupiter’s accounts.";
 
 export const QUOTE_DISCLAIMER =
-  "You pair into liquidity that already exists — SOL, Bitcoin (cbBTC), Ether, stables, listed stocks, ETFs, treasuries, bonds, memes, or any mint. Pick the live DEX pool at launch. You do not fund an empty pool. Pairing against a tokenized mint is a quote, not studio equity.";
+  "You launch against SOL, Bitcoin (cbBTC), Ether, stables, listed stocks, ETFs, treasuries, bonds, memes, or any mint. After print, sign and pay to open a PumpSwap pool in that quote (or SOL / USDC). Binding an existing quote market is a tag, not a deposit. Pairing against a tokenized mint is a quote, not studio equity.";
 
 export const RWA_GATE =
   "Pick a listed quote mint, or paste any Solana mint. A gated name is not a waitlist for shares.";

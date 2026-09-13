@@ -50,9 +50,9 @@ export default async function BindingsPage({
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">The Binding</p>
         <h1 className="font-heading mt-2 text-4xl font-extrabold">Link a pool after print</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
-          Your mint is on Solana. Bind the live quote pool you launched against (NVDAx/USDC, SOL/USDC, and others),
-          or paste an LP you opened for this token after launch. Pairing against a tokenized mint is a quote, not
-          studio equity.
+          Your mint is on Solana. Open the Story to sign and pay a PumpSwap pool (gas, rent, and a quote deposit).
+          This page only tags an existing pool — NVDAx/USDC quote depth or an LP you already created. Pairing against
+          a tokenized mint is a quote, not studio equity.
         </p>
       </section>
       <BindingForm signedIn={Boolean(profile)} stories={stories} initialSlug={initialSlug} />
