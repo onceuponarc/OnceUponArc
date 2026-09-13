@@ -12,7 +12,8 @@
     "check:quotes": "node scripts/verify-quotes.mjs",
     "check:curve": "node scripts/curve-math.mjs",
     "check:jupiter": "node scripts/check-jupiter.mjs",
-    "check:pages": "node scripts/check-pages.mjs"
+    "check:pages": "node scripts/check-pages.mjs",
+    "check:pools": "node scripts/check-pools.mjs"
   },
   "dependencies": {
     "@solana/spl-token": "^0.4.15",

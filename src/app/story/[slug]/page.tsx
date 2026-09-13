@@ -7,6 +7,7 @@ import { CurveTrade } from "@/components/pad/curve-trade";
 import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
 import { findChain, SOLANA } from "@onceupon/config/solana";
+import { catalogByCaip2, explorerUrlForPool } from "@onceupon/config/pools";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { tickerHue } from "@/lib/feed";
@@ -21,7 +22,7 @@ async function loadStory(slug: string) {
   if (!story) return { story: null, bindings: [] as BindingRow[] };
   const { data: bindings } = await supabase
     .from("bindings")
-    .select("id, kind, chain_caip2, pool_address, mechanism, is_primary, proof_url")
+    .select("id, kind, chain_caip2, pool_address, mechanism, is_primary, proof_url, depth_usd, quote_address")
     .eq("story_id", story.id)
     .order("is_primary", { ascending: false });
   return { story, bindings: bindings ?? [] };
@@ -35,6 +36,8 @@ type BindingRow = {
   mechanism: string | null;
   is_primary: boolean;
   proof_url: string | null;
+  depth_usd: number | string | null;
+  quote_address: string | null;
 };
 
 export async function generateMetadata({
@@ -215,7 +218,8 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>The Binding</CardTitle>
           <CardDescription>
-            Primary liquidity is the Solana curve. Foreign pools are records the Author attaches after launch.
+            Primary liquidity is the Solana OnceUpon curve from T0. Linked pools are the live DEX venues you
+            attached at launch — Raydium, Orca, Meteora, Uniswap, Aerodrome, Pons, or any pair you pasted.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
@@ -223,21 +227,38 @@ export default async function StoryPage({
             <p className="text-parchment/65">No pool bindings yet. The mint is on Solana mainnet.</p>
           ) : (
             <ul className="space-y-2">
-              {bindings.map((binding) => (
-                <li key={binding.id} className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2">
-                  <p className="font-medium text-parchment">
-                    {binding.is_primary ? "Primary · " : "Linked · "}
-                    {binding.kind.replaceAll("_", " ")} · {binding.chain_caip2}
-                  </p>
-                  <p className="break-all text-xs text-parchment/60">{binding.pool_address}</p>
-                  {binding.mechanism ? <p className="text-xs text-parchment/50">{binding.mechanism}</p> : null}
-                </li>
-              ))}
+              {bindings.map((binding) => {
+                const catalog = catalogByCaip2(binding.chain_caip2);
+                const href = binding.proof_url || explorerUrlForPool(binding.chain_caip2, binding.pool_address);
+                const depth = Number(binding.depth_usd ?? 0);
+                return (
+                  <li key={binding.id} className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2">
+                    <p className="font-medium text-parchment">
+                      {binding.is_primary ? "Launch pool · " : "Linked · "}
+                      {binding.mechanism ?? binding.kind.replaceAll("_", " ")} ·{" "}
+                      {catalog?.title ?? binding.chain_caip2}
+                    </p>
+                    <a
+                      className="mt-1 block break-all font-mono text-xs text-gold hover:underline"
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {binding.pool_address}
+                    </a>
+                    {depth > 0 ? (
+                      <p className="mt-1 text-xs text-parchment/50">
+                        ${depth.toLocaleString("en-US", { maximumFractionDigits: 0 })} depth
+                      </p>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
           )}
           {isAuthor ? (
             <Button asChild size="sm">
-              <Link href="/bindings">Bind a foreign pool</Link>
+              <Link href="/bindings">Bind another pool</Link>
             </Button>
           ) : null}
         </CardContent>

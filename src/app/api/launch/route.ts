@@ -11,6 +11,7 @@ import {
   type QuoteAsset,
 } from "@onceupon/config/quotes";
 import { assertPayer } from "@/lib/wallets/bound";
+import { parseLinkedPool } from "@/lib/pools/resolve";
 
 export const maxDuration = 60;
 
@@ -63,6 +64,13 @@ export async function POST(request: Request) {
     nftSupply?: number;
     rightsAttested?: boolean;
     payer?: string;
+    poolAddress?: string;
+    poolDex?: string;
+    poolLabel?: string;
+    poolUrl?: string;
+    poolChain?: string;
+    poolDepthUsd?: number;
+    poolQuoteAddress?: string;
   };
 
   if (body.confirm) {
@@ -116,6 +124,15 @@ export async function POST(request: Request) {
       autoBuyRewards: Boolean(body.autoBuyRewards),
       nftSupply: Number(body.nftSupply ?? 1),
       payer: payer.toBase58(),
+      linkedPool: parseLinkedPool({
+        poolAddress: body.poolAddress,
+        poolDex: body.poolDex,
+        poolLabel: body.poolLabel,
+        poolUrl: body.poolUrl,
+        poolChain: body.poolChain,
+        poolDepthUsd: body.poolDepthUsd,
+        quoteAddress: body.poolQuoteAddress ?? quote.mint ?? null,
+      }),
     });
     return NextResponse.json(result);
   } catch (error) {

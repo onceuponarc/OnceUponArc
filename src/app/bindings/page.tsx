@@ -27,8 +27,9 @@ export default async function BindingsPage() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">The Binding</p>
         <h1 className="font-heading mt-2 text-4xl font-extrabold">Link a foreign pool</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
-          Tokens print on Solana. Authors can attach a pool on Arc, Ethereum, Base, or Robinhood Chain when
-          that liquidity exists. This is a record of The Binding — not a claim that the token minted on that chain.
+          Tokens print on Solana. At launch — and any time after — Authors attach a live pool on Arc,
+          Solana, Ethereum, Base, or Robinhood Chain. Raydium, Orca, Meteora, Uniswap, Aerodrome, Pons, or
+          paste any pair. This is a record of The Binding, not a claim that the token minted on that chain.
         </p>
       </section>
       <BindingForm signedIn={Boolean(profile)} stories={stories ?? []} />

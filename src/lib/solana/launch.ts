@@ -25,6 +25,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import type { QuoteAsset } from "@onceupon/config/quotes";
 import { graduationRaw, virtualRaw } from "@onceupon/config/quotes";
 import { inspectMint, pushCreateAtaIfMissing } from "@/lib/solana/mint";
+import { CHAIN_POOLS, bindingKindForDex, type DexId } from "@onceupon/config/pools";
+import { resolvePools, type ResolvedPool } from "@/lib/pools/resolve";
 
 export type LaunchInput = {
   userId: string;
@@ -42,6 +44,7 @@ export type LaunchInput = {
   autoBuyRewards: boolean;
   nftSupply: number;
   payer: string;
+  linkedPool?: ResolvedPool | null;
 };
 
 function slugify(input: string) {
@@ -198,11 +201,34 @@ export async function launchOnSolana(input: LaunchInput) {
       pool_address: curve.publicKey.toBase58(),
       quote_address: input.quote.mint,
       dest_token_mint: mint.publicKey.toBase58(),
-      mechanism: input.venue,
+      mechanism: "onceupon_curve",
       fee_routing: "solana_curve",
       created_tx: null,
       verified_at: null,
     });
+  }
+
+  const linked = await collectLinkedPools(input);
+  for (const pool of linked) {
+    const { error: linkError } = await service.from("bindings").insert({
+      story_id: story.id,
+      kind: bindingKindForDex(pool.dex as DexId),
+      is_primary: false,
+      chain_caip2: pool.chainCaip2,
+      pool_address: pool.address,
+      quote_address: pool.quoteAddress ?? input.quote.mint,
+      dest_token_mint: mint.publicKey.toBase58(),
+      mechanism: pool.dex,
+      fee_routing: pool.chain === "solana" ? "jupiter" : "foreign_pool",
+      proof_url: pool.url || null,
+      depth_usd: pool.liquidityUsd || null,
+      created_tx: null,
+      verified_at: null,
+    });
+    if (linkError) {
+      // Shared quote pools can collide until migration 0004 is applied.
+      console.error("Linked pool bind failed", linkError.message);
+    }
   }
 
   return {
@@ -210,7 +236,61 @@ export async function launchOnSolana(input: LaunchInput) {
     mint: mint.publicKey.toBase58(),
     transaction: prepared.transaction,
     protocol: protocol.publicKey.toBase58(),
+    vault: isNft ? null : curve.publicKey.toBase58(),
+    linked: linked.map((pool) => ({
+      dex: pool.dex,
+      address: pool.address,
+      label: pool.label,
+      url: pool.url,
+      chain: pool.chain,
+    })),
   };
+}
+
+async function collectLinkedPools(input: LaunchInput): Promise<ResolvedPool[]> {
+  const picked = input.linkedPool ?? null;
+  let resolved: ResolvedPool[] = [];
+  try {
+    const live = await resolvePools({
+      chain: input.chain,
+      quoteId: input.quote.id,
+      quoteMint: input.quote.mint,
+    });
+    resolved = [...live.linked, ...live.destination];
+  } catch {
+    resolved = CHAIN_POOLS.solana.canonicalPools
+      .filter((pool) => pool.quoteId === input.quote.id || pool.quoteId === "sol")
+      .map((pool) => ({
+        id: `solana:${pool.address}`,
+        dex: pool.dex,
+        address: pool.address,
+        label: pool.label,
+        liquidityUsd: pool.liquidityUsd,
+        url: pool.url,
+        chain: "solana" as const,
+        chainCaip2: SOLANA.caip2,
+        quoteAddress: input.quote.mint,
+        source: "canonical" as const,
+      }));
+  }
+  const out: ResolvedPool[] = [];
+  const seen = new Set<string>();
+  const push = (pool: ResolvedPool | null) => {
+    if (!pool) return;
+    const key = `${pool.chainCaip2}:${pool.address.toLowerCase()}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(pool);
+  };
+  push(picked);
+  if (input.chain !== "solana") {
+    push(resolved.find((pool) => pool.chain === input.chain) ?? null);
+  }
+  if (!picked) {
+    for (const pool of resolved) push(pool);
+    return out.slice(0, 4);
+  }
+  return out.slice(0, 2);
 }
 
 export async function confirmLaunch(userId: string, slug: string, signature: string) {

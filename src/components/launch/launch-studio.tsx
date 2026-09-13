@@ -13,6 +13,7 @@ import { MODE_COPY, RIGHTS_TICK, feeExample } from "@onceupon/config/copy";
 import { PROTOCOL } from "@onceupon/config/arc";
 import { findQuote, type QuoteGroup } from "@onceupon/config/quotes";
 import { QuotePicker } from "@/components/launch/quote-picker";
+import { PoolPicker, type LinkedPoolPick } from "@/components/launch/pool-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +51,7 @@ export function LaunchStudio({
   const [snipeTaxBps, setSnipeTaxBps] = useState(0);
   const [nftSupply, setNftSupply] = useState(1);
   const [rights, setRights] = useState(false);
+  const [linkedPool, setLinkedPool] = useState<LinkedPoolPick | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -92,6 +94,13 @@ export function LaunchStudio({
           nftSupply,
           rightsAttested: rights,
           payer: address,
+          poolAddress: linkedPool?.address,
+          poolDex: linkedPool?.dex,
+          poolLabel: linkedPool?.label,
+          poolUrl: linkedPool?.url,
+          poolChain: linkedPool?.chain,
+          poolDepthUsd: linkedPool?.depthUsd,
+          poolQuoteAddress: linkedPool?.quoteAddress ?? undefined,
         }),
       });
       const body = await res.json();
@@ -221,6 +230,14 @@ export function LaunchStudio({
         onMint={setQuoteMint}
       />
 
+      <PoolPicker
+        chain={chain}
+        quoteId={quoteId}
+        mint={quoteMint || selectedQuote?.mint || ""}
+        selected={linkedPool}
+        onSelect={setLinkedPool}
+      />
+
       <section className="glass space-y-4 rounded-2xl border border-arc/20 p-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">4 · Print it</p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -312,6 +329,14 @@ export function LaunchStudio({
                 ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool.`
                 : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
+          {linkedPool ? (
+            <p className="mt-1">
+              Linked pool: {linkedPool.label} · {linkedPool.dex} · {linkedPool.address.slice(0, 6)}…
+              {linkedPool.address.slice(-4)}
+            </p>
+          ) : (
+            <p className="mt-1">Pick or paste a live pool above. The mint still goes live on the OnceUpon curve.</p>
+          )}
         </div>
         <Button type="submit" disabled={!canSubmit} className="w-full rounded-full sm:w-auto">
           {busy

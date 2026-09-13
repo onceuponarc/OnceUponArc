@@ -1,6 +1,6 @@
 # OnceUpon
 
-A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as SPL on Solana mainnet so they are live immediately against deep pairs — SOL, Bitcoin (cbBTC), Ether, stables, listed tokenized stocks, memes, or any mint. You do not fund an empty pool. Other chains tag the Story for a foreign pool binding.
+A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as SPL on Solana mainnet so they are live immediately against deep pairs — SOL, Bitcoin (cbBTC), Ether, stables, listed tokenized stocks, memes, or any mint. Pick the live DEX pool at launch (Raydium, Orca, Meteora, Uniswap, Aerodrome, Pons, or paste any pair). You do not fund an empty pool. Other chains tag the Story and bind a destination-chain pool.
 
 Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
 
@@ -12,6 +12,7 @@ Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Pha
 - **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%). Optional auto-buy converts each vault cut into the pair you chose.
 - **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every open chain, including Arc.
 - **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks), Ondo USDY/OUSG, or any mint. Buys settle in that quote. Pairing against a tokenized mint is a quote, not studio equity.
+- **Linked pools** — Every launch binds the live DEX pool you pick. Solana uses Raydium / Orca / Meteora / PumpSwap. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory. Paste any pool on any chain.
 - Bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, **0.1** for cbBTC, and **10** of a listed xStock.
 
 ## Wallets
@@ -90,7 +91,7 @@ Production: https://once-upon-arc.vercel.app/
 | `/shelf` | Own profile, or the crew if signed out |
 | `/shelf/[handle]` | Public profile |
 | `/ledger` | The Piece claims |
-| `/bindings` | Author links a foreign pool (including native Arc when it exists) |
+| `/bindings` | Author links another pool (Solana, Arc, Ethereum, Base, Robinhood) |
 | `/margin` | Jupiter doorway |
 | `/chapter/the-first-chapter` | First Chapter window |
 | `/onceuponers` | Crew directory |
@@ -98,11 +99,11 @@ Production: https://once-upon-arc.vercel.app/
 
 ## Network
 
-**Arc (home chain)** — Stories tagged for Arc. Native factory binds later from `/bindings`. Explorer `https://testnet.arcscan.app`.
+**Arc (home chain)** — Stories tagged for Arc. Uniswap V2 factory `0x89e5db8b…`, V3 `0xf0db7b58…`, V4 PoolManager `0x8366a39c…` on chain 5042. Link an Arc pool at launch. Testnet explorer `https://testnet.arcscan.app`.
 
-**Solana Mainnet (live printer)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`).
+**Solana Mainnet (live printer)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. Factories: Raydium AMM `675kPX9…`, CPMM `CPMMoo8L3…`, CLMM `CAMMCzo5…`, Orca `whirLbMi…`, Meteora DLMM `LBUZKhRx…`, PumpSwap `pAMMBay6…`. Canonical SOL/USDC Raydium `58oQChx4…`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`). Prove pool catalogs with `pnpm check:pools`.
 
-**Ethereum, Base, Robinhood Chain** — Stories tagged for those chains still mint as SPL on Solana today. Bind a foreign pool from `/bindings` after launch. Robinhood Pons factory `0x7ed598…`, router `0xe33e9e…`.
+**Ethereum, Base, Robinhood Chain** — Stories tagged for those chains still mint as SPL on Solana today. Pick a destination pool at launch (Uniswap WETH/USDC `0x88e6A0c2…` on Ethereum, Uniswap WETH/USDC `0x6c561b44…` or Aerodrome cbBTC/WETH `0x70aCDF2A…` on Base, Pons factory `0x7ed598…` on Robinhood Chain). RPC for Robinhood Chain: `https://rpc.mainnet.chain.robinhood.com`.
 
 ## Apply schema
 
