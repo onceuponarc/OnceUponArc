@@ -12,13 +12,13 @@ export function SignInButton({ profile }: { profile: OnceUponer | null }) {
     return (
       <Link
         href={`/you`}
-        className="flex items-center gap-2 rounded-full border border-gold/30 bg-white/5 px-2 py-1 backdrop-blur-xl"
+        className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-2 py-1 transition-colors hover:border-white/40"
       >
         <Avatar size="sm">
           {profile.portraitUrl ? <AvatarImage src={profile.portraitUrl} alt="" /> : null}
           <AvatarFallback>{initial}</AvatarFallback>
         </Avatar>
-        <span className="hidden pr-1 text-sm text-parchment sm:inline">@{profile.handle}</span>
+        <span className="hidden pr-1 text-sm text-white sm:inline">@{profile.handle}</span>
       </Link>
     );
   }

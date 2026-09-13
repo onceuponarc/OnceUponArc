@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { listLocalArcStories, localTape } from "@/lib/arc/store";
-import { enrichLaunch, feedFromArc, type FeedLaunch, type RawTrade, type TapeItem } from "@/lib/feed";
+import { enrichLaunch, feedFromArc, isListedLaunch, type FeedLaunch, type RawTrade, type TapeItem } from "@/lib/feed";
 
 type StoryRow = {
   id: string;
@@ -23,6 +23,7 @@ type StoryRow = {
   quote_decimals?: number | null;
   mint_decimals?: number | null;
   supply?: number | string | null;
+  token_address?: string | null;
   users: { handle: string } | { handle: string }[] | null;
 };
 
@@ -43,7 +44,7 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
     const { data: storyRows } = await supabase
       .from("stories")
       .select(
-        "id, slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, curve_quote_lamports, graduation_quote_raw, quote_decimals, mint_decimals, supply, users:author_user_id(handle)",
+        "id, slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, token_address, curve_quote_lamports, graduation_quote_raw, quote_decimals, mint_decimals, supply, users:author_user_id(handle)",
       )
       .in("status", ["live", "graduated"])
       .eq("chain", "arc")
@@ -109,6 +110,7 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
           createdAt: row.created_at,
           chain: row.chain ?? "arc",
           venue: row.venue ?? "spl",
+          tokenAddress: row.token_address ?? null,
         },
         tradesByStory.get(row.id) ?? [],
         {
@@ -119,13 +121,16 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
     });
 
     const seen = new Set(remote.map((item) => item.slug));
-    const launches = [...local.filter((item) => !seen.has(item.slug)), ...remote].sort(
+    const merged = [...local.filter((item) => !seen.has(item.slug)), ...remote].sort(
       (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt),
     );
+    const launches = merged.filter(isListedLaunch);
     tape.sort((a, b) => +new Date(b.at) - +new Date(a.at));
-    return { launches, tape: tape.slice(0, 24) };
+    const listedSlugs = new Set(launches.map((item) => item.slug));
+    return { launches, tape: tape.filter((item) => listedSlugs.has(item.slug)).slice(0, 24) };
   } catch (error) {
     console.error("Pad market failed", error);
-    return { launches: local, tape: tape.slice(0, 24) };
+    const launches = local.filter(isListedLaunch);
+    return { launches, tape: tape.filter((item) => launches.some((row) => row.slug === item.slug)).slice(0, 24) };
   }
 }

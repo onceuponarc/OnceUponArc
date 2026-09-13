@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/pad/sparkline";
 import { tickerHue, type FeedLaunch } from "@/lib/feed";
 import { formatCompact, formatPct, formatUsd, timeAgo } from "@/lib/format";
-import { venueLabel } from "@onceupon/config/launchpad";
 import { cn } from "@/lib/utils";
 
 function Avatar({ launch }: { launch: FeedLaunch }) {
@@ -30,15 +29,14 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
   return (
     <Link
       href={`/story/${launch.slug}`}
-      className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-3 py-3 transition hover:border-arc/35 hover:bg-arc/5 sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_72px_56px]"
+      className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_72px_56px]"
     >
       <div className="flex min-w-0 items-center gap-3">
         <Avatar launch={launch} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <p className="font-heading truncate text-base font-bold">${launch.ticker}</p>
-            <Badge variant="outline">{launch.chain === "arc" ? "Arc" : launch.chain === "robinhood" ? "RH" : "SOL"}</Badge>
-            <Badge variant="secondary">{venueLabel(launch.venue, launch.chain)}</Badge>
+            <p className="truncate text-base font-semibold tracking-tight">${launch.ticker}</p>
+            <Badge variant="outline">{launch.status === "graduated" ? "Graduated" : "Live"}</Badge>
           </div>
           <p className="truncate text-xs text-parchment/55">
             {launch.title}

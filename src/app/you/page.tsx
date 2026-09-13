@@ -3,6 +3,7 @@ import { SignOutButton } from "@/components/sign-in-button";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { XMark } from "@/components/x-mark";
 import Link from "next/link";
 
@@ -18,34 +19,38 @@ export default async function YouPage() {
         .from("stories")
         .select("slug, title, ticker, status")
         .eq("author_user_id", profile.id)
+        .eq("chain", "arc")
         .order("created_at", { ascending: false })
-        .limit(12);
+        .limit(24);
       stories = data ?? [];
     }
   } catch (error) {
     console.error("You page stories failed", error);
   }
 
+  const live = stories.filter((item) => item.status === "live").length;
+  const graduated = stories.filter((item) => item.status === "graduated").length;
+
   return (
-    <div className="space-y-6">
-      <section className="glass rounded-[28px] border border-arc/25 p-6 sm:p-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">You</p>
-        <h1 className="font-heading mt-2 text-4xl font-extrabold">
-          {profile ? `@${profile.handle}` : "Your pad"}
-        </h1>
-        <p className="mt-3 max-w-2xl text-parchment/75">
-          X is identity. The funded Arc test wallet prints and trades. Bindings, claims, and the crew live here.
-        </p>
-        <div className="mt-5 flex flex-wrap gap-2">
+    <div className="mx-auto max-w-2xl space-y-0 overflow-hidden rounded-2xl border border-white/10">
+      <div className="relative h-36 bg-white/10">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgb(0_0_0_/_80%))]" />
+      </div>
+      <div className="-mt-12 px-5 pb-6">
+        <div className="flex items-end justify-between">
+          <Avatar className="size-24 border-4 border-black">
+            {profile?.portraitUrl ? <AvatarImage src={profile.portraitUrl} alt="" /> : null}
+            <AvatarFallback>{(profile?.handle ?? "Y").slice(0, 1).toUpperCase()}</AvatarFallback>
+          </Avatar>
           {profile ? (
-            <>
-              <Button asChild className="rounded-full">
-                <Link href={`/shelf/${profile.handle}`}>Public shelf</Link>
+            <div className="mb-1 flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href={`/shelf/${profile.handle}`}>Public</Link>
               </Button>
               <SignOutButton />
-            </>
+            </div>
           ) : (
-            <Button asChild className="rounded-full">
+            <Button asChild className="mb-1">
               <a href="/auth/login">
                 <XMark className="size-3.5" />
                 Sign in with X
@@ -53,57 +58,53 @@ export default async function YouPage() {
             </Button>
           )}
         </div>
-      </section>
-
-      <ArcDevnetWallet />
-
-      <section className="grid gap-3 sm:grid-cols-2">
-        {[
-          { href: "/bindings", label: "The Binding", body: "Tag an Arc pool as hop-1 routing. Graduate the book from the Story." },
-          { href: "/wallet", label: "Trade", body: "Buy and sell on the Arc Chapter Curve in USDC." },
-          { href: "/onceuponers", label: "Crew", body: "Handles on the pad — not a PnL board." },
-          { href: "/chapter/the-first-chapter", label: "First Chapter", body: "The first official launch window." },
-        ].map((item) => (
-          <Link key={item.href} href={item.href} className="glass rounded-2xl border border-white/10 p-4 hover:border-arc/40">
-            <p className="font-heading text-lg font-bold">{item.label}</p>
-            <p className="mt-1 text-sm text-parchment/65">{item.body}</p>
-          </Link>
-        ))}
-      </section>
-
-      {profile ? (
-        <section className="space-y-3">
-          <h2 className="font-heading text-2xl font-bold">Your launches</h2>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight">
+          {profile ? profile.displayName || profile.handle : "Your profile"}
+        </h1>
+        <p className="text-white/45">@{profile?.handle ?? "unsigned"}</p>
+        <p className="mt-3 text-sm text-white/70">
+          {profile?.bio || "X is identity. Launch on Arc. Bind a wallet on the wallet desk."}
+        </p>
+        <div className="mt-4 flex gap-5 text-sm">
+          <p>
+            <span className="font-semibold">{stories.length}</span> <span className="text-white/45">Launches</span>
+          </p>
+          <p>
+            <span className="font-semibold">{live}</span> <span className="text-white/45">Live</span>
+          </p>
+          <p>
+            <span className="font-semibold">{graduated}</span> <span className="text-white/45">Graduated</span>
+          </p>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <Button asChild variant="outline">
+            <Link href="/wallet">Wallet</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/launch/arc">Launch</Link>
+          </Button>
+        </div>
+        <div className="mt-6 border-t border-white/10 pt-4">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">Launches</p>
           {!stories.length ? (
-            <p className="text-sm text-parchment/60">
-              None yet.{" "}
-              <Link href="/launch/arc" className="text-arc hover:underline">
-                Open the Arc press
-              </Link>
-              .
-            </p>
+            <p className="mt-3 text-sm text-white/50">No tokens yet.</p>
           ) : (
-            <ul className="grid gap-2">
+            <ul className="mt-3 divide-y divide-white/10">
               {stories.map((story) => (
-                <li
-                  key={story.slug}
-                  className="glass flex items-center justify-between gap-3 rounded-2xl border border-white/10 px-4 py-3"
-                >
-                  <Link href={`/story/${story.slug}`} className="min-w-0 flex-1">
-                    <span className="font-heading font-semibold">{story.title}</span>
-                    <span className="ml-2 text-sm text-arc">
-                      ${story.ticker} · {story.status}
-                    </span>
-                  </Link>
-                  <Link href={`/bindings?story=${story.slug}`} className="shrink-0 text-sm text-arc hover:underline">
-                    Tag hop-1
+                <li key={story.slug} className="py-3">
+                  <Link href={`/story/${story.slug}`} className="flex items-center justify-between">
+                    <span className="font-semibold">${story.ticker}</span>
+                    <span className="text-sm text-white/45">{story.status}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           )}
-        </section>
-      ) : null}
+        </div>
+        <div className="mt-6">
+          <ArcDevnetWallet />
+        </div>
+      </div>
     </div>
   );
 }

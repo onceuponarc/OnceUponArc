@@ -1,14 +1,12 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FeedBoard } from "@/components/pad/feed-board";
 import { LiveTape } from "@/components/pad/live-tape";
-import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { loadPadMarket } from "@/lib/market";
 import { getSessionUser } from "@/lib/auth";
 import { PROTOCOL } from "@onceupon/config/arc";
-import { BONDING_COPY, PAD_TAGLINE, QUOTE_DISCLAIMER } from "@onceupon/config/copy";
-import Link from "next/link";
+import { tokenOfTheDay } from "@/lib/feed";
 import { formatUsd } from "@/lib/format";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -18,87 +16,66 @@ export default async function HomePage() {
   const liveCount = launches.filter((item) => item.status === "live").length;
   const bondedCount = launches.filter((item) => item.status === "graduated").length;
   const volume = launches.reduce((sum, item) => sum + item.volumeUi, 0);
+  const totd = tokenOfTheDay(launches);
 
   return (
-    <div className="space-y-8">
-      <section className="glass relative overflow-hidden rounded-[28px] border border-arc/25 px-5 py-7 sm:px-10">
-        <div className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full bg-arc/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 left-10 size-64 rounded-full bg-secondary/25 blur-3xl" />
-        <div className="relative grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-arc">
-              Social launchpad · Arc
-            </p>
-            <h1 className="font-heading mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
-              Open a Chapter.
-              <span className="block bg-gradient-to-r from-arc via-parchment to-secondary bg-clip-text text-transparent">
-                Watch the tape.
-              </span>
-            </h1>
-            <p className="mt-4 max-w-xl text-base text-parchment/75 sm:text-lg">{PAD_TAGLINE}</p>
-            <p className="mt-2 max-w-xl text-sm text-parchment/55">{QUOTE_DISCLAIMER}</p>
-            <p className="mt-2 max-w-xl text-sm text-parchment/45">{BONDING_COPY}</p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <Button asChild className="rounded-full">
-                <Link href="/launch/arc">Launch on Arc</Link>
-              </Button>
-              <Button variant="outline" asChild className="rounded-full">
-                <Link href="/wallet">Trade</Link>
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="glass rounded-2xl border border-arc/20 p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Pad stats</p>
-              <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <dt className="text-parchment/50">Live</dt>
-                  <dd className="font-heading text-2xl font-bold">{liveCount}</dd>
-                </div>
-                <div>
-                  <dt className="text-parchment/50">Graduated</dt>
-                  <dd className="font-heading text-2xl font-bold">{bondedCount}</dd>
-                </div>
-                <div>
-                  <dt className="text-parchment/50">Tape</dt>
-                  <dd className="font-heading text-2xl font-bold">{formatUsd(volume)}</dd>
-                </div>
-                <div>
-                  <dt className="text-parchment/50">Protocol</dt>
-                  <dd className="font-heading text-2xl font-bold">
-                    {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%
-                  </dd>
-                </div>
-              </dl>
-              {profile ? (
-                <p className="mt-4 text-xs text-parchment/70">Signed in as @{profile.handle}</p>
-              ) : (
-                <p className="mt-4 text-xs text-parchment/55">
-                  Sign in with X. Arc Devnet uses the funded test wallet to print, buy, and sell.
-                </p>
-              )}
-            </div>
-            <ArcDevnetWallet compact />
+    <div className="space-y-6">
+      <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
+        <div className="rounded-2xl border border-white/10 bg-black p-5 sm:p-7">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Arc launchpad</p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
+            Launch. Trade.
+            <span className="block text-white/50">Graduate.</span>
+          </h1>
+          <p className="mt-3 max-w-xl text-sm text-white/55 sm:text-base">
+            Bonding curve in USDC on Arc. No seeded AMM at create. Highest volume is token of the day.
+            {profile ? ` Signed in as @${profile.handle}.` : " Sign in with X to bind a profile."}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button asChild>
+              <Link href="/launch/arc">Launch token</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/wallet">Import wallet</Link>
+            </Button>
           </div>
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            ["Live", String(liveCount)],
+            ["Graduated", String(bondedCount)],
+            ["Volume", formatUsd(volume)],
+            ["Fee", `${(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%`],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-2xl border border-white/10 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">{label}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
+            </div>
+          ))}
+        </div>
       </section>
+
+      {totd ? (
+        <Link
+          href={`/story/${totd.slug}`}
+          className="block rounded-2xl border border-white bg-white px-5 py-4 text-black transition-transform hover:-translate-y-0.5"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-black/50">Token of the day</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">
+                ${totd.ticker} <span className="text-black/45">{totd.title}</span>
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-black/45">Volume</p>
+              <p className="text-2xl font-semibold tabular-nums">{formatUsd(totd.volumeUi)}</p>
+            </div>
+          </div>
+        </Link>
+      ) : null}
 
       <LiveTape initial={tape} />
-
-      <section className="space-y-3">
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">Home chain</p>
-            <h2 className="font-heading mt-1 text-2xl font-bold">Arc. USDC in, tape out.</h2>
-          </div>
-          <Badge>Mainnet Arc in days</Badge>
-        </div>
-        <p className="max-w-2xl text-sm text-parchment/65">
-          OnceUpon prints on Arc only. The funded Devnet wallet signs create, buy, and sell. Graduation opens the book
-          from vault reserves.
-        </p>
-      </section>
-
       <FeedBoard launches={launches} />
     </div>
   );

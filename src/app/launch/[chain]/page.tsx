@@ -20,17 +20,14 @@ export default async function LaunchChainPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <section className="glass relative overflow-hidden rounded-[28px] border border-arc/25 px-5 py-7 sm:px-10">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">The Press · Arc</p>
-        <h1 className="font-heading mt-2 text-3xl font-extrabold sm:text-4xl">
-          Native Chapter on Arc. Funded Devnet wallet signs create, buy, and sell.
-        </h1>
-        <p className="mt-3 max-w-2xl text-parchment/75">
-          OnceUpon is an Arc launchpad. MockUSDC is the quote on Devnet. You do not seed an AMM at print. Your USDC
-          stays in the book until graduation.
+      <section className="rounded-2xl border border-white/10 px-5 py-7 sm:px-10">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Launch · Arc</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Create a token on Arc</h1>
+        <p className="mt-3 max-w-2xl text-white/60">
+          USDC bonding curve. Tradable the moment create lands. Graduation opens the pool from the vault. Devnet is
+          live.
         </p>
       </section>
-
       <LaunchStudio chain="arc" handle={profile?.handle ?? null} signedIn={Boolean(profile)} />
     </div>
   );

@@ -204,9 +204,9 @@ export default async function StoryPage({
   return (
     <div className="space-y-8">
       <section
-        className="relative overflow-hidden rounded-3xl border border-gold/25 p-6 sm:p-10"
+        className="relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-10"
         style={{
-          background: `linear-gradient(135deg, hsl(${hue} 40% 12% / 0.9), rgb(11 10 18 / 0.7))`,
+          background: `linear-gradient(135deg, hsl(${hue} 8% 8%), #000)`,
         }}
       >
         {coverUrl ? (
@@ -269,8 +269,8 @@ export default async function StoryPage({
               <CardTitle>Trade</CardTitle>
               <CardDescription>
                 {chain === "arc"
-                  ? "The funded Arc test wallet signs buy and sell on the Chapter Curve. Your USDC stays in the book until graduation."
-                  : "Bonding buys use the Chapter Curve. Your quote stays in the vault until graduation."}
+                  ? "The funded Arc test wallet signs buy and sell on the curve. Your USDC stays in the vault until graduation."
+                  : "Bonding buys use the curve. Your quote stays in the vault until graduation."}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -415,10 +415,10 @@ export default async function StoryPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>The book</CardTitle>
+          <CardTitle>Token</CardTitle>
           <CardDescription>
-            The Chapter Curve is the Story market from T0. Buyers pay USDC into the vault. Graduation opens the Arc AMM
-            from those reserves. The Author does not seed an AMM at print.
+            The bonding curve is the market from T0. Buyers pay USDC into the vault. Graduation opens the Arc pool from
+            those reserves. The creator does not seed an AMM at launch.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-parchment/70">

@@ -1,0 +1,28 @@
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+export const metadata = { title: "Privacy" };
+
+export default function PrivacyPage() {
+  return (
+    <article className="mx-auto max-w-2xl space-y-5 rounded-2xl border border-white/10 p-6 sm:p-10">
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Legal</p>
+      <h1 className="text-4xl font-semibold tracking-tight">Privacy</h1>
+      <p className="text-white/65">
+        Identity is X via Supabase. We store the handle, display name, bio, and portrait X provides, plus launches and
+        trades you make on the pad.
+      </p>
+      <p className="text-white/65">
+        Arc keys generated in the wallet desk stay in localStorage on your device. We do not receive those private keys.
+        On-chain addresses and transaction hashes are public by design.
+      </p>
+      <p className="text-white/65">
+        Analytics are limited to what you do on this site. We do not sell profiles. Delete your X session with Sign out.
+        To remove a handle from Postgres, contact the operator of this deployment.
+      </p>
+      <Button asChild variant="outline">
+        <Link href="/">Back to the pad</Link>
+      </Button>
+    </article>
+  );
+}

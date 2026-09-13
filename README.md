@@ -1,8 +1,8 @@
 # OnceUpon
 
-A social token launchpad on **Arc**. Open a Chapter Curve in USDC the instant create lands — buyers pay USDC, the vault holds it. The Author does not seed an AMM at print. Graduation opens the book from those vault reserves.
+A token launchpad on **Arc**. Launch a USDC bonding curve the instant create lands. Buyers pay USDC into the vault. Graduation opens the pool from those reserves.
 
-Identity is **X via Supabase**. Arc Devnet uses a funded test wallet so you can launch, buy, and sell before mainnet Arc.
+Identity is **X via Supabase**. Generate separate Arc **Devnet** and **Mainnet** keys on `/wallet`, import them into MetaMask or Rabby, and fund Devnet from the pad faucet.
 
 The pad installs as a **PWA**.
 
@@ -18,9 +18,15 @@ OnceUpon does not print on Solana or Robinhood Chain. Leftover Story URLs still 
 
 ## Wallets
 
-1. Sign in with X through Supabase.
-2. On Devnet, the funded Arc test wallet signs create, buy, and sell.
-3. Curve keys stay on the Chapter contracts. They are not your X account.
+1. Open `/wallet` and generate two keys — Devnet and Mainnet. They never leave this browser.
+2. Import each hex key into **MetaMask** or **Rabby** (Account menu → Import account → Private key).
+3. Add networks:
+   - Arc Devnet — RPC `http://127.0.0.1:8546`, chain ID `31337`, symbol ETH
+   - Arc Testnet — RPC `https://rpc.testnet.arc.io`, chain ID `5042002`, symbol USDC, explorer `https://testnet.arcscan.app`
+4. On Devnet, click **Fund Devnet** to mint USDC and send ETH from the local factory.
+5. Do not reuse a Devnet key on mainnet.
+
+The pad can still sign with the funded Anvil trader while you test. Your imported key is what you take live.
 
 ## What this repo is not
 
@@ -90,7 +96,10 @@ Production: https://once-upon-arc.vercel.app/
 | `/launch` | Redirects to the Arc press |
 | `/launch/arc` | Native Arc Chapter (Devnet wallet) |
 | `/story/[slug]` | Chart, holders, live buys/sells, trade dock |
-| `/wallet` | Arc test wallet and Chapter Curve trade |
+| `/wallet` | Generate / import Arc Devnet + Mainnet keys |
+| `/tools` | Fees, graduation math, add Arc to MetaMask |
+| `/terms` | Terms |
+| `/privacy` | Privacy |
 | `/you` | Profile, Arc wallet, shortcuts |
 | `/shelf` | Own profile, or the crew if signed out |
 | `/shelf/[handle]` | Public profile |

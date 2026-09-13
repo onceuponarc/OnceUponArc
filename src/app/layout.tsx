@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import type { Metadata, Viewport } from "next";
-import { Geist, Syne } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -8,19 +8,17 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const syne = Syne({
-  variable: "--font-syne",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "OnceUpon — Social launchpad on Arc",
+    default: "OnceUpon — Arc launchpad",
     template: "%s · OnceUpon",
   },
-  description:
-    "Open a Chapter on Arc. Watch live buys and sells, holders, and the curve. OnceUpon prints on Arc only. Sign in with X.",
+  description: "Token launchpad on Arc. Launch a USDC curve, trade live, graduate the pool. Sign in with X.",
   applicationName: "OnceUpon",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -39,7 +37,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#00E5C3",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -47,11 +45,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${syne.variable} dark h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-ink text-parchment">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}>
+      <body className="flex min-h-full flex-col bg-black text-parchment">
         <AppShell>{children}</AppShell>
       </body>
     </html>

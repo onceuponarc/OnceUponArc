@@ -24,7 +24,7 @@ export function LiveTape({ initial }: { initial: TapeItem[] }) {
   if (!tape.length) {
     return (
       <div className="glass overflow-hidden rounded-2xl border border-arc/20 px-4 py-3 text-sm text-parchment/55">
-        Live tape is quiet. Open a Chapter and the first buy prints here.
+        Live tape is quiet. Launch a token and the first buy prints here.
       </div>
     );
   }
@@ -40,7 +40,7 @@ export function LiveTape({ initial }: { initial: TapeItem[] }) {
           <Link
             key={`${item.txHash ?? item.at}-${item.slug}-${item.trader}`}
             href={`/story/${item.slug}`}
-            className="flex shrink-0 items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs"
+            className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs transition-colors hover:border-white/30"
           >
             <span className={cn("font-semibold uppercase", item.side === "buy" ? "text-buy" : "text-sell")}>
               {item.side}

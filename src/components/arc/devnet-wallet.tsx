@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatUsd, shortenAddress } from "@/lib/format";
 import { readApiJson } from "@/lib/http/read-json";
+import { cn } from "@/lib/utils";
 
 type Status = {
   ready?: boolean;
@@ -21,13 +22,44 @@ type Status = {
   nativeGas?: string;
 };
 
+async function loadStatus() {
+  return readApiJson<Status>(await fetch("/api/arc/status"));
+}
+
+export function NetworkChip() {
+  const [status, setStatus] = useState<Status | null>(null);
+  useEffect(() => {
+    loadStatus()
+      .then(setStatus)
+      .catch(() => setStatus({ ready: false }));
+  }, []);
+  const live = Boolean(status?.ready);
+  return (
+    <Linkish live={live} label={live ? "DEVNET" : "OFFLINE"} />
+  );
+}
+
+function Linkish({ live, label }: { live: boolean; label: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em]",
+        live ? "border-white/20 text-white" : "border-white/10 text-white/40",
+      )}
+    >
+      <span className={cn("size-1.5 rounded-full", live ? "bg-buy" : "bg-white/30")} />
+      {label}
+    </div>
+  );
+}
+
 export function ArcDevnetWallet({ compact = false }: { compact?: boolean }) {
   const [status, setStatus] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function refresh() {
-    const body = await readApiJson<Status>(await fetch("/api/arc/status"));
+    const body = await loadStatus();
     setStatus(body);
   }
 
@@ -50,56 +82,46 @@ export function ArcDevnetWallet({ compact = false }: { compact?: boolean }) {
     }
   }
 
-  if (compact) {
-    return (
-      <div className="flex items-center gap-2 rounded-full border border-arc/25 bg-arc/10 px-2.5 py-1 text-[11px]">
-        <span className="size-1.5 rounded-full bg-buy" />
-        <span className="hidden sm:inline">{status?.label ?? "Arc"}</span>
-        <span className="tabular-nums text-parchment/80">
-          {status?.usdcUi != null ? formatUsd(status.usdcUi) : "…"}
-        </span>
-      </div>
-    );
-  }
+  if (compact) return <NetworkChip />;
 
   return (
-    <section className="glass space-y-3 rounded-2xl border border-arc/25 p-5">
+    <section className="glass space-y-3 rounded-2xl border p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Arc test wallet</p>
-          <h2 className="font-heading text-xl font-bold">{status?.label ?? "Arc Devnet"}</h2>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/45">Arc pad wallet</p>
+          <h2 className="mt-1 text-xl font-semibold">{status?.ready ? "Devnet live" : "Devnet offline"}</h2>
         </div>
-        <Badge variant={status?.ready ? "default" : "outline"}>{status?.ready ? "Funded" : "Offline"}</Badge>
+        <Badge variant={status?.ready ? "default" : "outline"}>{status?.ready ? "Ready" : "Offline"}</Badge>
       </div>
-      {status?.note ? <p className="text-sm text-parchment/65">{status.note}</p> : null}
+      {status?.note ? <p className="text-sm text-white/60">{status.note}</p> : null}
       {status?.address ? (
-        <p className="font-mono text-xs text-parchment/70">{shortenAddress(status.address, 6)}</p>
+        <p className="font-mono text-xs text-white/55">{shortenAddress(status.address, 6)}</p>
       ) : null}
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
-          <dt className="text-parchment/45">USDC</dt>
-          <dd className="font-heading text-2xl font-bold tabular-nums">
+          <dt className="text-white/40">USDC</dt>
+          <dd className="text-2xl font-semibold tabular-nums">
             {status?.usdcUi != null ? formatUsd(status.usdcUi) : "—"}
           </dd>
         </div>
         <div>
-          <dt className="text-parchment/45">Gas</dt>
-          <dd className="font-heading text-2xl font-bold tabular-nums">
+          <dt className="text-white/40">Gas</dt>
+          <dd className="text-2xl font-semibold tabular-nums">
             {status?.gasEth ? Number(status.gasEth).toFixed(2) : "—"} {status?.nativeGas === "usdc" ? "USDC" : "ETH"}
           </dd>
         </div>
       </dl>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={faucet} disabled={busy || !status?.ready} className="rounded-full">
-          {busy ? "Minting…" : "Drip 25,000 test USDC"}
+        <Button type="button" onClick={faucet} disabled={busy || !status?.ready}>
+          {busy ? "Minting…" : "Drip 25,000 USDC"}
         </Button>
-        <Button type="button" variant="outline" onClick={() => refresh()} className="rounded-full">
+        <Button type="button" variant="outline" onClick={() => refresh()}>
           Refresh
         </Button>
       </div>
       {status?.error || error ? (
         <Alert variant="destructive">
-          <AlertTitle>Devnet</AlertTitle>
+          <AlertTitle>Factory</AlertTitle>
           <AlertDescription>{error ?? status?.error}</AlertDescription>
         </Alert>
       ) : null}

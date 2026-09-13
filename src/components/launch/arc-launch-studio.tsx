@@ -17,7 +17,7 @@ import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { readApiJson } from "@/lib/http/read-json";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Story", "Chapter", "Print"] as const;
+const STEPS = ["Token", "Curve", "Launch"] as const;
 
 export function ArcLaunchStudio({ handle }: { handle: string | null }) {
   const router = useRouter();
@@ -40,7 +40,7 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
     event.preventDefault();
     setBusy(true);
     setError(null);
-    setStatus("Opening the Chapter on Arc Devnet…");
+      setStatus("Launching on Arc Devnet…");
     try {
       const res = await fetch("/api/arc/launch", {
         method: "POST",
@@ -93,7 +93,7 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
 
       {step === 0 ? (
         <section className="glass space-y-4 rounded-2xl border border-arc/20 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">The manuscript</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Token</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="arc-title">Name</Label>
@@ -116,14 +116,14 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
           </div>
           <CoverField value={cover} onChange={setCover} />
           <Button type="button" onClick={() => setStep(1)} className="rounded-full">
-            Next · Chapter
+              Next · Curve
           </Button>
         </section>
       ) : null}
 
       {step === 1 ? (
         <section className="glass space-y-4 rounded-2xl border border-arc/20 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Chapter Curve</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Bonding curve</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {(["author", "onceuponers"] as const).map((id) => (
               <button
@@ -180,7 +180,7 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
               Back
             </Button>
             <Button type="button" onClick={() => setStep(2)} className="rounded-full">
-              Next · Print
+              Next · Launch
             </Button>
           </div>
         </section>
@@ -188,10 +188,9 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
 
       {step === 2 ? (
         <section className="glass space-y-4 rounded-2xl border border-arc/20 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Print on Arc</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Launch on Arc</p>
           <p className="text-sm text-parchment/70">
-            {handle ? `@${handle}` : "Devnet"} · {PAD_NAME} · native Chapter · USDC quote. The funded Arc test wallet
-            signs create.
+            {handle ? `@${handle}` : "Devnet"} · {PAD_NAME} · USDC curve. The funded Arc test wallet signs create.
           </p>
           <label className="flex items-start gap-3 text-sm">
             <Switch checked={rights} onCheckedChange={setRights} />
@@ -202,7 +201,7 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
               Back
             </Button>
             <Button type="submit" disabled={!rights || busy || !title || !ticker} className="rounded-full">
-              {busy ? status ?? "Opening…" : `Open the Chapter · ${PAD_NAME} · Arc`}
+              {busy ? status ?? "Launching…" : `Launch · ${PAD_NAME} · Arc`}
             </Button>
           </div>
           {error ? (

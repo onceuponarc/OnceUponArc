@@ -1,12 +1,9 @@
 import { cn } from "@/lib/utils";
 import { formatUsd, timeAgo } from "@/lib/format";
+import type { ChartTrade } from "@/lib/chart";
+import { TokenChart } from "@/components/story/token-chart";
 
-export type ChartTrade = {
-  at: string;
-  priceUsd: number;
-  side: "buy" | "sell";
-  quoteUi: number;
-};
+export type { ChartTrade };
 
 export function PriceChart({
   trades,
@@ -15,48 +12,7 @@ export function PriceChart({
   trades: ChartTrade[];
   fallbackPrice: number;
 }) {
-  const prices = trades.map((item) => item.priceUsd).filter((value) => value > 0);
-  const series = prices.length ? prices : [fallbackPrice, fallbackPrice * 1.01];
-  const min = Math.min(...series);
-  const max = Math.max(...series);
-  const span = max - min || fallbackPrice || 1;
-  const coords = series.map((value, i) => {
-    const x = (i / Math.max(1, series.length - 1)) * 100;
-    const y = 100 - ((value - min) / span) * 88 - 6;
-    return [x, y] as const;
-  });
-  const line = coords.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
-  const area = `${line} L100 100 L0 100 Z`;
-  const last = series.at(-1) ?? fallbackPrice;
-  const first = series[0] ?? last;
-  const up = last >= first;
-  const vol = trades.reduce((sum, item) => sum + item.quoteUi, 0);
-
-  return (
-    <div className="glass overflow-hidden rounded-2xl border border-arc/20">
-      <div className="flex flex-wrap items-end justify-between gap-3 px-5 pt-5">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Chapter chart</p>
-          <p className="font-heading mt-1 text-3xl font-bold tabular-nums">{formatUsd(last, 6)}</p>
-        </div>
-        <div className="text-right text-sm text-parchment/60">
-          <p className={up ? "text-buy" : "text-sell"}>
-            {up ? "+" : ""}
-            {(((last - first) / (first || 1)) * 100).toFixed(2)}%
-          </p>
-          <p>{formatUsd(vol)} tape</p>
-        </div>
-      </div>
-      <svg viewBox="0 0 100 100" className="mt-2 h-52 w-full" preserveAspectRatio="none">
-        <path d={area} fill={up ? "rgb(0 229 195 / 16%)" : "rgb(255 77 122 / 14%)"} />
-        <path d={line} fill="none" stroke={up ? "#00e5c3" : "#ff4d7a"} strokeWidth="1.4" />
-      </svg>
-      <div className="flex justify-between px-5 pb-4 text-[11px] text-parchment/40">
-        <span>{trades[0] ? timeAgo(trades[0].at) : "open"}</span>
-        <span>now</span>
-      </div>
-    </div>
-  );
+  return <TokenChart trades={trades} fallbackPrice={fallbackPrice} />;
 }
 
 export function HoldersTable({

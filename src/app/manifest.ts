@@ -5,13 +5,13 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "OnceUpon — Arc launchpad",
     short_name: "OnceUpon",
     description:
-      "Social token launchpad on Arc. Open a Chapter Curve in USDC, watch live buys and sells, then graduate the book.",
+      "Token launchpad on Arc. Launch a USDC curve, trade live, graduate the pool.",
     start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#041018",
-    theme_color: "#00E5C3",
+    background_color: "#000000",
+    theme_color: "#000000",
     categories: ["finance", "social"],
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

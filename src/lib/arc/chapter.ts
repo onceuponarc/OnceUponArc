@@ -1,6 +1,6 @@
 import "server-only";
 
-import { formatUnits, parseUnits, zeroHash } from "viem";
+import { formatUnits, parseEther, parseUnits, zeroHash } from "viem";
 import { CHAPTER } from "@onceupon/config/chapter";
 import { curveAbi, erc20Abi, factoryAbi } from "@/lib/arc/abi";
 import { publicArc, requireArcNetwork, traderWallet } from "@/lib/arc/client";
@@ -93,20 +93,25 @@ export async function arcStatus() {
     gasEth: formatUnits(gas, 18),
     usdcUi: Number(formatUnits(usdc, 6)),
     tokenBalance: tokenBalance.toString(),
-    note:
-      net.nativeGas === "usdc"
-        ? "Public Arc uses USDC for gas. This wallet is funded on the live testnet."
-        : "Arc Devnet mirrors Chapter math on Anvil. ETH pays gas. MockUSDC is the Chapter quote. Mainnet Arc lands in days — same factory, same curve.",
+        note:
+          net.nativeGas === "usdc"
+            ? "Public Arc uses USDC for gas."
+            : "Local Arc Devnet. ETH pays gas. MockUSDC is the quote.",
   };
 }
 
-export async function dripFaucet() {
+export async function dripFaucet(to?: `0x${string}`) {
   const net = requireArcNetwork();
   const { deployerWallet } = await import("@/lib/arc/client");
   const pub = publicArc(net);
   const deployer = deployerWallet(net);
-  const trader = traderWallet(net).account.address;
+  const trader = to || traderWallet(net).account.address;
   const amount = parseUnits("25000", 6);
+  const gas = await deployer.sendTransaction({
+    to: trader,
+    value: parseEther("25"),
+  });
+  await pub.waitForTransactionReceipt({ hash: gas });
   const hash = await deployer.writeContract({
     address: net.usdc,
     abi: erc20Abi,
@@ -114,7 +119,7 @@ export async function dripFaucet() {
     args: [trader, amount],
   });
   await pub.waitForTransactionReceipt({ hash });
-  return { hash, amountUi: 25_000 };
+  return { hash, amountUi: 25_000, address: trader, gas };
 }
 
 export async function launchOnArc(input: {

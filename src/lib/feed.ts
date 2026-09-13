@@ -15,6 +15,7 @@ export type FeedLaunch = {
   createdAt: string;
   chain?: string;
   venue?: string;
+  tokenAddress?: string | null;
   priceUi: number;
   changePct: number;
   volumeUi: number;
@@ -38,10 +39,10 @@ export type TapeItem = {
 export type FeedTab = "new" | "trending" | "curve" | "bonded";
 
 export const FEED_TABS: { id: FeedTab; label: string; hint: string }[] = [
-  { id: "new", label: "New", hint: "Just printed. First buys write the book." },
-  { id: "trending", label: "Trending", hint: "Volume and tape on the pad right now." },
-  { id: "curve", label: "On the curve", hint: "Still bonding. Watch graduation progress." },
-  { id: "bonded", label: "Graduated", hint: "Cleared the curve. Book is open." },
+  { id: "new", label: "New", hint: "Just launched. First fills print on the tape." },
+  { id: "trending", label: "Trending", hint: "Highest volume on the pad right now." },
+  { id: "curve", label: "Graduating", hint: "Still on the curve. Watch progress to the pool." },
+  { id: "bonded", label: "Graduated", hint: "Cleared the curve. Pool is open." },
 ];
 
 export function filterFeed(launches: FeedLaunch[], tab: FeedTab): FeedLaunch[] {
@@ -65,6 +66,21 @@ export function filterFeed(launches: FeedLaunch[], tab: FeedTab): FeedLaunch[] {
     default:
       return byNew;
   }
+}
+
+export function isListedLaunch(item: FeedLaunch): boolean {
+  if (item.chain && item.chain !== "arc") return false;
+  const mint = item.tokenAddress ?? "";
+  if (!/^0x[a-fA-F0-9]{40}$/.test(mint)) return false;
+  const ticker = item.ticker.trim().toUpperCase();
+  if (["TEST", "DEMO", "MOCK", "FOO", "BAR"].includes(ticker)) return false;
+  return item.status === "live" || item.status === "graduated";
+}
+
+export function tokenOfTheDay(launches: FeedLaunch[]): FeedLaunch | null {
+  const listed = launches.filter(isListedLaunch);
+  if (!listed.length) return null;
+  return [...listed].sort((a, b) => b.volumeUi - a.volumeUi || +new Date(b.createdAt) - +new Date(a.createdAt))[0] ?? null;
 }
 
 export function tickerHue(ticker: string): number {
@@ -169,6 +185,7 @@ export function feedFromArc(story: LocalArcStory): FeedLaunch {
       createdAt: story.createdAt,
       chain: "arc",
       venue: "spl",
+      tokenAddress: story.tokenAddress,
     },
     trades,
     {
