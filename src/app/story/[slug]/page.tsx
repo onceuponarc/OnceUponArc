@@ -4,12 +4,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurveTrade } from "@/components/pad/curve-trade";
+import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
 import { findChain, SOLANA } from "@onceupon/config/solana";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { tickerHue } from "@/lib/feed";
 import { explorerAddress, explorerTx } from "@/lib/solana/connection";
+
+const STORY_SELECT =
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, users:author_user_id(handle, display_name, portrait_url)";
+
+async function loadStory(slug: string) {
+  const supabase = await createClient();
+  const { data: story } = await supabase.from("stories").select(STORY_SELECT).eq("slug", slug).maybeSingle();
+  if (!story) return { story: null, bindings: [] as BindingRow[] };
+  const { data: bindings } = await supabase
+    .from("bindings")
+    .select("id, kind, chain_caip2, pool_address, mechanism, is_primary, proof_url")
+    .eq("story_id", story.id)
+    .order("is_primary", { ascending: false });
+  return { story, bindings: bindings ?? [] };
+}
+
+type BindingRow = {
+  id: string;
+  kind: string;
+  chain_caip2: string;
+  pool_address: string;
+  mechanism: string | null;
+  is_primary: boolean;
+  proof_url: string | null;
+};
 
 export async function generateMetadata({
   params,
@@ -26,22 +52,24 @@ export default async function StoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
   const { profile } = await getSessionUser();
-  const { data: story } = await supabase
-    .from("stories")
-    .select(
-      "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, users:author_user_id(handle, display_name, portrait_url)",
-    )
-    .eq("slug", slug)
-    .maybeSingle();
+  let story: Awaited<ReturnType<typeof loadStory>>["story"] = null;
+  let bindings: Awaited<ReturnType<typeof loadStory>>["bindings"] = [];
+  try {
+    const loaded = await loadStory(slug);
+    story = loaded.story;
+    bindings = loaded.bindings;
+  } catch (error) {
+    console.error("Story load failed", error);
+    return (
+      <div className="glass mx-auto max-w-lg space-y-3 rounded-3xl border border-gold/25 p-8">
+        <h1 className="font-heading text-3xl font-bold">This Story could not load</h1>
+        <p className="text-parchment/70">Supabase did not answer. Reload, then sign in with X if you were trading.</p>
+      </div>
+    );
+  }
 
   if (!story) notFound();
-  const { data: bindings } = await supabase
-    .from("bindings")
-    .select("id, kind, chain_caip2, pool_address, mechanism, is_primary, proof_url")
-    .eq("story_id", story.id)
-    .order("is_primary", { ascending: false });
 
   const author = Array.isArray(story.users) ? story.users[0] : story.users;
   const hue = tickerHue(story.ticker);
@@ -150,17 +178,36 @@ export default async function StoryPage({
       <Card>
         <CardHeader>
           <CardTitle>Trade</CardTitle>
-          <CardDescription>Real Solana mainnet buys and sells from your pad wallet.</CardDescription>
+          <CardDescription>
+            Bonding buys use the pad curve. After a route exists, Jupiter quotes the mint and the Supabase pad
+            wallet signs the swap.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <CurveTrade
-            slug={slug}
-            venue={story.venue ?? "spl"}
-            engine={story.engine}
-            pairLabel={story.pair_label}
-            decimals={Number(story.mint_decimals ?? 6)}
-            quoteDecimals={Number(story.quote_decimals ?? 9)}
-          />
+        <CardContent className="space-y-6">
+          {story.status !== "graduated" ? (
+            <CurveTrade
+              slug={slug}
+              venue={story.venue ?? "spl"}
+              engine={story.engine}
+              pairLabel={story.pair_label}
+              decimals={Number(story.mint_decimals ?? 6)}
+              quoteDecimals={Number(story.quote_decimals ?? 9)}
+            />
+          ) : (
+            <p className="text-sm text-parchment/70">This Story bonded. Spot now routes through Jupiter.</p>
+          )}
+          {story.token_address ? (
+            <JupiterSwapPanel
+              signedIn={Boolean(profile)}
+              title={`Jupiter · $${story.ticker}`}
+              extraMint={story.token_address}
+              extraSymbol={story.ticker}
+              extraDecimals={Number(story.mint_decimals ?? 6)}
+              defaultOutput={story.ticker}
+            />
+          ) : (
+            <p className="text-sm text-parchment/60">Jupiter can quote this mint once the printer lands it.</p>
+          )}
         </CardContent>
       </Card>
 

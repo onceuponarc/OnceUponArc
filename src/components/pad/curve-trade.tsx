@@ -59,7 +59,8 @@ export function CurveTrade({
   return (
     <div className="space-y-4">
       <p className="text-sm text-parchment/70">
-        Quote is {pairLabel}. Buys and sells settle in {pairLabel} on Solana mainnet from your pad wallet.
+        Quote is {pairLabel}. Curve fills settle from the Supabase pad wallet. After this Story bonds, spot
+        routes through Jupiter.
       </p>
       <div className="flex gap-2">
         <Button type="button" variant={side === "buy" ? "default" : "outline"} onClick={() => setSide("buy")}>

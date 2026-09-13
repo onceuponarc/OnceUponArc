@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSessionUser } from "@/lib/auth";
 import { MarginIntentForm } from "@/components/margin-intent-form";
-import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
 
 export const metadata = { title: "Margin" };
 
@@ -42,8 +41,6 @@ export default async function MarginPage() {
           </Card>
         ))}
       </div>
-
-      <JupiterSwapPanel title="Spot first" />
 
       {profile ? <MarginIntentForm /> : null}
     </div>

@@ -11,7 +11,8 @@ export default function LoginPage() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">OnceUpon</p>
         <h1 className="font-heading mt-3 text-4xl font-bold">Sign in with X</h1>
         <p className="mt-3 text-parchment/75">
-          Your X handle is your identity. Sign-in creates a Solana pad wallet you can export anytime.
+          Sign in with X through Supabase. That login is also the wallet connection: the pad keypair is
+          created in Supabase and signs Jupiter swaps. No injected wallet. No email signup.
         </p>
         <div className="mt-8 flex flex-col gap-3">
           <Button asChild className="w-full">

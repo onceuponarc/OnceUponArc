@@ -49,20 +49,27 @@ function mapStory(row: {
 }
 
 export default async function HomePage() {
-  const supabase = await createClient();
   const { profile } = await getSessionUser();
-
-  const [{ data: chapter }, { data: stories }] = await Promise.all([
-    supabase.from("chapters").select("slug, title, opens_at").eq("slug", "the-first-chapter").maybeSingle(),
-    supabase
-      .from("stories")
-      .select(
-        "slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, users:author_user_id(handle)",
-      )
-      .in("status", ["live", "graduated"])
-      .order("created_at", { ascending: false })
-      .limit(48),
-  ]);
+  let chapter: { slug: string; title: string; opens_at: string | null } | null = null;
+  let stories: Parameters<typeof mapStory>[0][] | null = null;
+  try {
+    const supabase = await createClient();
+    const [{ data: chapterRow }, { data: storyRows }] = await Promise.all([
+      supabase.from("chapters").select("slug, title, opens_at").eq("slug", "the-first-chapter").maybeSingle(),
+      supabase
+        .from("stories")
+        .select(
+          "slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, users:author_user_id(handle)",
+        )
+        .in("status", ["live", "graduated"])
+        .order("created_at", { ascending: false })
+        .limit(48),
+    ]);
+    chapter = chapterRow;
+    stories = storyRows;
+  } catch (error) {
+    console.error("Home feed failed", error);
+  }
 
   const launches = (stories ?? []).map(mapStory);
   const liveCount = launches.filter((item) => item.status === "live").length;

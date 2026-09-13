@@ -1,26 +1,36 @@
 import { SiteHeader } from "@/components/site-header";
 import { PadBackground } from "@/components/pad/pad-background";
+import { PadJupiterDock } from "@/components/jupiter/pad-jupiter-dock";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
 import { PAD_TAGLINE } from "@onceupon/config/copy";
 import Link from "next/link";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const { profile } = await getSessionUser();
-  const supabase = await createClient();
-  const { count } = await supabase.from("users").select("id", { count: "exact", head: true });
+  let profile = null as Awaited<ReturnType<typeof getSessionUser>>["profile"];
+  let onlineCount = 0;
+  try {
+    const session = await getSessionUser();
+    profile = session.profile;
+    const supabase = await createClient();
+    const { count } = await supabase.from("users").select("id", { count: "exact", head: true });
+    onlineCount = count ?? 0;
+  } catch (error) {
+    console.error("AppShell failed", error);
+  }
 
   return (
     <div className="relative flex min-h-full flex-col text-parchment">
       <PadBackground />
-      <SiteHeader profile={profile} onlineCount={count ?? 0} />
+      <SiteHeader profile={profile} onlineCount={onlineCount} />
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 sm:py-10">
         {children}
+        <PadJupiterDock signedIn={Boolean(profile)} />
       </main>
       <footer className="mt-auto border-t border-gold/15 bg-ink/40 px-4 py-8 text-center text-xs text-parchment/55 backdrop-blur-xl">
         <p className="font-heading text-sm text-parchment/85">{PAD_TAGLINE}</p>
         <p className="mt-2">
-          Identity is X. Stories print on Solana mainnet. Arc launches are not open yet. The Piece is a protocol claim, not a dividend.
+          Identity is X via Supabase. The pad wallet lives in Supabase. Swaps route through Jupiter.
         </p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           <Link href="/launch" className="text-gold hover:underline">

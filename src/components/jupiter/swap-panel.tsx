@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { VersionedTransaction } from "@solana/web3.js";
 import { JUPITER, SOLANA } from "@onceupon/config/solana";
 import { QUOTE_ASSETS } from "@onceupon/config/quotes";
 import { Button } from "@/components/ui/button";
@@ -9,25 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
-import { SolanaConnectButton } from "@/components/wallet/connect-button";
+import { XMark } from "@/components/x-mark";
 import type { JupiterQuote } from "@/lib/jupiter";
-import { cn } from "@/lib/utils";
-
-function bytesToBase64(bytes: Uint8Array) {
-  let binary = "";
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return btoa(binary);
-}
-
-function base64ToBytes(value: string) {
-  const binary = atob(value);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
 
 const SWAP_TOKENS = [
   { symbol: "SOL", mint: SOLANA.wsolMint, decimals: 9 },
@@ -40,17 +22,34 @@ const SWAP_TOKENS = [
 function formatAmount(raw: string, decimals: number) {
   const value = Number(raw) / 10 ** decimals;
   if (!Number.isFinite(value)) return "—";
-  return value.toLocaleString("en-US", { maximumFractionDigits: decimals > 6 ? 6 : 4 });
+  return value.toLocaleString("en-US", { maximumFractionDigits: decimals > 6 ? 4 : 4 });
 }
 
 export function JupiterSwapPanel({
   title = "Jupiter route",
+  signedIn = false,
+  extraMint,
+  extraSymbol,
+  extraDecimals = 6,
+  defaultOutput,
 }: {
   title?: string;
+  signedIn?: boolean;
+  extraMint?: string;
+  extraSymbol?: string;
+  extraDecimals?: number;
+  defaultOutput?: string;
 }) {
-  const { address, signTransaction } = useSolanaWallet();
+  const tokens = useMemo(() => {
+    const list = [...SWAP_TOKENS];
+    if (extraMint && extraSymbol && !list.some((item) => item.mint === extraMint)) {
+      list.push({ symbol: extraSymbol, mint: extraMint, decimals: extraDecimals });
+    }
+    return list;
+  }, [extraMint, extraSymbol, extraDecimals]);
+
   const [inputSymbol, setInputSymbol] = useState("SOL");
-  const [outputSymbol, setOutputSymbol] = useState("USDC");
+  const [outputSymbol, setOutputSymbol] = useState(defaultOutput ?? extraSymbol ?? "USDC");
   const [amount, setAmount] = useState("0.1");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,8 +57,8 @@ export function JupiterSwapPanel({
   const [quote, setQuote] = useState<JupiterQuote | null>(null);
   const [rawQuote, setRawQuote] = useState<Record<string, unknown> | null>(null);
 
-  const input = SWAP_TOKENS.find((item) => item.symbol === inputSymbol) ?? SWAP_TOKENS[0];
-  const output = SWAP_TOKENS.find((item) => item.symbol === outputSymbol) ?? SWAP_TOKENS[1];
+  const input = tokens.find((item) => item.symbol === inputSymbol) ?? tokens[0];
+  const output = tokens.find((item) => item.symbol === outputSymbol) ?? tokens[1];
   const hops = quote?.hops ?? [];
 
   const rawAmount = useMemo(() => {
@@ -98,8 +97,8 @@ export function JupiterSwapPanel({
   }
 
   async function swap() {
-    if (!address) {
-      setError("Connect a Solana wallet to sign the Jupiter swap.");
+    if (!signedIn) {
+      setError("Sign in with X. The pad wallet in Supabase signs the Jupiter swap.");
       return;
     }
     if (!rawQuote) {
@@ -110,23 +109,14 @@ export function JupiterSwapPanel({
     setError(null);
     setStatus(null);
     try {
-      const built = await fetch("/api/jupiter/swap", {
+      const res = await fetch("/api/jupiter/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userPublicKey: address, quoteResponse: rawQuote }),
+        body: JSON.stringify({ quoteResponse: rawQuote }),
       });
-      const swapBody = await built.json();
-      if (!built.ok) throw new Error(swapBody.error ?? "Jupiter could not build the swap.");
-      const tx = VersionedTransaction.deserialize(base64ToBytes(swapBody.swapTransaction as string));
-      const signed = await signTransaction(tx);
-      const sent = await fetch("/api/solana/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signedTx: bytesToBase64(signed.serialize()) }),
-      });
-      const result = await sent.json();
-      if (!sent.ok) throw new Error(result.error ?? "The swap did not land.");
-      setStatus(`Landed ${result.signature}`);
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "The pad wallet could not land the swap.");
+      setStatus(`Landed ${body.signature}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Swap failed.");
     } finally {
@@ -136,15 +126,12 @@ export function JupiterSwapPanel({
 
   return (
     <section className="glass space-y-4 rounded-2xl border border-gold/20 p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">{title}</p>
-          <h2 className="font-heading text-xl font-bold">Route through Jupiter</h2>
-          <p className="mt-1 text-sm text-parchment/65">
-            Quotes come from Jupiter Metis. You sign the swap in your wallet. OnceUpon does not custody the route.
-          </p>
-        </div>
-        <SolanaConnectButton />
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">{title}</p>
+        <h2 className="font-heading text-xl font-bold">Route through Jupiter</h2>
+        <p className="mt-1 text-sm text-parchment/65">
+          Quotes come from Jupiter. Sign in with X and Supabase creates the pad wallet that signs the swap.
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -155,7 +142,7 @@ export function JupiterSwapPanel({
             onChange={(e) => setInputSymbol(e.target.value)}
             className="h-8 w-full rounded-lg border border-gold/25 bg-ink/60 px-2 text-sm"
           >
-            {SWAP_TOKENS.map((token) => (
+            {tokens.map((token) => (
               <option key={token.symbol} value={token.symbol}>
                 {token.symbol}
               </option>
@@ -169,7 +156,7 @@ export function JupiterSwapPanel({
             onChange={(e) => setOutputSymbol(e.target.value)}
             className="h-8 w-full rounded-lg border border-gold/25 bg-ink/60 px-2 text-sm"
           >
-            {SWAP_TOKENS.map((token) => (
+            {tokens.map((token) => (
               <option key={token.symbol} value={token.symbol}>
                 {token.symbol}
               </option>
@@ -186,9 +173,18 @@ export function JupiterSwapPanel({
         <Button type="button" onClick={() => void loadQuote()} disabled={busy}>
           {busy && !quote ? "Routing…" : "Get Jupiter route"}
         </Button>
-        <Button type="button" variant="secondary" onClick={() => void swap()} disabled={busy || !quote || !address}>
-          {address ? "Sign swap" : "Connect to swap"}
-        </Button>
+        {signedIn ? (
+          <Button type="button" variant="secondary" onClick={() => void swap()} disabled={busy || !quote}>
+            Swap with pad wallet
+          </Button>
+        ) : (
+          <Button type="button" variant="secondary" asChild>
+            <a href="/auth/login">
+              <XMark className="size-3.5" />
+              Sign in with X to swap
+            </a>
+          </Button>
+        )}
         <Button type="button" variant="ghost" asChild>
           <a href={JUPITER.app} target="_blank" rel="noreferrer">
             Open jup.ag
@@ -208,7 +204,7 @@ export function JupiterSwapPanel({
           <div className="mt-2 flex flex-wrap gap-1.5">
             {hops.length ? (
               hops.map((hop, index) => (
-                <Badge key={`${hop.label}-${index}`} variant="outline" className={cn("text-[11px]")}>
+                <Badge key={`${hop.label}-${index}`} variant="outline" className="text-[11px]">
                   {hop.label}
                 </Badge>
               ))

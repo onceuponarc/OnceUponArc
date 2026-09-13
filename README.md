@@ -16,9 +16,7 @@ This is a working Solana printer: X identity, an encrypted pad wallet per accoun
 
 ## Pad wallet
 
-Sign-in with X creates a fresh Solana keypair. The secret is AES-256-GCM encrypted at rest in a table the browser cannot read. Export is an explicit POST. The pad never logs the key.
-
-You can still connect Phantom, Solflare, or Backpack. Swaps route through Jupiter. Launches sign with the pad wallet so mainnet mints actually land. Fund the wallet with real SOL — there is no faucet.
+Sign in with X through Supabase. That login is the wallet connection: the pad creates a Solana keypair, encrypts it AES-256-GCM at rest in a table the browser cannot read, and uses it to sign Jupiter swaps and launches. Export is an explicit POST. Fund the address with real SOL — there is no faucet and no injected wallet.
 
 ## What this repo is not
 
@@ -71,7 +69,7 @@ Production: https://once-upon-arc.vercel.app/
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
 - `@solana/web3.js` + `@solana/spl-token` for real mainnet mints
-- Custom Solana wallet connect (Phantom / Solflare / Backpack)
+- Pad wallet in Supabase (created on X login — no injected wallets)
 - Jupiter Metis routing for quotes and swaps (`lite-api.jup.ag`)
 - Foundry under `contracts/`
 
@@ -83,7 +81,7 @@ Production: https://once-upon-arc.vercel.app/
 | `/launch` | Choose a chain |
 | `/launch/solana` | Working Solana press (form visible without login) |
 | `/launch/[chain]` | Press for Ethereum, Base, Robinhood; Arc shows not yet |
-| `/wallet` | Pad wallet, Jupiter swap, optional Phantom bind |
+| `/wallet` | Supabase pad wallet plus Jupiter swap |
 | `/write` `/press` | Redirect to `/launch` |
 | `/desk` | Redirect to `/` |
 | `/trade` | Redirect to `/wallet` |

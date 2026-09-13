@@ -1,5 +1,4 @@
 import { AppShell } from "@/components/app-shell";
-import { Providers } from "@/components/providers";
 import type { Metadata } from "next";
 import { Geist, Syne } from "next/font/google";
 import "./globals.css";
@@ -21,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s · OnceUpon",
   },
   description:
-    "A token launchpad. Solana, Ethereum, Base, and Robinhood Chain are open. Tokens print on Solana mainnet. Swaps route through Jupiter. Arc launches are not open yet.",
+    "A token launchpad. Sign in with X via Supabase. The pad wallet lives in Supabase. Swaps route through Jupiter. Arc launches are not open yet.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -31,9 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${syne.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ink text-parchment">
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

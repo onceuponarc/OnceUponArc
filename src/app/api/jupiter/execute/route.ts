@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { VersionedTransaction } from "@solana/web3.js";
 import { getSessionUser } from "@/lib/auth";
-import { ensureSolanaWallet } from "@/lib/wallets/embedded";
+import { ensureSolanaWallet, loadUserKeypair } from "@/lib/wallets/embedded";
 import { fetchJupiterSwap } from "@/lib/jupiter";
+import { explorerTx, solanaConnection } from "@/lib/solana/connection";
 import { redactWalletError } from "@/lib/crypto/secret-box";
+
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const { user } = await getSessionUser();
@@ -17,12 +21,23 @@ export async function POST(request: Request) {
 
   try {
     const wallet = await ensureSolanaWallet(user.id);
-    const result = await fetchJupiterSwap({
+    const { swapTransaction } = await fetchJupiterSwap({
       userPublicKey: wallet.address,
       quoteResponse: body.quoteResponse,
     });
-    return NextResponse.json(result);
+    const tx = VersionedTransaction.deserialize(Buffer.from(swapTransaction, "base64"));
+    const keypair = await loadUserKeypair(user.id);
+    tx.sign([keypair]);
+    const signature = await solanaConnection().sendRawTransaction(tx.serialize(), {
+      skipPreflight: false,
+      maxRetries: 3,
+    });
+    return NextResponse.json({
+      signature,
+      explorer: explorerTx(signature),
+      address: wallet.address,
+    });
   } catch (error) {
-    return NextResponse.json({ error: redactWalletError(error) }, { status: 502 });
+    return NextResponse.json({ error: redactWalletError(error) }, { status: 400 });
   }
 }

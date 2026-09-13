@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { SignInButton } from "@/components/sign-in-button";
-import { WalletBar } from "@/components/wallet-bar";
+import { PadWalletChip } from "@/components/wallet/pad-wallet-chip";
 import type { OnceUponer } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,7 +91,7 @@ export function SiteHeader({
           <p className="hidden text-[11px] text-parchment/55 md:block">
             {onlineCount} online
           </p>
-          <WalletBar />
+          <PadWalletChip signedIn={Boolean(profile)} />
           <SignInButton profile={profile} />
           <Sheet>
             <SheetTrigger asChild>

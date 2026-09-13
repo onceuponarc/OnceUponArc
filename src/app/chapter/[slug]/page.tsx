@@ -20,12 +20,20 @@ export default async function ChapterPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { data: chapter } = await supabase
-    .from("chapters")
-    .select("slug, title, opens_at")
-    .eq("slug", slug)
-    .maybeSingle();
+  let chapter: { slug: string; title: string; opens_at: string | null } | null = null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.from("chapters").select("slug, title, opens_at").eq("slug", slug).maybeSingle();
+    chapter = data;
+  } catch (error) {
+    console.error("Chapter load failed", error);
+    return (
+      <div className="glass mx-auto max-w-lg space-y-3 rounded-3xl border border-gold/25 p-8">
+        <h1 className="font-heading text-3xl font-bold">This chapter could not load</h1>
+        <p className="text-parchment/70">Supabase did not answer. Reload to try again.</p>
+      </div>
+    );
+  }
 
   if (!chapter) notFound();
 

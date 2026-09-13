@@ -6,12 +6,27 @@ import Link from "next/link";
 export const metadata = { title: "Crew" };
 
 export default async function OnceUponersPage() {
-  const supabase = await createClient();
-  const { data: people, error } = await supabase
-    .from("users")
-    .select("handle, display_name, bio, portrait_url, storage_portrait_path")
-    .order("last_login_at", { ascending: false })
-    .limit(60);
+  let people: {
+    handle: string;
+    display_name: string;
+    bio: string | null;
+    portrait_url: string | null;
+    storage_portrait_path: string | null;
+  }[] | null = [];
+  let error: { message: string } | null = null;
+  try {
+    const supabase = await createClient();
+    const result = await supabase
+      .from("users")
+      .select("handle, display_name, bio, portrait_url, storage_portrait_path")
+      .order("last_login_at", { ascending: false })
+      .limit(60);
+    people = result.data;
+    error = result.error ? { message: result.error.message } : null;
+  } catch (err) {
+    console.error("Crew feed failed", err);
+    error = { message: "Supabase did not answer." };
+  }
 
   return (
     <div className="space-y-6">

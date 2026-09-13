@@ -6,14 +6,20 @@ export const metadata = { title: "Bindings" };
 
 export default async function BindingsPage() {
   const { user, profile } = await getSessionUser();
-  const supabase = await createClient();
-  const { data: stories } = user
-    ? await supabase
+  let stories: { slug: string; title: string; ticker: string }[] = [];
+  try {
+    if (user) {
+      const supabase = await createClient();
+      const { data } = await supabase
         .from("stories")
         .select("slug, title, ticker")
         .eq("author_user_id", user.id)
-        .order("created_at", { ascending: false })
-    : { data: [] };
+        .order("created_at", { ascending: false });
+      stories = data ?? [];
+    }
+  } catch (error) {
+    console.error("Bindings load failed", error);
+  }
 
   return (
     <div className="space-y-8">
