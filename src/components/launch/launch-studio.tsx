@@ -1,8 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CHAINS, VENUES, type LaunchChain, type LaunchVenue } from "@onceupon/config/solana";
+import {
+  VENUES,
+  findChain,
+  type LaunchVenue,
+  type PrintableChain,
+} from "@onceupon/config/solana";
 import { MODE_COPY, RIGHTS_TICK, feeExample } from "@onceupon/config/copy";
 import { PROTOCOL } from "@onceupon/config/arc";
 import { findQuote, type QuoteGroup } from "@onceupon/config/quotes";
@@ -14,19 +20,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { XMark } from "@/components/x-mark";
 import { cn } from "@/lib/utils";
 
 export function LaunchStudio({
+  chain,
   handle,
   walletAddress,
   balance,
+  signedIn,
 }: {
-  handle: string;
+  chain: PrintableChain;
+  handle: string | null;
   walletAddress: string | null;
   balance: number | null;
+  signedIn: boolean;
 }) {
   const router = useRouter();
-  const [chain, setChain] = useState<LaunchChain>("solana");
+  const selectedChain = findChain(chain)!;
   const [venue, setVenue] = useState<LaunchVenue>("spl");
   const [engine, setEngine] = useState<"author" | "onceuponers">("author");
   const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>("sol");
@@ -45,13 +56,16 @@ export function LaunchStudio({
   const [status, setStatus] = useState<string | null>(null);
 
   const cap = engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap;
-  const selectedChain = CHAINS.find((item) => item.id === chain);
-  const canPrint = selectedChain?.prints ?? false;
   const selectedQuote = findQuote(quoteId);
   const example = useMemo(() => feeExample(1000, Math.min(authorBps, cap)), [authorBps, cap]);
+  const canSubmit = signedIn && rights && !busy;
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
+    if (!signedIn) {
+      setError("Sign in with X first. Your handle is identity on the pad.");
+      return;
+    }
     setBusy(true);
     setError(null);
     setStatus(null);
@@ -81,7 +95,7 @@ export function LaunchStudio({
         setError(body.error ?? "Launch failed.");
         return;
       }
-      setStatus(`Live on Solana. Mint ${body.mint}`);
+      setStatus(`Live. Mint ${body.mint}`);
       router.push(`/story/${body.slug}`);
     } finally {
       setBusy(false);
@@ -89,55 +103,62 @@ export function LaunchStudio({
   }
 
   return (
-    <form onSubmit={launch} className="space-y-6">
-      <section className="glass rounded-2xl border border-gold/20 p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">1 · Chain</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {CHAINS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setChain(item.id)}
-              className={cn(
-                "rounded-2xl border p-4 text-left transition",
-                chain === item.id ? "border-gold bg-gold/15" : "border-gold/15 bg-white/5",
-                !item.live && "opacity-80",
-              )}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-heading text-lg font-bold">{item.title}</p>
-                <Badge variant={item.live ? "default" : "outline"}>{item.badge}</Badge>
-              </div>
-              <p className="mt-2 text-sm text-parchment/65">{item.body}</p>
-            </button>
-          ))}
+    <form onSubmit={launch} className="space-y-5">
+      <section className="glass flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/20 px-4 py-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">The Press</p>
+          <h2 className="font-heading text-xl font-bold">
+            {selectedChain.title}
+            <span className="ml-2 text-sm font-normal text-parchment/60">· {selectedChain.badge}</span>
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge>{chain === "solana" ? "Prints here" : `Tagged for ${selectedChain.title}`}</Badge>
+          <Link href="/launch" className="text-sm text-gold hover:underline">
+            Change chain
+          </Link>
         </div>
       </section>
 
-      <section className="glass rounded-2xl border border-gold/20 p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">2 · Venue</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      {!signedIn ? (
+        <Alert>
+          <AlertTitle>Compose now. Sign in to print.</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center gap-3">
+            <span>The Solana press is open. Sign in with X to mint from your pad wallet.</span>
+            <Button asChild size="sm">
+              <a href="/auth/login">
+                <XMark className="size-3.5" />
+                Sign in with X
+              </a>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <section className="glass rounded-2xl border border-gold/20 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">1 · Venue</p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {VENUES.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setVenue(item.id)}
               className={cn(
-                "rounded-2xl border p-4 text-left transition",
+                "rounded-xl border p-3 text-left transition",
                 venue === item.id ? "border-gold bg-gold/15" : "border-gold/15 bg-white/5",
               )}
             >
               <p className="text-[11px] uppercase tracking-[0.18em] text-gold">{item.title}</p>
-              <p className="font-heading mt-1 text-xl font-bold">{item.headline}</p>
+              <p className="font-heading mt-0.5 text-base font-bold">{item.headline}</p>
               <p className="mt-1 text-sm text-parchment/65">{item.body}</p>
             </button>
           ))}
         </div>
       </section>
 
-      <section className="glass rounded-2xl border border-gold/20 p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">3 · Fee engine</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <section className="glass rounded-2xl border border-gold/20 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">2 · Fee engine</p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {(["author", "onceuponers"] as const).map((id) => (
             <button
               key={id}
@@ -147,12 +168,12 @@ export function LaunchStudio({
                 setAuthorBps((bps) => Math.min(bps, id === "author" ? 300 : 100));
               }}
               className={cn(
-                "rounded-2xl border p-4 text-left transition",
+                "rounded-xl border p-3 text-left transition",
                 engine === id ? "border-gold bg-gold/15" : "border-gold/15 bg-white/5",
               )}
             >
               <p className="text-[11px] uppercase tracking-[0.18em] text-gold">{MODE_COPY[id].title}</p>
-              <p className="font-heading mt-1 text-xl font-bold">{MODE_COPY[id].headline}</p>
+              <p className="font-heading mt-0.5 text-base font-bold">{MODE_COPY[id].headline}</p>
               <p className="mt-1 text-sm text-parchment/65">{MODE_COPY[id].body}</p>
             </button>
           ))}
@@ -168,8 +189,8 @@ export function LaunchStudio({
         onMint={setQuoteMint}
       />
 
-      <section className="glass rounded-2xl border border-gold/20 p-5 space-y-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">5 · Print it</p>
+      <section className="glass space-y-4 rounded-2xl border border-gold/20 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">4 · Print it</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="title">Name</Label>
@@ -221,7 +242,7 @@ export function LaunchStudio({
           </p>
           <p className="text-sm text-parchment/65">{example}</p>
         </div>
-        {(venue === "pons" || venue === "pumpfun") ? (
+        {venue === "pons" || venue === "pumpfun" ? (
           <div className="space-y-2">
             <Label htmlFor="snipe">Snipe tax (first 15 minutes, 0–5.00%)</Label>
             <input
@@ -239,9 +260,7 @@ export function LaunchStudio({
         {engine === "onceuponers" ? (
           <label className="flex items-start gap-3 text-sm">
             <Switch checked={autoBuy} onCheckedChange={setAutoBuy} />
-            <span>
-              Auto-buy the quote with every vault cut. Holders claim that bag as The Piece.
-            </span>
+            <span>Auto-buy the quote with every vault cut. Holders claim that bag as The Piece.</span>
           </label>
         ) : null}
         <label className="flex items-start gap-3 text-sm">
@@ -250,27 +269,26 @@ export function LaunchStudio({
         </label>
         <div className="rounded-xl border border-gold/15 bg-black/20 p-3 text-sm text-parchment/70">
           <p>
-            Pad wallet @{handle}: {walletAddress ?? "provisioning…"}{" "}
+            Pad wallet {handle ? `@${handle}` : "(sign in)"}: {walletAddress ?? "provisioning after sign-in"}{" "}
             {balance != null ? `· ${balance.toFixed(3)} SOL` : null}
           </p>
+          <p className="mt-1">{selectedChain.printNote}</p>
           <p className="mt-1">
-            {chain === "arc"
-              ? "Arc testnet is live for wallets. The token factory is not deployed yet — print on Solana mainnet."
-              : venue === "nft"
-                ? "Mints a real token on Solana mainnet. Needs SOL in the pad wallet."
-                : selectedQuote
-                  ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}.`
-                  : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
+            {venue === "nft"
+              ? "Mints a real token on Solana mainnet. Needs SOL in the pad wallet."
+              : selectedQuote
+                ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}.`
+                : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
         </div>
-        <Button type="submit" size="lg" className="h-11 w-full sm:w-auto" disabled={busy || !rights || !canPrint}>
+        <Button type="submit" disabled={!canSubmit}>
           {busy
             ? "Printing on Solana…"
-            : canPrint
-              ? "Launch on Solana mainnet"
-              : chain === "arc"
-                ? "Arc factory not deployed yet"
-                : "This chain is coming soon"}
+            : !signedIn
+              ? "Sign in with X to launch"
+              : chain === "solana"
+                ? "Launch on Solana mainnet"
+                : `Launch · tagged for ${selectedChain.title}`}
         </Button>
         {error ? (
           <Alert variant="destructive">

@@ -44,6 +44,7 @@ export function LaunchCard({ launch }: { launch: FeedLaunch }) {
             <Badge variant="outline">{engineLabel}</Badge>
             {launch.venue ? <Badge variant="outline">{launch.venue}</Badge> : null}
             <Badge variant="secondary">{launch.pairLabel}</Badge>
+            {launch.chain ? <Badge variant="outline">{launch.chain}</Badge> : null}
             <span className="text-xs text-gold/90">{(launch.authorBps / 100).toFixed(2)}% author</span>
           </div>
           {launch.handle ? (

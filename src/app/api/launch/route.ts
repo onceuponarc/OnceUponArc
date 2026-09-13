@@ -3,7 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import { launchOnSolana, parseMint } from "@/lib/solana/launch";
 import { inspectMint } from "@/lib/solana/mint";
 import { redactWalletError } from "@/lib/crypto/secret-box";
-import type { LaunchVenue } from "@onceupon/config/solana";
+import { isPrintableChain, type LaunchVenue } from "@onceupon/config/solana";
 import {
   customQuoteAsset,
   findQuote,
@@ -60,20 +60,17 @@ export async function POST(request: Request) {
     rightsAttested?: boolean;
   };
 
-  if (body.chain === "arc") {
+  const chain = body.chain ?? "solana";
+  if (chain === "arc") {
     return NextResponse.json(
       {
-        error:
-          "Arc testnet is live for wallets and quotes. The token factory is not deployed yet. Launch on Solana mainnet.",
+        error: "Circle Arc is not open for launches yet. Pick Solana, Ethereum, Base, or Robinhood Chain.",
       },
       { status: 400 },
     );
   }
-  if (body.chain && body.chain !== "solana") {
-    return NextResponse.json(
-      { error: "That chain is coming soon. Launch on Solana mainnet today." },
-      { status: 400 },
-    );
+  if (!isPrintableChain(chain)) {
+    return NextResponse.json({ error: "Unknown chain. Pick Solana, Ethereum, Base, or Robinhood Chain." }, { status: 400 });
   }
   if (!body.title || !body.ticker || !body.engine || !body.venue) {
     return NextResponse.json({ error: "Name, ticker, engine, and venue are required." }, { status: 400 });
@@ -96,6 +93,7 @@ export async function POST(request: Request) {
     const result = await launchOnSolana({
       userId: user.id,
       handle: profile.handle,
+      chain,
       title: body.title,
       ticker: body.ticker,
       blurb: body.blurb ?? "",

@@ -1,9 +1,11 @@
+import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurveTrade } from "@/components/pad/curve-trade";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
-import { SOLANA } from "@onceupon/config/solana";
+import { findChain, SOLANA } from "@onceupon/config/solana";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { tickerHue } from "@/lib/feed";
@@ -25,20 +27,29 @@ export default async function StoryPage({
 }) {
   const { slug } = await params;
   const supabase = await createClient();
+  const { profile } = await getSessionUser();
   const { data: story } = await supabase
     .from("stories")
     .select(
-      "title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, users:author_user_id(handle, display_name, portrait_url)",
+      "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, users:author_user_id(handle, display_name, portrait_url)",
     )
     .eq("slug", slug)
     .maybeSingle();
 
   if (!story) notFound();
+  const { data: bindings } = await supabase
+    .from("bindings")
+    .select("id, kind, chain_caip2, pool_address, mechanism, is_primary, proof_url")
+    .eq("story_id", story.id)
+    .order("is_primary", { ascending: false });
+
   const author = Array.isArray(story.users) ? story.users[0] : story.users;
   const hue = tickerHue(story.ticker);
   const engineLabel = story.engine === "author" ? "Author" : "OnceUponers";
   const statusLabel = story.status === "graduated" ? "Bonded" : story.status;
   const chain = story.chain ?? "solana";
+  const chainCard = findChain(chain);
+  const isAuthor = Boolean(profile && story.author_user_id === profile.id);
 
   return (
     <div className="space-y-8">
@@ -60,7 +71,7 @@ export default async function StoryPage({
             <Badge variant="outline">{story.venue ?? "spl"}</Badge>
             <Badge variant="outline">{story.pair_label}</Badge>
             <Badge variant="secondary">{statusLabel}</Badge>
-            <Badge variant="outline">{chain}</Badge>
+            <Badge variant="outline">{chainCard?.title ?? chain}</Badge>
           </div>
         </div>
       </section>
@@ -150,6 +161,38 @@ export default async function StoryPage({
             decimals={Number(story.mint_decimals ?? 6)}
             quoteDecimals={Number(story.quote_decimals ?? 9)}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>The Binding</CardTitle>
+          <CardDescription>
+            Primary liquidity is the Solana curve. Foreign pools are records the Author attaches after launch.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          {!bindings?.length ? (
+            <p className="text-parchment/65">No pool bindings yet. The mint is on Solana mainnet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {bindings.map((binding) => (
+                <li key={binding.id} className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2">
+                  <p className="font-medium text-parchment">
+                    {binding.is_primary ? "Primary · " : "Linked · "}
+                    {binding.kind.replaceAll("_", " ")} · {binding.chain_caip2}
+                  </p>
+                  <p className="break-all text-xs text-parchment/60">{binding.pool_address}</p>
+                  {binding.mechanism ? <p className="text-xs text-parchment/50">{binding.mechanism}</p> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+          {isAuthor ? (
+            <Button asChild size="sm">
+              <Link href="/bindings">Bind a foreign pool</Link>
+            </Button>
+          ) : null}
         </CardContent>
       </Card>
     </div>

@@ -22,9 +22,9 @@ export default async function AuthErrorPage({
         <h1 className="font-heading mt-3 text-3xl font-bold">Sign in did not finish</h1>
         <p className="mt-3 text-parchment/75">{friendly}</p>
         <div className="mt-8 flex flex-col gap-3">
-          <Button asChild size="lg" className="h-11 w-full text-base">
+          <Button asChild className="w-full">
             <Link href="/auth/login">
-              <XMark className="size-4" />
+              <XMark className="size-3.5" />
               Try X again
             </Link>
           </Button>

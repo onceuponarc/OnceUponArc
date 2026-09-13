@@ -4,7 +4,6 @@ import { POSITIONING } from "@onceupon/config/copy";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArcQuoteRow } from "@/components/crypto/headless";
-import { OnceUponConnectButton } from "@/components/crypto/connect";
 
 export async function generateMetadata({
   params,
@@ -38,18 +37,20 @@ export default async function ChapterPage({
         <h1 className="font-heading mt-3 text-5xl font-extrabold sm:text-6xl">{chapter.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-parchment/80">{POSITIONING}</p>
         <p className="mt-3 max-w-2xl text-parchment/65">
-          First official launch window on OnceUpon. Tokens mint on Solana mainnet. Arc testnet is live for wallets. This is not studio equity.
+          First official launch window on OnceUpon. Solana is the live printer. Arc launches are not open yet. This is not studio equity.
         </p>
         {chapter.opens_at ? (
           <p className="mt-4 text-sm text-gold">Opens {new Date(chapter.opens_at).toUTCString()}</p>
         ) : null}
         <div className="mt-6 space-y-4">
           <ArcQuoteRow />
-          <div className="flex flex-wrap gap-3">
-            <Button size="lg" className="h-11 px-5" asChild>
-              <Link href="/launch">Launch into this window</Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild>
+              <Link href="/launch/solana">Launch on Solana</Link>
             </Button>
-            <OnceUponConnectButton />
+            <Button variant="outline" asChild>
+              <Link href="/launch">Choose a chain</Link>
+            </Button>
           </div>
         </div>
       </section>

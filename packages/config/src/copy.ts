@@ -1,11 +1,11 @@
 /** Canonical OnceUpon copy. Keep this file free of forbidden offering language. */
 
 export const POSITIONING =
-  "OnceUpon is a token launchpad. Solana is live on mainnet. Circle Arc testnet is live for wallets and quotes. Robinhood Chain (Pons) uses the same engines when that network is wired. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
+  "OnceUpon is a token launchpad. Solana, Ethereum, Base, and Robinhood Chain are open for launch. Tokens print on Solana mainnet today so they are live immediately; other chains tag the Story for a foreign pool binding. Circle Arc is not open for launches yet. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
 
 export const TAGLINE = "OnceUponers write the stories. The chain keeps the receipts.";
 
-export const PAD_TAGLINE = "Launch on Solana mainnet. Arc testnet is live. Fees that actually move.";
+export const PAD_TAGLINE = "Pick a chain. Print on Solana mainnet. Arc is not open yet.";
 
 export const MODE_COPY = {
   author: {
@@ -31,7 +31,7 @@ export const LAUNCH_TYPES = [
       "Pick an author fee from 0% to 3.00%. The choice is locked when you launch.",
       "Every swap pushes that cut to your pad wallet in the same transaction. No claim button.",
       "Protocol takes about 0.20% on top. That cut is not yours to set.",
-      "Same engine on Solana mainnet now. Arc testnet is live for wallets. Robinhood Chain when those rails go live.",
+      "Same engine on every open chain. The mint lands on Solana mainnet today. Arc launches are not open yet.",
     ],
   },
   {

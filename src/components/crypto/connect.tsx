@@ -27,7 +27,7 @@ export function OnceUponConnectButton() {
     <ClientOnly
       fallback={
         <span
-          className="inline-block h-[50px] min-w-[165px] rounded-lg border border-gold/20 bg-card"
+          className="inline-block h-8 min-w-[108px] rounded-md border border-gold/20 bg-card"
           aria-hidden
         />
       }
@@ -39,9 +39,24 @@ export function OnceUponConnectButton() {
         wallets={onceUponWallets}
         theme={onceUponThirdwebTheme}
         appMetadata={onceUponAppMetadata}
-        connectButton={{ label: "Connect wallet" }}
+        connectButton={{
+          label: "Connect",
+          style: {
+            height: "32px",
+            minHeight: "32px",
+            fontSize: "13px",
+            minWidth: "0",
+            padding: "0 12px",
+            borderRadius: "8px",
+          },
+        }}
         connectModal={connectModal}
         detailsButton={{
+          style: {
+            height: "32px",
+            minHeight: "32px",
+            fontSize: "12px",
+          },
           displayBalanceToken: {
             [arcChain.id]: ARC_USDC_ERC20,
           },

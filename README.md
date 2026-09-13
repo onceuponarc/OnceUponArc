@@ -1,16 +1,18 @@
 # OnceUpon
 
-A token launchpad. Solana is live on mainnet. Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
+A token launchpad. Solana, Ethereum, Base, and Robinhood Chain are open. Tokens print on Solana mainnet today so a Story is live immediately. Other chains tag the launch for a foreign pool binding. Circle Arc is not open for launches yet.
 
-This is a working Solana launchpad: X identity, an encrypted pad wallet per account, and real SPL / NFT mints on Solana mainnet. Circle Arc testnet is live for wallets and quotes. Robinhood Chain (Pons) shares the same launch types when that rail is wired.
+Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
+
+This is a working Solana printer: X identity, an encrypted pad wallet per account, and real SPL / NFT mints on Solana mainnet.
 
 ## Launch types
 
 - **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
 - **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%). Optional auto-buy converts each vault cut into the pair you chose.
-- **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every chain.
+- **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every open chain.
 - **Quotes** — SOL, USDC/USDT/PYUSD, listed tokenized stocks (xStocks), Ondo USDY/OUSG, or any mint. Buys settle in that quote. Pairing against a tokenized mint is a quote, not studio equity.
-- Solana bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, and **10** of a listed xStock. Arc still uses **5,000 USDC** when that factory ships.
+- Solana bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, and **10** of a listed xStock.
 
 ## Pad wallet
 
@@ -77,32 +79,32 @@ Production: https://once-upon-arc.vercel.app/
 
 | Path | Job |
 | --- | --- |
-| `/` | Home feed — new, trending, on the curve, recently bonded |
-| `/launch` | Working Solana launch studio (SPL, NFT, Pump-style, Pons-style) |
+| `/` | The Desk — feed plus chain chooser |
+| `/launch` | Choose a chain |
+| `/launch/solana` | Working Solana press (form visible without login) |
+| `/launch/[chain]` | Press for Ethereum, Base, Robinhood; Arc shows not yet |
 | `/wallet` | Pad wallet, export, optional external connect |
-| `/write` | Redirects to `/launch` |
-| `/story/[slug]` | A live launch |
-| `/shelf/[handle]` | Profile |
+| `/write` `/press` | Redirect to `/launch` |
+| `/desk` | Redirect to `/` |
+| `/trade` | Redirect to `/wallet` |
+| `/claims` | Redirect to `/ledger` |
+| `/story/[slug]` | A live launch plus The Binding |
+| `/shelf` | Own profile, or the crew if signed out |
+| `/shelf/[handle]` | Public profile |
 | `/ledger` | The Piece claims |
+| `/bindings` | Author links a foreign pool |
 | `/margin` | Jupiter doorway |
 | `/chapter/the-first-chapter` | First Chapter window |
 | `/onceuponers` | Crew directory |
 | `/auth/login` | Sign in with X |
 
-## Launch types
-
-- **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
-- **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%).
-- **Tokenized RWA / single-name** — Gated until a licensed issuer lists that name on Arc.
-- Quotes: **USDC** and **EURC** are listed. Bonding graduates at **5,000 USDC**.
-
 ## Network
 
-**Solana Mainnet (live)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`).
+**Solana Mainnet (live printer)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`).
 
-**Circle Arc testnet (live for wallets)** — chain ID `5042002`, RPC `https://rpc.testnet.arc.io`, explorer `https://testnet.arcscan.app`, faucet `https://faucet.circle.com`. Native gas USDC is 18 decimals. Pool USDC is the ERC-20 at `0x3600…0000` with 6 decimals. Do not mix them. Token factory is not deployed yet — Stories still print on Solana mainnet.
+**Ethereum, Base, Robinhood Chain (open)** — Stories tagged for those chains still mint as SPL on Solana today. Bind a foreign pool from `/bindings` after launch. Robinhood Pons factory `0x7ed598…`, router `0xe33e9e…`.
 
-**Robinhood Chain / Pons (coming soon)** — factory `0x7ed598…`, router `0xe33e9e…`. Same launch form; prints when public RPC is wired.
+**Circle Arc (not yet)** — chain ID `5042002`, RPC `https://rpc.testnet.arc.io`, explorer `https://testnet.arcscan.app`. Token factory is not deployed. Launches are closed until it ships.
 
 ## Apply schema
 

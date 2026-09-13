@@ -40,7 +40,7 @@ export function QuotePicker({
 
   return (
     <section className="glass rounded-2xl border border-gold/20 p-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">4 · Pair liquidity</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">3 · Pair liquidity</p>
       <p className="mt-2 text-sm text-parchment/65">{QUOTE_DISCLAIMER}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {QUOTE_GROUPS.map((item) => (
@@ -48,6 +48,7 @@ export function QuotePicker({
             key={item.id}
             type="button"
             variant={group === item.id ? "default" : "outline"}
+            size="sm"
             onClick={() => {
               onGroup(item.id);
               if (item.id === "sol") onQuoteId("sol");

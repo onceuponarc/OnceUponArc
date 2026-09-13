@@ -26,6 +26,7 @@ const NAV = [
 ];
 
 const MORE = [
+  { href: "/bindings", label: "Bindings" },
   { href: "/margin", label: "Margin" },
   { href: "/chapter/the-first-chapter", label: "First Chapter" },
 ];
@@ -72,7 +73,7 @@ export function SiteHeader({
 
   return (
     <header className="glass-nav sticky top-0 z-50">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+      <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-2">
         <Link href="/" className="flex min-w-0 items-baseline gap-2">
           <span className="font-heading text-xl font-bold tracking-tight text-parchment sm:text-2xl">
             OnceUpon
@@ -86,7 +87,7 @@ export function SiteHeader({
           <NavLinks pathname={pathname} />
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <p className="hidden text-[11px] text-parchment/55 md:block">
             {onlineCount} online
           </p>

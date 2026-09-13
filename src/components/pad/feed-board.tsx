@@ -1,14 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { FEED_TABS, filterFeed, type FeedLaunch, type FeedTab } from "@/lib/feed";
 import { EmptyPad, LaunchCard } from "@/components/pad/launch-card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const EMPTY: Record<FeedTab, { title: string; body: string }> = {
   new: {
     title: "No new launches yet",
-    body: "The first Story on Solana mainnet prints here. Pick Author or OnceUponers and hit Launch.",
+    body: "The first Story on Solana mainnet prints here. Open the press, pick Author or OnceUponers, and launch.",
   },
   trending: {
     title: "Nothing trending yet",
@@ -56,7 +58,14 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
       </div>
       <p className="text-sm text-parchment/60">{FEED_TABS.find((item) => item.id === tab)?.hint}</p>
       {shown.length === 0 ? (
-        <EmptyPad title={empty.title} body={empty.body} />
+        <div className="space-y-4">
+          <EmptyPad title={empty.title} body={empty.body} />
+          <div className="flex justify-center">
+            <Button asChild>
+              <Link href="/launch/solana">Open the Solana press</Link>
+            </Button>
+          </div>
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {shown.map((launch) => (

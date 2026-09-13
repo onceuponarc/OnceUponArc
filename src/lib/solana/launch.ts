@@ -16,13 +16,12 @@ import {
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { SOLANA } from "@onceupon/config/solana";
+import { SOLANA, type LaunchVenue, type PrintableChain } from "@onceupon/config/solana";
 import { PROTOCOL } from "@onceupon/config/arc";
 import { solanaConnection, explorerTx } from "@/lib/solana/connection";
 import { generateKeypair, protocolKeypair, sealKeypair } from "@/lib/solana/keys";
 import { loadUserKeypair, requireSolBalance } from "@/lib/wallets/embedded";
 import { createServiceClient } from "@/lib/supabase/service";
-import type { LaunchVenue } from "@onceupon/config/solana";
 import type { QuoteAsset } from "@onceupon/config/quotes";
 import { graduationRaw, virtualRaw } from "@onceupon/config/quotes";
 import { inspectMint, pushCreateAtaIfMissing } from "@/lib/solana/mint";
@@ -30,6 +29,7 @@ import { inspectMint, pushCreateAtaIfMissing } from "@/lib/solana/mint";
 export type LaunchInput = {
   userId: string;
   handle: string;
+  chain: PrintableChain;
   title: string;
   ticker: string;
   blurb: string;
@@ -166,7 +166,7 @@ export async function launchOnSolana(input: LaunchInput) {
       decimals,
       rights_attested: true,
       created_tx: signature,
-      chain: "solana",
+      chain: input.chain,
       venue: input.venue,
       quote_mint: input.quote.mint,
       reward_mint: input.autoBuyRewards ? (input.rewardMint ?? input.quote.mint) : null,

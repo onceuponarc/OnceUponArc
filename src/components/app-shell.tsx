@@ -19,16 +19,24 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       <footer className="mt-auto border-t border-gold/15 bg-ink/40 px-4 py-8 text-center text-xs text-parchment/55 backdrop-blur-xl">
         <p className="font-heading text-sm text-parchment/85">{PAD_TAGLINE}</p>
-        <p className="mt-2">Identity is X. Stories print on Solana mainnet. Arc testnet is live for wallets. The Piece is a protocol claim, not a dividend.</p>
+        <p className="mt-2">
+          Identity is X. Stories print on Solana mainnet. Arc launches are not open yet. The Piece is a protocol claim, not a dividend.
+        </p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           <Link href="/launch" className="text-gold hover:underline">
             Launch
+          </Link>
+          <Link href="/launch/solana" className="text-gold hover:underline">
+            Solana press
           </Link>
           <Link href="/wallet" className="text-gold hover:underline">
             Trade
           </Link>
           <Link href="/ledger" className="text-gold hover:underline">
             Claims
+          </Link>
+          <Link href="/bindings" className="text-gold hover:underline">
+            Bindings
           </Link>
           <Link href="/margin" className="text-gold hover:underline">
             Margin

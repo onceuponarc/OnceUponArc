@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FeedBoard } from "@/components/pad/feed-board";
 import { LaunchTypeStrip } from "@/components/pad/launch-types";
+import { ChainChooser } from "@/components/launch/chain-chooser";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
 import { SOLANA } from "@onceupon/config/solana";
@@ -75,7 +76,7 @@ export default async function HomePage() {
         <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold">
-              Solana mainnet · Arc testnet
+              Solana printer · Arc not yet
             </p>
             <h1 className="font-heading mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
               Launch it.
@@ -85,19 +86,22 @@ export default async function HomePage() {
             </h1>
             <p className="mt-4 max-w-xl text-base text-parchment/75 sm:text-lg">{PAD_TAGLINE}</p>
             <p className="mt-2 max-w-xl text-sm text-parchment/55">{BONDING_COPY}</p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="h-11 px-5 text-base">
-                <Link href="/launch">Launch a token</Link>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Button asChild>
+                <Link href="/launch/solana">Launch on Solana</Link>
               </Button>
               {profile ? (
-                <Button variant="outline" size="lg" className="h-11 px-5 text-base" asChild>
+                <Button variant="outline" asChild>
                   <Link href="/wallet">Open trade</Link>
                 </Button>
               ) : (
-                <Button variant="outline" size="lg" className="h-11 px-5 text-base" asChild>
+                <Button variant="outline" asChild>
                   <a href="/auth/login">Sign in with X</a>
                 </Button>
               )}
+              <Button variant="ghost" asChild>
+                <Link href="/launch">All chains</Link>
+              </Button>
             </div>
           </div>
           <div className="glass rounded-2xl border border-gold/20 p-5">
@@ -124,7 +128,7 @@ export default async function HomePage() {
             </dl>
             <div className="mt-5 space-y-2 text-xs text-parchment/55">
               <p>
-                {SOLANA.name} live · {ARC_TESTNET.name} live
+                Solana, Ethereum, Base, and Robinhood Chain are open. Arc is not yet.
               </p>
               <p>
                 <a className="text-gold hover:underline" href={SOLANA.explorer} target="_blank" rel="noreferrer">
@@ -154,12 +158,20 @@ export default async function HomePage() {
           </div>
           <h2 className="font-heading mt-2 text-2xl font-bold">{chapter?.title ?? "The First Chapter"}</h2>
           <p className="mt-1 max-w-xl text-sm text-parchment/65">
-            The first official window on the pad. Solana mainnet prints tokens. Arc testnet is live for wallets.
+            The first official window on the pad. Solana is the live printer. Arc launches are not open yet.
           </p>
         </div>
         <Button variant="secondary" asChild>
           <Link href="/chapter/the-first-chapter">Open the window</Link>
         </Button>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Chains</p>
+          <h2 className="font-heading mt-1 text-2xl font-bold">Pick where to launch</h2>
+        </div>
+        <ChainChooser compact />
       </section>
 
       <FeedBoard launches={launches} />

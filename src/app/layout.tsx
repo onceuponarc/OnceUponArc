@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s · OnceUpon",
   },
   description:
-    "A token launchpad. Solana mainnet is live. Launch SPL, NFT, Pump-style, or Pons-style. Arc testnet is live for wallets.",
+    "A token launchpad. Solana, Ethereum, Base, and Robinhood Chain are open. Tokens print on Solana mainnet. Arc launches are not open yet.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

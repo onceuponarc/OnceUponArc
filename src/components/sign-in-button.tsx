@@ -24,8 +24,8 @@ export function SignInButton({ profile }: { profile: OnceUponer | null }) {
   }
 
   return (
-    <Button asChild>
-      <a href="/auth/login" className="gap-2">
+    <Button asChild size="sm">
+      <a href="/auth/login" className="gap-1.5">
         <XMark className="size-3.5" />
         Sign in with X
       </a>

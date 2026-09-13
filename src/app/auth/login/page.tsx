@@ -14,9 +14,9 @@ export default function LoginPage() {
           Your X handle is your identity. Sign-in creates a Solana pad wallet you can export anytime.
         </p>
         <div className="mt-8 flex flex-col gap-3">
-          <Button asChild size="lg" className="h-11 w-full text-base">
+          <Button asChild className="w-full">
             <a href="/auth/start">
-              <XMark className="size-4" />
+              <XMark className="size-3.5" />
               Continue with X
             </a>
           </Button>
