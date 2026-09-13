@@ -1,6 +1,6 @@
 "use client";
 
-import { Transaction, VersionedTransaction } from "@solana/web3.js";
+import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
 
 function bytesToBase64(bytes: Uint8Array) {
@@ -18,6 +18,15 @@ function base64ToBytes(value: string) {
   return out;
 }
 
+function asBytes(value: unknown): Uint8Array | null {
+  if (value instanceof Uint8Array) return value;
+  if (value && typeof value === "object" && ArrayBuffer.isView(value)) {
+    const view = value as ArrayBufferView;
+    return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+  }
+  return null;
+}
+
 export function useWalletSigner() {
   const wallet = useSolanaWallet();
 
@@ -27,12 +36,29 @@ export function useWalletSigner() {
     let serialized: string;
     if (versioned) {
       const tx = VersionedTransaction.deserialize(bytes);
-      const signed = (await wallet.signTransaction(tx)) as VersionedTransaction;
-      serialized = bytesToBase64(signed.serialize());
+      const signed = await wallet.signTransaction(tx);
+      const raw = asBytes(signed);
+      if (raw) {
+        serialized = bytesToBase64(raw);
+      } else if (signed && typeof signed === "object" && "serialize" in signed) {
+        serialized = bytesToBase64((signed as VersionedTransaction).serialize());
+      } else {
+        throw new Error("Wallet did not return a signed transaction.");
+      }
     } else {
       const tx = Transaction.from(bytes);
-      const signed = (await wallet.signTransaction(tx)) as Transaction;
-      serialized = bytesToBase64(signed.serialize());
+      if (!tx.feePayer) tx.feePayer = new PublicKey(wallet.address);
+      const signed = await wallet.signTransaction(tx);
+      const raw = asBytes(signed);
+      if (raw) {
+        serialized = bytesToBase64(raw);
+      } else if (signed && typeof signed === "object" && "serialize" in signed) {
+        const next = signed as Transaction;
+        if (!next.feePayer) next.feePayer = new PublicKey(wallet.address);
+        serialized = bytesToBase64(next.serialize());
+      } else {
+        throw new Error("Wallet did not return a signed transaction.");
+      }
     }
     const res = await fetch("/api/solana/send", {
       method: "POST",
