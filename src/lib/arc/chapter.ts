@@ -13,6 +13,34 @@ import {
 } from "@/lib/arc/store";
 import { listPersistedArcStories, loadArcStory, persistArcStory, persistArcTrade } from "@/lib/arc/persist";
 
+const ANVIL_QUOTE = "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707".toLowerCase();
+
+function isAnvilChapter(story: { quoteAddress?: string | null; curveAddress?: string | null }) {
+  const quote = (story.quoteAddress ?? "").toLowerCase();
+  const curve = (story.curveAddress ?? "").toLowerCase();
+  return quote === ANVIL_QUOTE || curve.startsWith("0x5fc8") || quote.startsWith("0xe7f1725e");
+}
+
+async function requireLiveCurve(story: { quoteAddress: `0x${string}`; curveAddress: `0x${string}`; tokenAddress: `0x${string}` }) {
+  const net = requireArcNetwork();
+  if (net.chainId !== 5042002 && !isAnvilChapter(story)) return;
+  if (net.chainId === 5042002 && isAnvilChapter(story)) {
+    throw new Error(
+      "This Chapter was printed on local Anvil, not Arc Testnet. Launch a new Chapter on the live factory.",
+    );
+  }
+  const pub = publicArc(net);
+  const [curveCode, quoteCode] = await Promise.all([
+    pub.getCode({ address: story.curveAddress }),
+    pub.getCode({ address: story.quoteAddress }),
+  ]);
+  if (!curveCode || curveCode === "0x" || !quoteCode || quoteCode === "0x") {
+    throw new Error(
+      "This Chapter’s curve is not a contract on the current RPC. Launch on Arc Testnet instead of Devnet.",
+    );
+  }
+}
+
 function slugify(input: string) {
   return input
     .toLowerCase()
@@ -273,6 +301,7 @@ export async function tradeOnArc(slug: string, side: "buy" | "sell", amountUi: n
   if (!story) throw new Error("Unknown Arc Chapter.");
   await ensureArcDevnet();
   const net = requireArcNetwork();
+  await requireLiveCurve(story);
   const pub = publicArc(net);
   const wallet = traderWallet(net);
   const owner = wallet.account.address;
@@ -360,6 +389,9 @@ export async function arcSnapshot(slug: string) {
   }
   const net = loadArcNetwork();
   if (!net) return { story, onchain: null };
+  if (net.chainId === 5042002 && isAnvilChapter(story)) {
+    return { story, onchain: null, offline: "anvil-only" as const };
+  }
   const pub = publicArc(net);
   const snap = await pub.readContract({
     address: story.curveAddress,
@@ -398,5 +430,8 @@ export async function arcSnapshot(slug: string) {
 }
 
 export async function allArcStories() {
-  return listPersistedArcStories();
+  const stories = await listPersistedArcStories();
+  const net = loadArcNetwork();
+  if (net?.chainId !== 5042002) return stories;
+  return stories.filter((story) => !isAnvilChapter(story));
 }

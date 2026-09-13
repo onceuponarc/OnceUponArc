@@ -126,7 +126,7 @@ export function ArcTrade({
       {quote ? <p className="text-sm text-arc">{quote}</p> : null}
       {error ? (
         <Alert variant="destructive">
-          <AlertTitle>Trade blocked</AlertTitle>
+          <AlertTitle>Wrong chain</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
