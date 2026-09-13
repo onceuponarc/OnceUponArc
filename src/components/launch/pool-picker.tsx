@@ -25,6 +25,7 @@ export function PoolPicker({
   venue,
   selected,
   onSelect,
+  heading = "3b · Link a live pool",
 }: {
   chain: LaunchChain;
   quoteId: string;
@@ -32,6 +33,7 @@ export function PoolPicker({
   venue?: string;
   selected: LinkedPoolPick | null;
   onSelect: (pool: LinkedPoolPick | null) => void;
+  heading?: string;
 }) {
   const [data, setData] = useState<PoolResolveResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +101,7 @@ export function PoolPicker({
 
   return (
     <section className="glass rounded-2xl border border-arc/20 p-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">3b · Link a live pool</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">{heading}</p>
       <p className="mt-2 text-sm text-parchment/65">
         {data?.launchPool.note ??
           (venue === "pumpfun"

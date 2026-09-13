@@ -15,7 +15,7 @@ Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Pha
 - **Coin art** — Required for PumpSwap-pair launches; optional (recommended) for SPL. Upload a PNG/JPEG/WebP or paste an IPFS CID.
 - **Metadata** — Each mint writes Metaplex Token Metadata on-chain. The URI is `https://once-upon-arc.vercel.app/api/token/<mint>/metadata`.
 - **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks such as **NVDAx**), ETFs (SPYx, QQQx), Ondo USDY/OUSG, or any mint. Pairing against a tokenized mint is a quote, not studio equity.
-- **Linked pools** — Every launch binds the live DEX pool you pick. Solana uses Raydium / Orca / Meteora / PumpSwap. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
+- **Linked pools** — Every launch can bind the live DEX pool you pick. After print, open the Story (or `/bindings`) to bind NVDAx/USDC-style quote depth or paste an LP you created for your mint. Solana uses Raydium / Orca / Meteora / PumpSwap. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
 - Default bond targets: **2 SOL**, **5,000** stables, **0.1** cbBTC, **10** of a listed xStock/ETF — editable at print.
 
 ## Wallets
@@ -96,7 +96,7 @@ Production: https://once-upon-arc.vercel.app/
 | `/shelf` | Own profile, or the crew if signed out |
 | `/shelf/[handle]` | Public profile |
 | `/ledger` | The Piece claims |
-| `/bindings` | Author links another pool (Solana, Arc, Ethereum, Base, Robinhood) |
+| `/bindings` | Author links a quote pool (NVDAx/USDC, …) or pastes an LP opened after print |
 | `/margin` | Jupiter doorway |
 | `/chapter/the-first-chapter` | First Chapter window |
 | `/onceuponers` | Crew directory |

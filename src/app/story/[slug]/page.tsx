@@ -1,7 +1,6 @@
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurveTrade } from "@/components/pad/curve-trade";
 import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
@@ -14,11 +13,12 @@ import Link from "next/link";
 import { tickerHue } from "@/lib/feed";
 import { explorerAddress, explorerTx } from "@/lib/solana/explorer";
 import { LaunchLinks } from "@/components/story/launch-links";
+import { LinkLp } from "@/components/story/link-lp";
 
 const STORY_SELECT =
-  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, users:author_user_id(handle, display_name, portrait_url)";
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
 const STORY_SELECT_MIN =
-  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, supply, reward_vault_lamports, users:author_user_id(handle, display_name, portrait_url)";
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, supply, reward_vault_lamports, quote_mint, users:author_user_id(handle, display_name, portrait_url)";
 
 async function loadStory(slug: string) {
   const supabase = await createClient();
@@ -169,7 +169,12 @@ export default async function StoryPage({
                 protocol cut, not Pump.fun’s.
               </p>
             ) : null}
-            <p>Quote {story.pair_label}</p>
+            <p>
+              Quote {story.pair_label}
+              {(story as { quote_mint?: string | null }).quote_mint
+                ? ` · ${(story as { quote_mint?: string | null }).quote_mint}`
+                : ""}
+            </p>
             {story.auto_buy_rewards ? <p>Vault auto-buys the pair on each OnceUponers cut.</p> : null}
             {story.engine === "onceuponers" ? (
               <p>
@@ -282,13 +287,17 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>The Binding</CardTitle>
           <CardDescription>
-            Primary liquidity is the Solana OnceUpon curve from T0. Linked pools are the live DEX venues you
-            attached at launch — Raydium, Orca, Meteora, PumpSwap, Uniswap, Aerodrome, Pons, or any pair you pasted.
+            Primary liquidity is the Solana OnceUpon curve from T0. Linked pools are live DEX venues — the quote
+            depth you launched against (NVDAx/USDC, SOL/USDC, and others) and any ${story.ticker} LP you open after
+            print.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {!bindings?.length ? (
-            <p className="text-parchment/65">No pool bindings yet. The mint is on Solana mainnet.</p>
+            <p className="text-parchment/65">
+              No pool linked yet. Launching against {story.pair_label} does not automatically put this mint in that
+              LP. Bind the quote pool or paste your own pool below.
+            </p>
           ) : (
             <ul className="space-y-2">
               {bindings.map((binding) => {
@@ -321,9 +330,16 @@ export default async function StoryPage({
             </ul>
           )}
           {isAuthor ? (
-            <Button asChild size="sm">
-              <Link href="/bindings">Bind another pool</Link>
-            </Button>
+            <div className="pt-2">
+              <LinkLp
+                slug={slug}
+                ticker={story.ticker}
+                tokenMint={story.token_address}
+                quoteMint={(story as { quote_mint?: string | null }).quote_mint ?? null}
+                pairLabel={story.pair_label}
+                boundAddresses={bindings.map((item) => item.pool_address)}
+              />
+            </div>
           ) : null}
         </CardContent>
       </Card>

@@ -10,7 +10,7 @@ export async function GET(
   const full = await supabase
     .from("stories")
     .select(
-      "slug, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, token_address, vault_address, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri",
+      "slug, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, token_address, vault_address, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label",
     )
     .eq("slug", slug)
     .maybeSingle();

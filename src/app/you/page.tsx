@@ -60,7 +60,7 @@ export default async function YouPage() {
 
       <section className="grid gap-3 sm:grid-cols-2">
         {[
-          { href: "/bindings", label: "Bindings", body: "Attach an Arc, Ethereum, Base, or Robinhood pool." },
+          { href: "/bindings", label: "Link LP", body: "Bind NVDAx/USDC or paste a pool you opened for your mint after launch." },
           { href: "/margin", label: "Margin", body: "Doorway to Jupiter perps. OnceUpon does not custody leverage." },
           { href: "/onceuponers", label: "Crew", body: "Handles on the pad — not a PnL board." },
           { href: "/chapter/the-first-chapter", label: "First Chapter", body: "The first official launch window." },
@@ -86,15 +86,18 @@ export default async function YouPage() {
           ) : (
             <ul className="grid gap-2">
               {stories.map((story) => (
-                <li key={story.slug}>
-                  <Link
-                    href={`/story/${story.slug}`}
-                    className="glass flex items-center justify-between rounded-2xl border border-white/10 px-4 py-3"
-                  >
+                <li
+                  key={story.slug}
+                  className="glass flex items-center justify-between gap-3 rounded-2xl border border-white/10 px-4 py-3"
+                >
+                  <Link href={`/story/${story.slug}`} className="min-w-0 flex-1">
                     <span className="font-heading font-semibold">{story.title}</span>
-                    <span className="text-sm text-arc">
+                    <span className="ml-2 text-sm text-arc">
                       ${story.ticker} · {story.status}
                     </span>
+                  </Link>
+                  <Link href={`/bindings?story=${story.slug}`} className="shrink-0 text-sm text-arc hover:underline">
+                    Link LP
                   </Link>
                 </li>
               ))}

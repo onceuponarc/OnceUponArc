@@ -377,6 +377,39 @@ export function canonicalPoolsForQuote(quoteId: string) {
   return [];
 }
 
+/** Issuers we allow as a quote (xStocks, Ondo, stables). Pairing is a quote, not studio equity. */
+export const ALLOWED_QUOTE_ISSUERS = ["Backed", "Ondo", "Circle", "Tether", "PayPal"] as const;
+
+export function createLpLinks(baseMint: string, quoteMint: string | null) {
+  const quote = quoteMint && quoteMint.length >= 32 ? quoteMint : SOLANA.usdcMint;
+  return [
+    {
+      id: "raydium" as const,
+      name: "Raydium",
+      href: "https://raydium.io/liquidity/create-pool/",
+      note: "Open a standard AMM. Base = your mint. Quote = NVDAx, USDC, or SOL.",
+    },
+    {
+      id: "meteora" as const,
+      name: "Meteora",
+      href: "https://app.meteora.ag/pools/create",
+      note: "DAMM or DLMM with your mint against the quote.",
+    },
+    {
+      id: "orca" as const,
+      name: "Orca",
+      href: "https://www.orca.so/create",
+      note: "Whirlpool. Paste the two mints.",
+    },
+    {
+      id: "dex" as const,
+      name: "Quote depth",
+      href: `https://dexscreener.com/solana/${quote}`,
+      note: "The live quote pool (for NVDAx that is NVDAx/USDC). Binding this is not the same as putting your mint in it.",
+    },
+  ];
+}
+
 export function isSolUsdcQuote(quoteId: string) {
   return quoteId === "sol" || quoteId === "usdc";
 }
