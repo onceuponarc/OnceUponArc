@@ -3,9 +3,10 @@ import { EmbeddedWalletCard } from "@/components/wallet/embedded-wallet";
 import { getSessionUser } from "@/lib/auth";
 import { findChain, isLaunchChain, isPrintableChain } from "@onceupon/config/solana";
 import { Button } from "@/components/ui/button";
-import { ensureSolanaWallet, solBalance } from "@/lib/wallets/embedded";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ chain: string }> };
 
@@ -39,18 +40,7 @@ export default async function LaunchChainPage({ params }: Props) {
     );
   }
 
-  const { user, profile } = await getSessionUser();
-  let walletAddress: string | null = null;
-  let balance: number | null = null;
-  if (user) {
-    try {
-      const wallet = await ensureSolanaWallet(user.id);
-      walletAddress = wallet.address;
-      balance = await solBalance(wallet.address);
-    } catch {
-      walletAddress = null;
-    }
-  }
+  const { profile } = await getSessionUser();
 
   return (
     <div className="space-y-8">
@@ -64,13 +54,7 @@ export default async function LaunchChainPage({ params }: Props) {
 
       {profile ? <EmbeddedWalletCard /> : null}
 
-      <LaunchStudio
-        chain={chain}
-        handle={profile?.handle ?? null}
-        walletAddress={walletAddress}
-        balance={balance}
-        signedIn={Boolean(profile)}
-      />
+      <LaunchStudio chain={chain} handle={profile?.handle ?? null} signedIn={Boolean(profile)} />
     </div>
   );
 }

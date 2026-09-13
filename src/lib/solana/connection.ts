@@ -1,5 +1,9 @@
+import "server-only";
+
 import { Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { SOLANA } from "@onceupon/config/solana";
+
+export { explorerAddress, explorerTx } from "@/lib/solana/explorer";
 
 let connection: Connection | null = null;
 
@@ -9,18 +13,6 @@ export function solanaConnection(): Connection {
     connection = new Connection(rpc, "confirmed");
   }
   return connection;
-}
-
-function explorerQuery(): string {
-  return SOLANA.cluster === "mainnet-beta" ? "" : `?cluster=${SOLANA.cluster}`;
-}
-
-export function explorerTx(signature: string): string {
-  return `${SOLANA.explorer}/tx/${signature}${explorerQuery()}`;
-}
-
-export function explorerAddress(address: string): string {
-  return `${SOLANA.explorer}/address/${address}${explorerQuery()}`;
 }
 
 export function solToLamports(sol: number): bigint {

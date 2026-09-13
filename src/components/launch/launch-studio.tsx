@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -26,14 +26,10 @@ import { cn } from "@/lib/utils";
 export function LaunchStudio({
   chain,
   handle,
-  walletAddress,
-  balance,
   signedIn,
 }: {
   chain: PrintableChain;
   handle: string | null;
-  walletAddress: string | null;
-  balance: number | null;
   signedIn: boolean;
 }) {
   const router = useRouter();
@@ -54,6 +50,30 @@ export function LaunchStudio({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!signedIn) {
+      setWalletAddress(null);
+      setBalance(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/wallets/embedded")
+      .then((res) => res.json())
+      .then((body) => {
+        if (cancelled) return;
+        if (typeof body.address === "string") setWalletAddress(body.address);
+        if (typeof body.balance === "number") setBalance(body.balance);
+      })
+      .catch(() => {
+        if (!cancelled) setWalletAddress(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn]);
 
   const cap = engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap;
   const selectedQuote = findQuote(quoteId);

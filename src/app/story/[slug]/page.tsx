@@ -10,7 +10,7 @@ import { findChain, SOLANA } from "@onceupon/config/solana";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { tickerHue } from "@/lib/feed";
-import { explorerAddress, explorerTx } from "@/lib/solana/connection";
+import { explorerAddress, explorerTx } from "@/lib/solana/explorer";
 
 const STORY_SELECT =
   "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, users:author_user_id(handle, display_name, portrait_url)";

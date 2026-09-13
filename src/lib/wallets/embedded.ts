@@ -1,3 +1,5 @@
+import "server-only";
+
 import { LAMPORTS_PER_SOL, type Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { createServiceClient } from "@/lib/supabase/service";
