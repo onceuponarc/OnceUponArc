@@ -23,7 +23,7 @@ Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Pha
 1. Sign in with X through Supabase.
 2. Connect Phantom, Solflare, or Backpack.
 3. Approve a short message (`OnceUpon:{userId}:{issuedAt}`). The pad stores that address on `user_wallets` as `kind: connected`.
-4. Launch, curve trades, and Jupiter swaps are partial-signed on the server, then signed in your wallet and sent to Solana.
+4. Launch, curve trades, and Jupiter swaps are extra-signed on the server, then your wallet **signs and pays** them (`signAndSendTransaction` in Phantom, Solflare, or Backpack). The browser fetches a recent blockhash so Vercel does not have to talk to public Solana RPC just to print.
 
 Curve keypairs (the bonding vault) stay encrypted in Supabase. They are not your wallet.
 
@@ -66,7 +66,8 @@ Required env:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (avatar copier and service writes)
 - `NEXT_PUBLIC_APP_URL`
-- `SOLANA_RPC_URL` (optional, defaults to public mainnet-beta; use a dedicated RPC in production)
+- `SOLANA_RPC_URL` (optional, defaults to public mainnet-beta then PublicNode; use a dedicated RPC in production)
+- `NEXT_PUBLIC_SOLANA_RPC_URL` (optional browser RPC for blockhash / wallet send fallbacks)
 - `EMBEDDED_WALLET_SECRET` (optional extra entropy for **curve** key encryption — not a user wallet)
 - `PINATA_JWT` (optional — pin coin art to IPFS)
 

@@ -1,5 +1,5 @@
 import {
-  Keypair,
+  ComputeBudgetProgram,
   PublicKey,
   SystemProgram,
   Transaction,
@@ -11,7 +11,6 @@ import {
   createMintToInstruction,
   createSetAuthorityInstruction,
   getAssociatedTokenAddressSync,
-  getMinimumBalanceForRentExemptMint,
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
@@ -24,7 +23,7 @@ import {
   preferDexForVenue,
   tokenMetadataUri,
 } from "@onceupon/config/launchpad";
-import { solanaConnection, explorerTx } from "@/lib/solana/connection";
+import { explorerTx } from "@/lib/solana/connection";
 import { serializePartialTx } from "@/lib/solana/partial-tx";
 import { generateKeypair, protocolKeypair, sealKeypair } from "@/lib/solana/keys";
 import { parsePayer } from "@/lib/wallets/bound";
@@ -60,6 +59,7 @@ export type LaunchInput = {
   graduationUi?: number;
   virtualUi?: number;
   payer: string;
+  recentBlockhash?: string | null;
   linkedPool?: ResolvedPool | null;
   coverUrl?: string | null;
   imageUri?: string | null;
@@ -85,14 +85,14 @@ export async function launchOnSolana(input: LaunchInput) {
 
   const mint = generateKeypair();
   const curve = generateKeypair();
-  const connection = solanaConnection();
-  const lamports = await getMinimumBalanceForRentExemptMint(connection);
+  // Mainnet rent-exempt minimum for an 82-byte mint. Avoids a Vercel → public RPC round trip.
+  const mintRentLamports = 1_461_600;
 
   const mintIx = SystemProgram.createAccount({
     fromPubkey: payer,
     newAccountPubkey: mint.publicKey,
     space: MINT_SIZE,
-    lamports,
+    lamports: mintRentLamports,
     programId: TOKEN_PROGRAM_ID,
   });
   const initMint = createInitializeMint2Instruction(
@@ -139,7 +139,16 @@ export async function launchOnSolana(input: LaunchInput) {
     TOKEN_PROGRAM_ID,
   );
 
-  const tx = new Transaction().add(mintIx, initMint, ataIx, mintTo, metadataIx, revokeMint);
+  const tx = new Transaction().add(
+    ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
+    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 100_000 }),
+    mintIx,
+    initMint,
+    ataIx,
+    mintTo,
+    metadataIx,
+    revokeMint,
+  );
   if (!isNft) {
     tx.add(
       SystemProgram.transfer({
@@ -150,8 +159,8 @@ export async function launchOnSolana(input: LaunchInput) {
     );
   }
 
-  const extraSigners: Keypair[] = isNft ? [mint] : [mint, curve];
-  const prepared = await serializePartialTx(tx, payer, extraSigners);
+  // Only the new mint account must extra-sign createAccount. The curve vault just receives SOL.
+  const prepared = await serializePartialTx(tx, payer, [mint], input.recentBlockhash);
 
   const protocol = protocolKeypair();
   const venueFees = feesForVenue(input.venue, input.engine);
@@ -275,6 +284,7 @@ export async function launchOnSolana(input: LaunchInput) {
     slug: story.slug as string,
     mint: mint.publicKey.toBase58(),
     transaction: prepared.transaction,
+    transactions: [prepared.transaction],
     protocol: protocol.publicKey.toBase58(),
     vault: isNft ? null : curve.publicKey.toBase58(),
     linked: linked.map((pool) => ({

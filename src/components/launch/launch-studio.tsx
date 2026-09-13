@@ -34,6 +34,7 @@ import { XMark } from "@/components/x-mark";
 import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
 import { readApiJson } from "@/lib/http/read-json";
+import { fetchLaunchBlockhash } from "@/lib/solana/blockhash";
 import { cn } from "@/lib/utils";
 
 export function LaunchStudio({
@@ -47,7 +48,7 @@ export function LaunchStudio({
 }) {
   const router = useRouter();
   const selectedChain = findChain(chain)!;
-  const { address, signAndSend } = useWalletSigner();
+  const { address, signAndSend, ensureBound } = useWalletSigner();
   const [venue, setVenue] = useState<LaunchVenue>("spl");
   const [engine, setEngine] = useState<"author" | "onceuponers">("author");
   const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>("sol");
@@ -94,6 +95,10 @@ export function LaunchStudio({
     setError(null);
     setStatus(null);
     try {
+      setStatus("Bind this wallet to your X account…");
+      const payer = await ensureBound();
+      setStatus("Fetching a Solana blockhash…");
+      const latest = await fetchLaunchBlockhash();
       setStatus("Building the mint…");
       const res = await fetch("/api/launch", {
         method: "POST",
@@ -117,7 +122,8 @@ export function LaunchStudio({
           graduationUi,
           virtualUi,
           rightsAttested: rights,
-          payer: address,
+          payer,
+          recentBlockhash: latest.blockhash,
           poolAddress: linkedPool?.address,
           poolDex: linkedPool?.dex,
           poolLabel: linkedPool?.label,
@@ -135,6 +141,7 @@ export function LaunchStudio({
       const body = await readApiJson<{
         error?: string;
         transaction?: string;
+        transactions?: string[];
         slug?: string;
         mint?: string;
       }>(res);
@@ -142,12 +149,25 @@ export function LaunchStudio({
         setError(body.error ?? "Launch failed.");
         return;
       }
-      if (!body.transaction || !body.slug) {
-        setError("The press did not return a transaction to sign.");
+      const txs =
+        Array.isArray(body.transactions) && body.transactions.length
+          ? body.transactions
+          : body.transaction
+            ? [body.transaction]
+            : [];
+      if (!txs.length || !body.slug) {
+        setError("The press did not return a transaction to sign and pay.");
         return;
       }
-      setStatus("Approve the mint in your wallet…");
-      const sent = await signAndSend(body.transaction);
+      let sent = { signature: "", explorer: "" };
+      for (let i = 0; i < txs.length; i += 1) {
+        setStatus(
+          txs.length > 1
+            ? `Sign and pay transaction ${i + 1} of ${txs.length} in your wallet…`
+            : "Sign and pay the mint in your wallet…",
+        );
+        sent = await signAndSend(txs[i]);
+      }
       setStatus("Confirming on Solana…");
       const confirm = await fetch("/api/launch", {
         method: "POST",
@@ -204,7 +224,7 @@ export function LaunchStudio({
         <Alert>
           <AlertTitle>Connect a Solana wallet</AlertTitle>
           <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
-            <span>Your connected wallet is the fee payer. Approve a message to bind it to @{handle}.</span>
+            <span>Connect Phantom, Solflare, or Backpack. Approve the bind message, then sign and pay the mint.</span>
             <SolanaConnectButton />
           </AlertDescription>
         </Alert>
@@ -441,7 +461,7 @@ export function LaunchStudio({
           <p className="mt-1">{selectedChain.printNote}</p>
           <p className="mt-1">
             {venue === "nft"
-              ? "Mints a real token on Solana mainnet with Metaplex metadata. Needs SOL in the connected wallet."
+              ? "Mints a real token on Solana mainnet with Metaplex metadata. Your wallet signs and pays rent."
               : selectedQuote
                 ? `SPL mint · ${supplyUi.toLocaleString("en-US")} supply · ${decimals} decimals · bonds at ${graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool.`
                 : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}

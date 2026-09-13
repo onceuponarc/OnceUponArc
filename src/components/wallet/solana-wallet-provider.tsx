@@ -10,7 +10,9 @@ type Injected = {
   publicKey?: { toBase58(): string } | string | null;
   connect: (opts?: { onlyIfTrusted?: boolean }) => Promise<unknown>;
   disconnect?: () => Promise<void>;
-  signTransaction: (tx: unknown) => Promise<unknown>;
+  signTransaction?: (tx: unknown) => Promise<unknown>;
+  signAndSendTransaction?: (tx: unknown, opts?: unknown) => Promise<unknown>;
+  signAllTransactions?: (txs: unknown[]) => Promise<unknown>;
   signMessage?: (message: Uint8Array) => Promise<{ signature: Uint8Array } | Uint8Array>;
 };
 
@@ -28,10 +30,13 @@ type WalletState = {
   wallets: DetectedWallet[];
   address: string | null;
   connecting: boolean;
+  bound: boolean;
   error: string | null;
   connect: (id?: string) => Promise<string | null>;
   disconnect: () => Promise<void>;
+  ensureBound: () => Promise<string>;
   signTransaction: (tx: unknown) => Promise<unknown>;
+  signAndSendTransaction: (tx: unknown) => Promise<unknown>;
   signMessage: (message: Uint8Array) => Promise<Uint8Array>;
 };
 
@@ -39,10 +44,17 @@ const empty: WalletState = {
   wallets: [],
   address: null,
   connecting: false,
+  bound: false,
   error: null,
   connect: async () => null,
   disconnect: async () => undefined,
+  ensureBound: async () => {
+    throw new Error("Connect a Solana wallet.");
+  },
   signTransaction: async () => {
+    throw new Error("Connect a Solana wallet.");
+  },
+  signAndSendTransaction: async () => {
     throw new Error("Connect a Solana wallet.");
   },
   signMessage: async () => {
@@ -68,14 +80,23 @@ function detect(): DetectedWallet[] {
   return list;
 }
 
+function readSignatureBytes(result: unknown): Uint8Array {
+  if (result instanceof Uint8Array) return result;
+  if (result && typeof result === "object" && "signature" in result) {
+    const signature = (result as { signature: Uint8Array }).signature;
+    if (signature instanceof Uint8Array) return signature;
+  }
+  throw new Error("Wallet did not return a signature.");
+}
+
 async function bindToSupabase(address: string, signMessage: (msg: Uint8Array) => Promise<Uint8Array>) {
   const issuedAt = new Date().toISOString();
   const me = await fetch("/api/me").then((res) => res.json().catch(() => ({})));
-  if (!me?.id) return;
+  if (!me?.id) throw new Error("Sign in with X first. Your handle is identity on the pad.");
   const message = new TextEncoder().encode(`OnceUpon:${me.id}:${issuedAt}`);
   const signature = await signMessage(message);
   const bytes = signature instanceof Uint8Array ? signature : new Uint8Array(signature as ArrayBuffer);
-  await fetch("/api/wallets/verify", {
+  const res = await fetch("/api/wallets/verify", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -84,12 +105,15 @@ async function bindToSupabase(address: string, signMessage: (msg: Uint8Array) =>
       signature: bytesToBase64(bytes),
     }),
   });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((body as { error?: string }).error ?? "Wallet bind failed.");
 }
 
 export function SolanaWalletProvider({ children }: { children: ReactNode }) {
   const [wallets, setWallets] = useState<DetectedWallet[]>([]);
   const [address, setAddress] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [bound, setBound] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -114,18 +138,40 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
 
   const active = wallets.find((item) => item.id === activeId) ?? wallets[0];
 
+  const resolveAddress = useCallback(async (provider: Injected, connected?: unknown) => {
+    return (
+      injectedAddress(connected) ??
+      injectedAddress(provider.publicKey) ??
+      injectedAddress(provider)
+    );
+  }, []);
+
+  const ensureSession = useCallback(
+    async (provider = active?.provider) => {
+      if (!provider) throw new Error("Connect a Solana wallet.");
+      let connected: unknown = null;
+      try {
+        connected = await provider.connect({ onlyIfTrusted: true });
+      } catch {
+        connected = await provider.connect({ onlyIfTrusted: false });
+      }
+      const next = await resolveAddress(provider, connected);
+      if (!next) {
+        throw new Error("Wallet connected but did not return an address. Unlock it and try again.");
+      }
+      setAddress(next);
+      return { provider, address: next };
+    },
+    [active, resolveAddress],
+  );
+
   const signMessage = useCallback(
     async (message: Uint8Array) => {
-      if (!active) throw new Error("Connect a Solana wallet.");
-      if (!active.provider.signMessage) throw new Error("This wallet cannot sign a message.");
-      const result = await active.provider.signMessage(message);
-      if (result instanceof Uint8Array) return result;
-      if (result && typeof result === "object" && "signature" in result) {
-        return (result as { signature: Uint8Array }).signature;
-      }
-      throw new Error("Wallet did not return a signature.");
+      const session = await ensureSession();
+      if (!session.provider.signMessage) throw new Error("This wallet cannot sign a message.");
+      return readSignatureBytes(await session.provider.signMessage(message));
     },
-    [active],
+    [ensureSession],
   );
 
   const connect = useCallback(
@@ -138,26 +184,22 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
       setConnecting(true);
       setError(null);
       try {
-        const result = await target.provider.connect({ onlyIfTrusted: false }).catch(() => null);
-        const next =
-          injectedAddress(result) ??
-          injectedAddress(target.provider.publicKey) ??
-          injectedAddress(target.provider);
-        if (!next) {
-          throw new Error("Wallet connected but did not return an address. Unlock it and try again.");
-        }
         setActiveId(target.id);
-        setAddress(next);
-        await bindToSupabase(next, async (message) => {
-          if (!target.provider.signMessage) throw new Error("This wallet cannot sign a message.");
-          const signed = await target.provider.signMessage(message);
-          if (signed instanceof Uint8Array) return signed;
-          if (signed && typeof signed === "object" && "signature" in signed) {
-            return (signed as { signature: Uint8Array }).signature;
-          }
-          throw new Error("Wallet did not return a signature.");
-        }).catch(() => undefined);
-        return next;
+        const session = await ensureSession(target.provider);
+        try {
+          await bindToSupabase(session.address, async (message) =>
+            readSignatureBytes(
+              target.provider.signMessage
+                ? await target.provider.signMessage(message)
+                : Promise.reject(new Error("This wallet cannot sign a message.")),
+            ),
+          );
+          setBound(true);
+        } catch (bindError) {
+          setBound(false);
+          setError(bindError instanceof Error ? bindError.message : "Wallet bind failed.");
+        }
+        return session.address;
       } catch (err) {
         setError(err instanceof Error ? err.message : "Wallet connect failed.");
         return null;
@@ -165,7 +207,7 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
         setConnecting(false);
       }
     },
-    [wallets],
+    [ensureSession, wallets],
   );
 
   const disconnect = useCallback(async () => {
@@ -176,19 +218,80 @@ export function SolanaWalletProvider({ children }: { children: ReactNode }) {
     }
     setAddress(null);
     setActiveId(null);
+    setBound(false);
   }, [active]);
 
   const signTransaction = useCallback(
     async (tx: unknown) => {
-      if (!active) throw new Error("Connect a Solana wallet.");
-      return active.provider.signTransaction(tx);
+      const session = await ensureSession();
+      if (typeof session.provider.signTransaction !== "function") {
+        throw new Error("This wallet cannot sign a transaction. Use a wallet that can sign and pay.");
+      }
+      return session.provider.signTransaction(tx);
     },
-    [active],
+    [ensureSession],
   );
 
+  const signAndSendTransaction = useCallback(
+    async (tx: unknown) => {
+      const session = await ensureSession();
+      if (typeof session.provider.signAndSendTransaction === "function") {
+        return session.provider.signAndSendTransaction(tx);
+      }
+      if (typeof session.provider.signTransaction === "function") {
+        return { signed: await session.provider.signTransaction(tx) };
+      }
+      throw new Error("This wallet cannot sign and pay a transaction.");
+    },
+    [ensureSession],
+  );
+
+  const ensureBound = useCallback(async () => {
+    const session = await ensureSession();
+    const me = await fetch("/api/wallets/me").then((res) => res.json().catch(() => ({})));
+    if (me?.bound && me.address === session.address) {
+      setBound(true);
+      return session.address;
+    }
+    if (me?.bound && me.address && me.address !== session.address) {
+      throw new Error("Sign with the Solana wallet bound to this X account.");
+    }
+    await bindToSupabase(session.address, async (message) => {
+      if (!session.provider.signMessage) throw new Error("This wallet cannot sign a message.");
+      return readSignatureBytes(await session.provider.signMessage(message));
+    });
+    setBound(true);
+    setError(null);
+    return session.address;
+  }, [ensureSession]);
+
   const value = useMemo(
-    () => ({ wallets, address, connecting, error, connect, disconnect, signTransaction, signMessage }),
-    [wallets, address, connecting, error, connect, disconnect, signTransaction, signMessage],
+    () => ({
+      wallets,
+      address,
+      connecting,
+      bound,
+      error,
+      connect,
+      disconnect,
+      ensureBound,
+      signTransaction,
+      signAndSendTransaction,
+      signMessage,
+    }),
+    [
+      wallets,
+      address,
+      connecting,
+      bound,
+      error,
+      connect,
+      disconnect,
+      ensureBound,
+      signTransaction,
+      signAndSendTransaction,
+      signMessage,
+    ],
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;

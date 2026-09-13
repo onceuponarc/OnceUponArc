@@ -46,6 +46,7 @@ type LaunchBody = {
   virtualUi?: number;
   rightsAttested?: boolean;
   payer?: string;
+  recentBlockhash?: string;
   poolAddress?: string;
   poolDex?: string;
   poolLabel?: string;
@@ -146,6 +147,7 @@ export async function POST(request: Request) {
       graduationUi: body.graduationUi == null ? undefined : Number(body.graduationUi),
       virtualUi: body.virtualUi == null ? undefined : Number(body.virtualUi),
       payer: payer.toBase58(),
+      recentBlockhash: body.recentBlockhash,
       linkedPool: parseLinkedPool({
         poolAddress: body.poolAddress,
         poolDex: body.poolDex,

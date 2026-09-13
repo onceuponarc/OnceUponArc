@@ -30,7 +30,10 @@ export function parsePayer(address: string | undefined | null): PublicKey {
 export async function assertPayer(userId: string, payer: string | undefined | null): Promise<PublicKey> {
   const parsed = parsePayer(payer);
   const bound = await getBoundSolanaWallet(userId);
-  if (bound && bound !== parsed.toBase58()) {
+  if (!bound) {
+    throw new Error("Approve the wallet bind in Phantom, Solflare, or Backpack first.");
+  }
+  if (bound !== parsed.toBase58()) {
     throw new Error("Sign with the Solana wallet bound to this X account.");
   }
   return parsed;

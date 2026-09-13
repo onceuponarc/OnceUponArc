@@ -42,7 +42,7 @@ export function JupiterSwapPanel({
   extraDecimals?: number;
   defaultOutput?: string;
 }) {
-  const { address, signAndSend } = useWalletSigner();
+  const { address, signAndSend, ensureBound } = useWalletSigner();
   const tokens = useMemo(() => {
     const list = [...SWAP_TOKENS];
     if (extraMint && extraSymbol && !list.some((item) => item.mint === extraMint)) {
@@ -112,6 +112,7 @@ export function JupiterSwapPanel({
     setError(null);
     setStatus(null);
     try {
+      await ensureBound();
       const res = await fetch("/api/jupiter/swap", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,7 +120,7 @@ export function JupiterSwapPanel({
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Jupiter could not build the swap.");
-      setStatus("Approve the swap in your wallet…");
+      setStatus("Sign and pay the swap in your wallet…");
       const sent = await signAndSend(body.swapTransaction, true);
       setStatus(`Landed ${sent.signature}`);
     } catch (err) {

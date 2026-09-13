@@ -16,7 +16,7 @@ export async function GET() {
     if (!address) {
       return NextResponse.json({ address: null, bound: false });
     }
-    const balance = await solBalance(address);
+    const balance = await solBalance(address).catch(() => null);
     return NextResponse.json({
       address,
       bound: true,

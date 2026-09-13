@@ -19,7 +19,7 @@ export function ConnectedWalletCard({
           <h2 className="font-heading mt-1 text-xl font-bold">Connect to launch and trade</h2>
           <p className="mt-1 max-w-lg text-sm text-parchment/65">
             Phantom, Solflare, or Backpack. Sign in with X for identity, then bind this address in Supabase by
-            approving the connect message. Your wallet pays rent and signs. There is no in-app keypair.
+            approving the connect message. Your wallet signs and pays rent. There is no in-app keypair.
           </p>
         </div>
         <SolanaConnectButton />

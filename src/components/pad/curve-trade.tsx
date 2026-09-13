@@ -28,7 +28,7 @@ export function CurveTrade({
   isAuthor?: boolean;
   vaultRaw?: number;
 }) {
-  const { address, signAndSend } = useWalletSigner();
+  const { address, signAndSend, ensureBound } = useWalletSigner();
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState(pairLabel === "SOL" ? "0.1" : pairLabel.includes("USD") ? "10" : "0.25");
   const [fundAmount, setFundAmount] = useState(pairLabel === "SOL" ? "0.25" : "25");
@@ -53,11 +53,12 @@ export function CurveTrade({
     setError(null);
     setResult(null);
     try {
+      const payer = await ensureBound();
       const value = action === "fund" ? Number(fundAmount) : Number(amount);
       const res = await fetch(`/api/stories/${slug}/trade`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, amount: value, payer: address }),
+        body: JSON.stringify({ action, amount: value, payer }),
       });
       const body = await readApiJson<{ error?: string; transaction?: string }>(res);
       if (!res.ok) {
@@ -77,7 +78,7 @@ export function CurveTrade({
           side: action,
           amount: action === "fund" ? Number(fundAmount) : Number(amount),
           signature: sent.signature,
-          payer: address,
+          payer,
         }),
       });
       const confirmed = await readApiJson<{ error?: string; explorer?: string }>(confirm);
