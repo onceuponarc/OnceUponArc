@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
+import { readApiJson } from "@/lib/http/read-json";
 
 export function CurveTrade({
   slug,
@@ -52,7 +53,7 @@ export function CurveTrade({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, amount: Number(amount), payer: address }),
       });
-      const body = await res.json();
+      const body = await readApiJson<{ error?: string; transaction?: string }>(res);
       if (!res.ok) {
         setError(body.error ?? "Trade failed.");
         return;
@@ -73,7 +74,7 @@ export function CurveTrade({
           payer: address,
         }),
       });
-      const confirmed = await confirm.json();
+      const confirmed = await readApiJson<{ error?: string; explorer?: string }>(confirm);
       if (!confirm.ok) {
         setError(confirmed.error ?? "Trade landed but the pad could not record it.");
         setResult(sent.explorer);

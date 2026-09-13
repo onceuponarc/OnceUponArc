@@ -2,6 +2,7 @@
 
 import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
+import { readApiJson } from "@/lib/http/read-json";
 
 function bytesToBase64(bytes: Uint8Array) {
   let bin = "";
@@ -65,9 +66,10 @@ export function useWalletSigner() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ signedTx: serialized }),
     });
-    const body = await res.json();
+    const body = await readApiJson<{ error?: string; signature?: string; explorer?: string }>(res);
     if (!res.ok) throw new Error(body.error ?? "Could not land the transaction.");
-    return body as { signature: string; explorer: string };
+    if (!body.signature) throw new Error("The pad did not return a signature.");
+    return { signature: body.signature, explorer: body.explorer ?? "" };
   }
 
   return { ...wallet, signAndSend };

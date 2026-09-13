@@ -13,15 +13,42 @@ import {
 import { assertPayer } from "@/lib/wallets/bound";
 import { parseLinkedPool } from "@/lib/pools/resolve";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const VENUES: LaunchVenue[] = ["spl", "nft", "pumpfun", "pons"];
 
-async function resolveQuote(body: {
+type LaunchBody = {
+  confirm?: boolean;
+  slug?: string;
+  signature?: string;
+  chain?: string;
+  venue?: LaunchVenue;
+  engine?: "author" | "onceuponers";
+  title?: string;
+  ticker?: string;
+  blurb?: string;
+  authorBps?: number;
+  snipeTaxBps?: number;
   quoteId?: string;
   quoteKind?: string;
   quoteMint?: string;
-}): Promise<QuoteAsset> {
+  rewardMint?: string;
+  autoBuyRewards?: boolean;
+  nftSupply?: number;
+  rightsAttested?: boolean;
+  payer?: string;
+  poolAddress?: string;
+  poolDex?: string;
+  poolLabel?: string;
+  poolUrl?: string;
+  poolChain?: string;
+  poolDepthUsd?: number;
+  poolQuoteAddress?: string;
+};
+
+async function resolveQuote(body: LaunchBody): Promise<QuoteAsset> {
   if (body.quoteId && body.quoteId !== "custom") {
     const listed = findQuote(body.quoteId);
     if (!listed) throw new Error("Unknown quote. Pick SOL, a listed mint, or paste a mint.");
@@ -39,75 +66,46 @@ async function resolveQuote(body: {
 }
 
 export async function POST(request: Request) {
-  const { user, profile } = await getSessionUser();
-  if (!user || !profile) {
-    return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
-  }
-
-  const body = (await request.json()) as {
-    confirm?: boolean;
-    slug?: string;
-    signature?: string;
-    chain?: string;
-    venue?: LaunchVenue;
-    engine?: "author" | "onceuponers";
-    title?: string;
-    ticker?: string;
-    blurb?: string;
-    authorBps?: number;
-    snipeTaxBps?: number;
-    quoteId?: string;
-    quoteKind?: string;
-    quoteMint?: string;
-    rewardMint?: string;
-    autoBuyRewards?: boolean;
-    nftSupply?: number;
-    rightsAttested?: boolean;
-    payer?: string;
-    poolAddress?: string;
-    poolDex?: string;
-    poolLabel?: string;
-    poolUrl?: string;
-    poolChain?: string;
-    poolDepthUsd?: number;
-    poolQuoteAddress?: string;
-  };
-
-  if (body.confirm) {
-    if (!body.slug || !body.signature) {
-      return NextResponse.json({ error: "Launch confirmation needs a slug and signature." }, { status: 400 });
+  try {
+    const { user, profile } = await getSessionUser();
+    if (!user || !profile) {
+      return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
     }
+
+    let body: LaunchBody;
     try {
+      body = (await request.json()) as LaunchBody;
+    } catch {
+      return NextResponse.json({ error: "Launch request was empty. Retry." }, { status: 400 });
+    }
+
+    if (body.confirm) {
+      if (!body.slug || !body.signature) {
+        return NextResponse.json({ error: "Launch confirmation needs a slug and signature." }, { status: 400 });
+      }
       const result = await confirmLaunch(user.id, body.slug, body.signature);
       return NextResponse.json(result);
-    } catch (error) {
-      return NextResponse.json({ error: redactWalletError(error) }, { status: 400 });
     }
-  }
 
-  const chain = body.chain ?? "arc";
-  if (!isPrintableChain(chain)) {
-    return NextResponse.json({ error: "Unknown chain. Pick Arc, Solana, Ethereum, Base, or Robinhood Chain." }, { status: 400 });
-  }
-  if (!body.title || !body.ticker || !body.engine || !body.venue) {
-    return NextResponse.json({ error: "Name, ticker, engine, and venue are required." }, { status: 400 });
-  }
-  if (!VENUES.includes(body.venue) || !["author", "onceuponers"].includes(body.engine)) {
-    return NextResponse.json({ error: "Unknown launch type." }, { status: 400 });
-  }
-  if (!body.rightsAttested) {
-    return NextResponse.json({ error: "Attest you have the rights to the art and name." }, { status: 400 });
-  }
+    const chain = body.chain ?? "arc";
+    if (!isPrintableChain(chain)) {
+      return NextResponse.json(
+        { error: "Unknown chain. Pick Arc, Solana, Ethereum, Base, or Robinhood Chain." },
+        { status: 400 },
+      );
+    }
+    if (!body.title || !body.ticker || !body.engine || !body.venue) {
+      return NextResponse.json({ error: "Name, ticker, engine, and venue are required." }, { status: 400 });
+    }
+    if (!VENUES.includes(body.venue) || !["author", "onceuponers"].includes(body.engine)) {
+      return NextResponse.json({ error: "Unknown launch type." }, { status: 400 });
+    }
+    if (!body.rightsAttested) {
+      return NextResponse.json({ error: "Attest you have the rights to the art and name." }, { status: 400 });
+    }
 
-  try {
     const payer = await assertPayer(user.id, body.payer);
-    let quote = await resolveQuote(body);
-    if (quote.mint) {
-      const live = await inspectMint(quote.mint);
-      if (live.decimals !== quote.decimals) {
-        quote = { ...quote, decimals: live.decimals };
-      }
-    }
+    const quote = await resolveQuote(body);
     const result = await launchOnSolana({
       userId: user.id,
       handle: profile.handle,
@@ -136,6 +134,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(result);
   } catch (error) {
+    console.error("launch route failed", error);
     return NextResponse.json({ error: redactWalletError(error) }, { status: 400 });
   }
 }

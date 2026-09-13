@@ -24,6 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { XMark } from "@/components/x-mark";
 import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
+import { readApiJson } from "@/lib/http/read-json";
 import { cn } from "@/lib/utils";
 
 export function LaunchStudio({
@@ -75,6 +76,7 @@ export function LaunchStudio({
     setError(null);
     setStatus(null);
     try {
+      setStatus("Building the mint…");
       const res = await fetch("/api/launch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,12 +105,17 @@ export function LaunchStudio({
           poolQuoteAddress: linkedPool?.quoteAddress ?? undefined,
         }),
       });
-      const body = await res.json();
+      const body = await readApiJson<{
+        error?: string;
+        transaction?: string;
+        slug?: string;
+        mint?: string;
+      }>(res);
       if (!res.ok) {
         setError(body.error ?? "Launch failed.");
         return;
       }
-      if (!body.transaction) {
+      if (!body.transaction || !body.slug) {
         setError("The press did not return a transaction to sign.");
         return;
       }
@@ -120,7 +127,7 @@ export function LaunchStudio({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ confirm: true, slug: body.slug, signature: sent.signature }),
       });
-      const confirmed = await confirm.json();
+      const confirmed = await readApiJson<{ error?: string }>(confirm);
       if (!confirm.ok) {
         setError(confirmed.error ?? "Mint landed but the pad could not mark it live. Open the Story.");
         router.push(`/story/${body.slug}`);
