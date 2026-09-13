@@ -112,13 +112,25 @@ export async function dripFaucet(to?: `0x${string}`) {
   const { deployerWallet } = await import("@/lib/arc/client");
   const pub = publicArc(net);
   const deployer = deployerWallet(net);
-  const trader = to || traderWallet(net).account.address;
-  const amount = parseUnits("25000", 6);
+  const testnet = net.chainId === 5042002;
+  const blocked = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8".toLowerCase();
+  const fallback = testnet
+    ? ("0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7" as `0x${string}`)
+    : traderWallet(net).account.address;
+  const requested = to || fallback;
+  const trader = requested.toLowerCase() === blocked
+    ? fallback
+    : requested;
+  const dripNative = testnet ? parseEther("0.25") : parseEther("25");
   const gas = await deployer.sendTransaction({
     to: trader,
-    value: parseEther("25"),
+    value: dripNative,
   });
   await pub.waitForTransactionReceipt({ hash: gas });
+  if (testnet) {
+    return { hash: gas, amountUi: 0.25, address: trader, gas };
+  }
+  const amount = parseUnits("25000", 6);
   const hash = await deployer.writeContract({
     address: net.usdc,
     abi: erc20Abi,

@@ -54,7 +54,7 @@ export function loadArcNetwork(): ArcNetworkFile | null {
       chainId: ARC_TESTNET.chainId,
       factory: (process.env.ARC_FACTORY as `0x${string}` | undefined) || TESTNET_FACTORY,
       usdc: (process.env.ARC_USDC as `0x${string}` | undefined) || ARC_TESTNET.usdcErc20,
-      trader: (process.env.ARC_TRADER as `0x${string}`) || ANVIL_TRADER.address,
+      trader: (process.env.ARC_TRADER as `0x${string}`) || "0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7",
       deployer: (process.env.ARC_DEPLOYER as `0x${string}`) || "0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7",
       explorer: process.env.ARC_EXPLORER || ARC_TESTNET.explorer,
       nativeGas: "usdc",
