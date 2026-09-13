@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/arc-devnet.mjs",
     "dev": "next dev --hostname 127.0.0.1 --port 43147",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1 --port 43147",
@@ -21,6 +22,7 @@
     "check:read-json": "node --experimental-strip-types --no-warnings scripts/check-read-json.ts",
     "test:forge": "forge test --root contracts -vv",
     "arc:devnet": "node scripts/arc-devnet.mjs",
+    "arc:watch": "node scripts/arc-watchdog.mjs",
     "sql:apply": "node scripts/apply-sql.mjs"
   },
   "dependencies": {

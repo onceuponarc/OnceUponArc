@@ -5,6 +5,7 @@ import { CHAPTER } from "@onceupon/config/chapter";
 import { curveAbi, erc20Abi, factoryAbi } from "@/lib/arc/abi";
 import { publicArc, requireArcNetwork, traderWallet } from "@/lib/arc/client";
 import { loadArcNetwork } from "@/lib/arc/env";
+import { ensureArcDevnet } from "@/lib/arc/ensure";
 import {
   appendLocalArcTrade,
   upsertLocalArcStory,
@@ -46,6 +47,11 @@ async function ensureAllowance(
 }
 
 export async function arcStatus() {
+  try {
+    await ensureArcDevnet();
+  } catch {
+    /* status still reports the missing factory below */
+  }
   const net = loadArcNetwork();
   if (!net) {
     return {
@@ -101,6 +107,7 @@ export async function arcStatus() {
 }
 
 export async function dripFaucet(to?: `0x${string}`) {
+  await ensureArcDevnet();
   const net = requireArcNetwork();
   const { deployerWallet } = await import("@/lib/arc/client");
   const pub = publicArc(net);
@@ -133,6 +140,7 @@ export async function launchOnArc(input: {
   coverUrl?: string | null;
   userId?: string | null;
 }) {
+  await ensureArcDevnet();
   const net = requireArcNetwork();
   const pub = publicArc(net);
   const wallet = traderWallet(net);
@@ -211,6 +219,7 @@ export async function launchOnArc(input: {
 export async function quoteArcTrade(slug: string, side: "buy" | "sell", amountUi: number) {
   const story = await loadArcStory(slug);
   if (!story) throw new Error("Unknown Arc Chapter.");
+  await ensureArcDevnet();
   const net = requireArcNetwork();
   const pub = publicArc(net);
   if (side === "buy") {
@@ -250,6 +259,7 @@ export async function quoteArcTrade(slug: string, side: "buy" | "sell", amountUi
 export async function tradeOnArc(slug: string, side: "buy" | "sell", amountUi: number) {
   const story = await loadArcStory(slug);
   if (!story) throw new Error("Unknown Arc Chapter.");
+  await ensureArcDevnet();
   const net = requireArcNetwork();
   const pub = publicArc(net);
   const wallet = traderWallet(net);
@@ -331,6 +341,11 @@ export async function tradeOnArc(slug: string, side: "buy" | "sell", amountUi: n
 export async function arcSnapshot(slug: string) {
   const story = await loadArcStory(slug);
   if (!story) return null;
+  try {
+    await ensureArcDevnet();
+  } catch {
+    /* snapshot still returns the story without on-chain fields */
+  }
   const net = loadArcNetwork();
   if (!net) return { story, onchain: null };
   const pub = publicArc(net);

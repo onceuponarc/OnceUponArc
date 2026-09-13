@@ -68,7 +68,7 @@ export PATH="$PATH:$HOME/.foundry/bin"
 pnpm arc:devnet
 ```
 
-That starts Anvil on `127.0.0.1:8546`, deploys `ChapterFactory` + MockUSDC, and mints **1,000,000 test USDC** to the pad wallet. Then launch / buy / sell from `/launch/arc` and any Arc Story.
+That starts Anvil on `127.0.0.1:8546`, deploys `ChapterFactory` + MockUSDC, and mints **1,000,000 test USDC** to the pad wallet. `pnpm dev` runs the same ensure step first. Status, launch, and trade also bring Devnet up locally if Anvil died. Chain state is saved to `data/anvil-state.json` so a restart keeps the same factory and curves. Then launch / buy / sell from `/launch/arc` and any Arc Story.
 
 Required env:
 

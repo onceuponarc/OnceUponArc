@@ -17,6 +17,11 @@ if (!quotes.includes('return "0.05"')) {
   throw new Error("xStock default missing.");
 }
 
+const chapter = readFileSync(new URL("../src/lib/arc/chapter.ts", import.meta.url), "utf8");
+if (!chapter.includes("ensureArcDevnet")) {
+  throw new Error("Arc trades must auto-wire Anvil + the Chapter Factory before signing.");
+}
+
 const story = readFileSync(new URL("../src/app/story/[slug]/page.tsx", import.meta.url), "utf8");
 if (story.includes("JupiterSwapPanel")) {
   throw new Error("Story page should not mount Jupiter. OnceUpon trades on Arc.");
