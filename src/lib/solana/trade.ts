@@ -11,7 +11,18 @@ import { solanaConnection, explorerTx } from "@/lib/solana/connection";
 import { openKeypair, protocolKeypair } from "@/lib/solana/keys";
 import { serializePartialTx } from "@/lib/solana/partial-tx";
 import { assertPayer, getBoundSolanaWallet } from "@/lib/wallets/bound";
-import { quoteOutForSell, splitBuyFees, tokensOutForBuy } from "@/lib/solana/curve";
+import {
+  chapterFeeBps,
+  isChapterCurve,
+  quoteChapterBuy,
+  quoteChapterSell,
+  quoteOutForSell,
+  splitBuyFees,
+  splitCurveFee,
+  takeBps,
+  tokensOutForBuy,
+  type ChapterState,
+} from "@/lib/solana/curve";
 import { inspectMint, pushCreateAtaIfMissing, tokenBalance, transferCheckedIx, ataFor } from "@/lib/solana/mint";
 import { findQuoteByMint, graduationRaw, rawToUi, uiToRaw, virtualRaw } from "@onceupon/config/quotes";
 import { holderClaimShare } from "@/lib/solana/tokenomics";
@@ -40,18 +51,47 @@ type StoryRow = {
   virtual_quote_raw: string | number | null;
   graduation_quote_raw: string | number | null;
   supply: string | number | null;
+  virtual_base_raw?: string | number | null;
+  lp_base_reserved_raw?: string | number | null;
+  curve_k?: string | number | null;
 };
+
+const STORY_SELECT =
+  "id, slug, engine, status, author_user_id, author_wallet, token_address, vault_address, author_bps, protocol_bps, snipe_tax_bps, created_at, curve_quote_lamports, curve_token_raw, auto_buy_rewards, reward_vault_lamports, venue, quote_mint, pair_label, quote_decimals, virtual_quote_raw, graduation_quote_raw, supply, virtual_base_raw, lp_base_reserved_raw, curve_k";
+const STORY_SELECT_MIN =
+  "id, slug, engine, status, author_user_id, author_wallet, token_address, vault_address, author_bps, protocol_bps, snipe_tax_bps, created_at, curve_quote_lamports, curve_token_raw, auto_buy_rewards, reward_vault_lamports, venue, quote_mint, pair_label, quote_decimals, virtual_quote_raw, graduation_quote_raw, supply";
+
+function asBig(value: string | number | null | undefined, fallback = 0n) {
+  if (value == null || value === "") return fallback;
+  try {
+    return BigInt(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function chapterFromStory(story: StoryRow, graduateTarget: bigint): ChapterState | null {
+  const virtualBase = asBig(story.virtual_base_raw);
+  if (!isChapterCurve(virtualBase)) return null;
+  const virtualQuote = asBig(story.virtual_quote_raw);
+  return {
+    virtualQuote,
+    virtualBase,
+    realQuote: asBig(story.curve_quote_lamports),
+    realBase: asBig(story.curve_token_raw),
+    lpReserved: asBig(story.lp_base_reserved_raw),
+    k: asBig(story.curve_k, virtualQuote * virtualBase),
+    graduateTarget,
+  };
+}
 
 async function loadStory(slug: string) {
   const service = createServiceClient();
-  const { data, error } = await service
-    .from("stories")
-    .select(
-      "id, slug, engine, status, author_user_id, author_wallet, token_address, vault_address, author_bps, protocol_bps, snipe_tax_bps, created_at, curve_quote_lamports, curve_token_raw, auto_buy_rewards, reward_vault_lamports, venue, quote_mint, pair_label, quote_decimals, virtual_quote_raw, graduation_quote_raw, supply",
-    )
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error || !data?.token_address) throw new Error("Launch not found.");
+  const full = await service.from("stories").select(STORY_SELECT).eq("slug", slug).maybeSingle();
+  const data =
+    full.data ??
+    (full.error ? (await service.from("stories").select(STORY_SELECT_MIN).eq("slug", slug).maybeSingle()).data : null);
+  if (!data?.token_address) throw new Error("Launch not found.");
   return data as StoryRow;
 }
 
@@ -108,22 +148,42 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
 
   const payer = await assertPayer(userId, payerAddress);
   const meta = quoteMeta(story);
+  const chapter = chapterFromStory(story, meta.graduation);
+  if (chapter && story.status === "graduated") {
+    throw new Error("This Chapter has graduated. Trade the AMM.");
+  }
   if (amountUi <= 0 || amountUi > meta.maxBuy) {
     throw new Error(`Buy size must be between 0 and ${meta.maxBuy} ${meta.symbol}.`);
   }
 
   const quoteIn = uiToRaw(amountUi, meta.decimals);
   const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
-  const fees = splitBuyFees(
-    quoteIn,
-    authorBps,
-    Number(story.protocol_bps),
-    snipeBps(story),
-  );
-  const quoteReserve = BigInt(story.curve_quote_lamports);
-  const tokenReserve = BigInt(story.curve_token_raw);
-  const tokensOut = tokensOutForBuy(quoteReserve, tokenReserve, fees.toCurve, meta.virtual);
-  if (tokensOut <= 0n) throw new Error("Curve would return zero tokens.");
+  let tokensOut: bigint;
+  let authorCut: bigint;
+  let protocolCut: bigint;
+  let toCurve: bigint;
+  if (chapter) {
+    const snipe = takeBps(quoteIn, snipeBps(story));
+    const rest = quoteIn - snipe;
+    const curveBps = chapterFeeBps(authorBps, Number(story.protocol_bps));
+    const quoted = quoteChapterBuy(chapter, rest, curveBps);
+    if (quoted.baseOut <= 0n) throw new Error("Curve would return zero tokens.");
+    if (quoted.wouldEatLp) throw new Error("That buy would eat the tokens reserved for the book at graduation.");
+    const split = splitCurveFee(quoted.fee, authorBps, Number(story.protocol_bps));
+    tokensOut = quoted.baseOut;
+    authorCut = story.engine === "author" ? split.author : 0n;
+    protocolCut = split.protocol + snipe + (story.engine === "onceuponers" ? split.author : 0n);
+    toCurve = quoted.netIn;
+  } else {
+    const fees = splitBuyFees(quoteIn, authorBps, Number(story.protocol_bps), snipeBps(story));
+    const quoteReserve = BigInt(story.curve_quote_lamports);
+    const tokenReserve = BigInt(story.curve_token_raw);
+    tokensOut = tokensOutForBuy(quoteReserve, tokenReserve, fees.toCurve, meta.virtual);
+    if (tokensOut <= 0n) throw new Error("Curve would return zero tokens.");
+    authorCut = story.engine === "author" ? fees.author : 0n;
+    protocolCut = fees.protocol + fees.snipe;
+    toCurve = fees.toCurve;
+  }
 
   const curve = await loadCurve(story.id);
   const protocol = protocolKeypair();
@@ -133,14 +193,13 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
   const curveAta = getAssociatedTokenAddressSync(mint, curve.publicKey, false, TOKEN_PROGRAM_ID);
 
   const vaultCut = 0n;
-  const authorCut = story.engine === "author" ? fees.author : 0n;
 
   if (!meta.mint) {
     tx.add(
       SystemProgram.transfer({
         fromPubkey: payer,
         toPubkey: curve.publicKey,
-        lamports: Number(fees.toCurve + vaultCut),
+        lamports: Number(toCurve + vaultCut),
       }),
     );
     if (authorCut > 0n) {
@@ -152,12 +211,12 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
         }),
       );
     }
-    if (fees.protocol + fees.snipe > 0n) {
+    if (protocolCut > 0n) {
       tx.add(
         SystemProgram.transfer({
           fromPubkey: payer,
           toPubkey: protocol.publicKey,
-          lamports: Number(fees.protocol + fees.snipe),
+          lamports: Number(protocolCut),
         }),
       );
     }
@@ -189,7 +248,7 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
         }),
       );
     }
-    if (fees.protocol + fees.snipe > 0n) {
+    if (protocolCut > 0n) {
       const protoQuote = await pushCreateAtaIfMissing(tx, payer, protocol.publicKey, quote.mint, quote.programId);
       tx.add(
         transferCheckedIx({
@@ -197,7 +256,7 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
           mint: quote.mint,
           destination: protoQuote,
           owner: payer,
-          amount: fees.protocol + fees.snipe,
+          amount: protocolCut,
           decimals: quote.decimals,
           programId: quote.programId,
         }),
@@ -209,7 +268,7 @@ export async function buyOnCurve(userId: string, slug: string, amountUi: number,
         mint: quote.mint,
         destination: curveQuote,
         owner: payer,
-        amount: fees.toCurve + vaultCut,
+        amount: toCurve + vaultCut,
         decimals: quote.decimals,
         programId: quote.programId,
       }),
@@ -241,14 +300,33 @@ export async function sellOnCurve(
 
   const payer = await assertPayer(userId, payerAddress);
   const meta = quoteMeta(story);
+  const chapter = chapterFromStory(story, meta.graduation);
+  if (chapter && story.status === "graduated") {
+    throw new Error("This Chapter has graduated. Trade the AMM.");
+  }
   const tokensIn = uiToRaw(tokenUi, decimals);
-  const quoteReserve = BigInt(story.curve_quote_lamports);
-  const tokenReserve = BigInt(story.curve_token_raw);
-  const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn, meta.virtual);
   const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
-  const fees = splitBuyFees(quoteOut, authorBps, Number(story.protocol_bps), 0);
-  const userGets = fees.toCurve;
-  if (userGets <= 0n) throw new Error(`Curve would return zero ${meta.symbol}.`);
+  let userGets: bigint;
+  let authorCut: bigint;
+  let protocolCut: bigint;
+  if (chapter) {
+    const quoted = quoteChapterSell(chapter, tokensIn, chapterFeeBps(authorBps, Number(story.protocol_bps)));
+    if (quoted.vaultDry) throw new Error(`The vault cannot pay that much ${meta.symbol}.`);
+    if (quoted.quoteOut <= 0n) throw new Error(`Curve would return zero ${meta.symbol}.`);
+    const split = splitCurveFee(quoted.fee, authorBps, Number(story.protocol_bps));
+    userGets = quoted.quoteOut;
+    authorCut = story.engine === "author" ? split.author : 0n;
+    protocolCut = split.protocol + (story.engine === "onceuponers" ? split.author : 0n);
+  } else {
+    const quoteReserve = BigInt(story.curve_quote_lamports);
+    const tokenReserve = BigInt(story.curve_token_raw);
+    const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn, meta.virtual);
+    const fees = splitBuyFees(quoteOut, authorBps, Number(story.protocol_bps), 0);
+    userGets = fees.toCurve;
+    authorCut = story.engine === "author" ? fees.author : 0n;
+    protocolCut = fees.protocol;
+    if (userGets <= 0n) throw new Error(`Curve would return zero ${meta.symbol}.`);
+  }
 
   const curve = await loadCurve(story.id);
   const protocol = protocolKeypair();
@@ -272,21 +350,21 @@ export async function sellOnCurve(
         lamports: Number(userGets),
       }),
     );
-    if (story.engine === "author" && fees.author > 0n) {
+    if (story.engine === "author" && authorCut > 0n) {
       tx.add(
         SystemProgram.transfer({
           fromPubkey: curve.publicKey,
           toPubkey: new PublicKey(story.author_wallet),
-          lamports: Number(fees.author),
+          lamports: Number(authorCut),
         }),
       );
     }
-    if (fees.protocol > 0n) {
+    if (protocolCut > 0n) {
       tx.add(
         SystemProgram.transfer({
           fromPubkey: curve.publicKey,
           toPubkey: protocol.publicKey,
-          lamports: Number(fees.protocol),
+          lamports: Number(protocolCut),
         }),
       );
     }
@@ -305,7 +383,7 @@ export async function sellOnCurve(
         programId: quote.programId,
       }),
     );
-    if (story.engine === "author" && fees.author > 0n) {
+    if (story.engine === "author" && authorCut > 0n) {
       const authorQuote = await pushCreateAtaIfMissing(
         tx,
         payer,
@@ -319,13 +397,13 @@ export async function sellOnCurve(
           mint: quote.mint,
           destination: authorQuote,
           owner: curve.publicKey,
-          amount: fees.author,
+          amount: authorCut,
           decimals: quote.decimals,
           programId: quote.programId,
         }),
       );
     }
-    if (fees.protocol > 0n) {
+    if (protocolCut > 0n) {
       const protoQuote = await pushCreateAtaIfMissing(tx, payer, protocol.publicKey, quote.mint, quote.programId);
       tx.add(
         transferCheckedIx({
@@ -333,7 +411,7 @@ export async function sellOnCurve(
           mint: quote.mint,
           destination: protoQuote,
           owner: curve.publicKey,
-          amount: fees.protocol,
+          amount: protocolCut,
           decimals: quote.decimals,
           programId: quote.programId,
         }),
@@ -482,23 +560,51 @@ export async function confirmCurveTrade(
   if (side === "buy") {
     const quoteIn = uiToRaw(amountUi, meta.decimals);
     const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
-    const fees = splitBuyFees(quoteIn, authorBps, Number(story.protocol_bps), snipeBps(story));
-    const quoteReserve = BigInt(story.curve_quote_lamports);
-    const tokenReserve = BigInt(story.curve_token_raw);
-    const tokensOut = tokensOutForBuy(quoteReserve, tokenReserve, fees.toCurve, meta.virtual);
-    const nextQuote = quoteReserve + fees.toCurve;
-    const nextTokens = tokenReserve - tokensOut;
-    const rewardVault = BigInt(story.reward_vault_lamports);
+    const chapter = chapterFromStory(story, meta.graduation);
+    let tokensOut: bigint;
+    let nextQuote: bigint;
+    let nextTokens: bigint;
+    let nextVirtualQuote: string | null = null;
+    let nextVirtualBase: string | null = null;
+    let vaultAmount = 0n;
+    let protocolAmount = 0n;
+    if (chapter) {
+      const snipe = takeBps(quoteIn, snipeBps(story));
+      const rest = quoteIn - snipe;
+      const quoted = quoteChapterBuy(chapter, rest, chapterFeeBps(authorBps, Number(story.protocol_bps)));
+      const split = splitCurveFee(quoted.fee, authorBps, Number(story.protocol_bps));
+      tokensOut = quoted.baseOut;
+      nextQuote = quoted.nextRealQuote;
+      nextTokens = quoted.remaining;
+      nextVirtualQuote = (chapter.virtualQuote + quoted.netIn).toString();
+      nextVirtualBase = (chapter.k / (chapter.virtualQuote + quoted.netIn)).toString();
+      vaultAmount = story.engine === "onceuponers" ? split.author : 0n;
+      protocolAmount = split.protocol + snipe;
+    } else {
+      const fees = splitBuyFees(quoteIn, authorBps, Number(story.protocol_bps), snipeBps(story));
+      const quoteReserve = BigInt(story.curve_quote_lamports);
+      const tokenReserve = BigInt(story.curve_token_raw);
+      tokensOut = tokensOutForBuy(quoteReserve, tokenReserve, fees.toCurve, meta.virtual);
+      nextQuote = quoteReserve + fees.toCurve;
+      nextTokens = tokenReserve - tokensOut;
+      vaultAmount = story.engine === "onceuponers" ? fees.author : 0n;
+      protocolAmount = fees.protocol + fees.snipe;
+    }
     const graduated = nextQuote >= meta.graduation;
-    await service
-      .from("stories")
-      .update({
-        curve_quote_lamports: nextQuote.toString(),
-        curve_token_raw: nextTokens.toString(),
-        reward_vault_lamports: rewardVault.toString(),
-        status: graduated ? "graduated" : story.status,
-      })
-      .eq("id", story.id);
+    const patch: Record<string, unknown> = {
+      curve_quote_lamports: nextQuote.toString(),
+      curve_token_raw: nextTokens.toString(),
+      reward_vault_lamports: BigInt(story.reward_vault_lamports).toString(),
+      status: graduated ? "graduated" : story.status,
+    };
+    if (nextVirtualQuote) patch.virtual_quote_raw = nextVirtualQuote;
+    if (nextVirtualBase) patch.virtual_base_raw = nextVirtualBase;
+    const updated = await service.from("stories").update(patch).eq("id", story.id);
+    if (updated.error && (nextVirtualQuote || nextVirtualBase)) {
+      delete patch.virtual_quote_raw;
+      delete patch.virtual_base_raw;
+      await service.from("stories").update(patch).eq("id", story.id);
+    }
     await service.from("trades").insert({
       story_id: story.id,
       tx_hash: signature,
@@ -510,7 +616,7 @@ export async function confirmCurveTrade(
       amount_in: quoteIn.toString(),
       amount_out: tokensOut.toString(),
     });
-    if (story.engine === "onceuponers" && fees.author > 0n) {
+    if (vaultAmount > 0n) {
       await service.from("fee_events").insert({
         story_id: story.id,
         tx_hash: signature,
@@ -519,8 +625,8 @@ export async function confirmCurveTrade(
         swapper: trader,
         asset: meta.mint ?? "SOL",
         author_amount: 0,
-        vault_amount: fees.author.toString(),
-        protocol_amount: (fees.protocol + fees.snipe).toString(),
+        vault_amount: vaultAmount.toString(),
+        protocol_amount: protocolAmount.toString(),
       });
     }
     return {
@@ -534,21 +640,42 @@ export async function confirmCurveTrade(
 
   if (side === "sell") {
     const tokensIn = uiToRaw(amountUi, decimals);
-    const quoteReserve = BigInt(story.curve_quote_lamports);
-    const tokenReserve = BigInt(story.curve_token_raw);
-    const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn, meta.virtual);
     const authorBps = story.engine === "author" ? Number(story.author_bps) : 0;
-    const fees = splitBuyFees(quoteOut, authorBps, Number(story.protocol_bps), 0);
-    const userGets = fees.toCurve;
-    const rewardAdd = 0n;
-    await service
-      .from("stories")
-      .update({
-        curve_quote_lamports: (quoteReserve - quoteOut).toString(),
-        curve_token_raw: (tokenReserve + tokensIn).toString(),
-        reward_vault_lamports: (BigInt(story.reward_vault_lamports) + rewardAdd).toString(),
-      })
-      .eq("id", story.id);
+    const chapter = chapterFromStory(story, meta.graduation);
+    let userGets: bigint;
+    let nextQuote: bigint;
+    let nextTokens: bigint;
+    let nextVirtualQuote: string | null = null;
+    let nextVirtualBase: string | null = null;
+    if (chapter) {
+      const quoted = quoteChapterSell(chapter, tokensIn, chapterFeeBps(authorBps, Number(story.protocol_bps)));
+      userGets = quoted.quoteOut;
+      nextQuote = chapter.realQuote - quoted.gross;
+      nextTokens = chapter.realBase + tokensIn;
+      const nextBase = chapter.virtualBase + tokensIn;
+      nextVirtualBase = nextBase.toString();
+      nextVirtualQuote = (chapter.k / nextBase).toString();
+    } else {
+      const quoteReserve = BigInt(story.curve_quote_lamports);
+      const tokenReserve = BigInt(story.curve_token_raw);
+      const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn, meta.virtual);
+      const fees = splitBuyFees(quoteOut, authorBps, Number(story.protocol_bps), 0);
+      userGets = fees.toCurve;
+      nextQuote = quoteReserve - quoteOut;
+      nextTokens = tokenReserve + tokensIn;
+    }
+    const patch: Record<string, unknown> = {
+      curve_quote_lamports: nextQuote.toString(),
+      curve_token_raw: nextTokens.toString(),
+    };
+    if (nextVirtualQuote) patch.virtual_quote_raw = nextVirtualQuote;
+    if (nextVirtualBase) patch.virtual_base_raw = nextVirtualBase;
+    const updated = await service.from("stories").update(patch).eq("id", story.id);
+    if (updated.error && (nextVirtualQuote || nextVirtualBase)) {
+      delete patch.virtual_quote_raw;
+      delete patch.virtual_base_raw;
+      await service.from("stories").update(patch).eq("id", story.id);
+    }
     await service.from("trades").insert({
       story_id: story.id,
       tx_hash: signature,

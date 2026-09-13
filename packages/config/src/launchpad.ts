@@ -41,8 +41,8 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
       authorBps: 30,
       snipeTaxBps: 200,
       lpBps: 0,
-      headline: "PumpSwap-paired SPL on the OnceUpon curve",
-      note: "This is a real SPL mint. 0.30% creator + 0.20% protocol on OnceUpon’s curve. The linked AMM is PumpSwap (pAMMBay6…), not the Pump.fun program. Pump.fun’s own curve (0.30% + 0.95%) is reference only.",
+      headline: "Chapter Curve fees",
+      note: "This is a real SPL mint. 0.30% creator + 0.20% protocol on the Chapter Curve. PumpSwap opens from the vault at graduation. Pump.fun’s own curve (0.30% + 0.95%) is reference only.",
     };
   }
   if (venue === "pons") {
@@ -61,7 +61,7 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
     snipeTaxBps: 0,
     lpBps: 0,
     headline: "OnceUpon SPL fees",
-    note: "Author mode pushes your cut to your wallet on every buy and sell. Holder-claim mode takes only the 0.20% protocol cut on trades — you fund the holder pool yourself.",
+    note: "Author mode pushes your cut to your wallet on every buy and sell. Holder-claim mode takes only the 0.20% protocol cut on trades — you fund the holder pool yourself. Buyers’ quote stays in the vault until graduation.",
   };
 }
 

@@ -1,4 +1,5 @@
 import { SOLANA } from "./solana";
+import { CHAPTER } from "./chapter";
 
 export type QuoteGroup = "sol" | "btc" | "stable" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
 export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
@@ -107,8 +108,8 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
     group: "stable",
     kind: "usdc",
     pairClass: "usdc",
-    graduationUi: 5_000,
-    virtualUi: 30_000,
+    graduationUi: CHAPTER.graduateQuoteUi,
+    virtualUi: CHAPTER.startCapQuoteUi,
     issuer: "Circle",
     maxBuyUi: 100_000,
   },
@@ -121,8 +122,8 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
     group: "stable",
     kind: "usdc",
     pairClass: "usdc",
-    graduationUi: 5_000,
-    virtualUi: 30_000,
+    graduationUi: CHAPTER.graduateQuoteUi,
+    virtualUi: CHAPTER.startCapQuoteUi,
     issuer: "Tether",
     maxBuyUi: 100_000,
   },
@@ -135,8 +136,8 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
     group: "stable",
     kind: "usdc",
     pairClass: "usdc",
-    graduationUi: 5_000,
-    virtualUi: 30_000,
+    graduationUi: CHAPTER.graduateQuoteUi,
+    virtualUi: CHAPTER.startCapQuoteUi,
     issuer: "PayPal",
     maxBuyUi: 100_000,
   },
@@ -233,8 +234,8 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
     group: "treasury",
     kind: "treasury",
     pairClass: "rwa_other",
-    graduationUi: 5_000,
-    virtualUi: 30_000,
+    graduationUi: CHAPTER.graduateQuoteUi,
+    virtualUi: CHAPTER.startCapQuoteUi,
     issuer: "Ondo",
     maxBuyUi: 100_000,
   },
@@ -276,7 +277,7 @@ export const QUOTE_GROUPS: { id: QuoteGroup; label: string; hint: string }[] = [
   { id: "btc", label: "BTC / ETH", hint: "Pair into Bitcoin and Ether liquidity already on Solana. No new pool to fund." },
   { id: "stable", label: "Stables", hint: "USDC, USDT, PYUSD." },
   { id: "meme", label: "Memes", hint: "Pair into BONK, WIF, JUP, PENGU and other live mints." },
-  { id: "stock", label: "Stocks", hint: "Listed xStocks such as NVDAx. Quote pair, not studio equity — you bind the live deep pool, you do not seed a fresh one." },
+  { id: "stock", label: "Stocks", hint: "Listed xStocks such as NVDAx. Quote pair, not studio equity — the live deep pool is hop-1 routing, never this Story’s market." },
   { id: "etf", label: "ETFs", hint: "Listed index xStocks such as SPYx and QQQx. Quote pair only — not a claim on the fund." },
   { id: "treasury", label: "Treasuries", hint: "Ondo USDY. Quote pair only — not a claim on the issuer." },
   { id: "bond", label: "Bonds", hint: "Ondo OUSG short-term government bonds. Quote pair only." },
@@ -311,8 +312,8 @@ export function virtualRaw(asset: Pick<QuoteAsset, "virtualUi" | "decimals">): b
 }
 
 export function customQuoteAsset(mint: string, decimals: number, symbol = "TOKEN"): QuoteAsset {
-  const graduationUi = decimals === 9 ? 2 : decimals === 6 ? 5_000 : decimals === 8 ? 10 : 1_000;
-  const virtualUi = graduationUi * 15;
+  const graduationUi = decimals === 9 ? 2 : decimals === 6 ? CHAPTER.graduateQuoteUi : decimals === 8 ? 10 : 1_000;
+  const virtualUi = decimals === 6 ? CHAPTER.startCapQuoteUi : graduationUi;
   return {
     id: "custom",
     symbol,

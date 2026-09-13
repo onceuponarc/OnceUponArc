@@ -15,8 +15,8 @@ export default function LaunchPage() {
         <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">Pick a chain. Pair any asset.</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
           Arc is home. Solana, Ethereum, Base, and Robinhood Chain are open too. Tokens print on Solana
-          mainnet today so the Story is live against deep pairs immediately — SOL, Bitcoin, Ether, stocks,
-          memes, or any mint. Pick the live DEX pool at launch. Other chains also bind a destination-chain
+          mainnet today so the Story is live on a Chapter Curve immediately — SOL, Bitcoin, Ether, stocks,
+          memes, or any mint. Tag a live DEX pool as hop-1 routing. Other chains also bind a destination-chain
           pool (Uniswap, Aerodrome, Pons) when you choose one.
         </p>
         <p className="mt-2 max-w-2xl text-sm text-parchment/55">{QUOTE_DISCLAIMER}</p>

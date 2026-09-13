@@ -85,11 +85,11 @@ export const CHAINS: ChainCard[] = [
     live: true,
     prints: true,
     badge: "Home chain",
-    body: "OnceUpon lives on Arc. Launch here, pair into any Solana-deep asset — BTC, stocks, memes, stables — and link a Uniswap pool on Arc mainnet (chain 5042) at print.",
+    body: "OnceUpon lives on Arc. Launch here, pair into any Solana-deep asset — BTC, stocks, memes, stables — and tag a Uniswap pool on Arc mainnet (chain 5042) as hop-1 routing. The Chapter Curve is the Story market from T0.",
     caip2: "eip155:5042002",
     accent: "from-[#3ee0c6]/45 to-[#6d7cff]/25",
     printNote:
-      "Tagged for Arc. The mint prints as SPL on Solana so it is live against the Raydium/Orca/Meteora pool you pick. Native Arc Uniswap V2/V3 factories on chain 5042 bind at launch.",
+      "Tagged for Arc. The mint prints as SPL on Solana so it is live on a Chapter Curve immediately. Native Arc Uniswap V2/V3 factories on chain 5042 are hop-1 tags, not the Story pool.",
   },
   {
     id: "solana",
@@ -97,11 +97,11 @@ export const CHAINS: ChainCard[] = [
     live: true,
     prints: true,
     badge: "Live printer",
-    body: "The working printer. Full SPL coins, NFTs, optional PumpSwap pairing, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, memes, stocks, ETFs, treasuries, bonds, or any mint, and link a live Raydium, Orca, Meteora, or PumpSwap pool.",
+    body: "The working printer. Full SPL coins, NFTs, Chapter Curves, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, memes, stocks, ETFs, treasuries, bonds, or any mint. Existing Raydium, Orca, Meteora, or PumpSwap books are hop-1 routing — never this Story’s pool until graduation.",
     caip2: SOLANA.caip2,
     accent: "from-[#9945ff]/40 to-[#14f195]/25",
     printNote:
-      "Mints a real SPL token on Solana mainnet. Your connected wallet pays rent. After print, sign and pay PumpSwap create_pool so the mint has on-chain LP.",
+      "Mints a real SPL token on Solana mainnet. Your connected wallet pays rent. The Chapter opens at print with zero real quote in the vault. Buyers feed the book until graduation.",
   },
   {
     id: "ethereum",
@@ -113,7 +113,7 @@ export const CHAINS: ChainCard[] = [
     caip2: ETHEREUM.caip2,
     accent: "from-[#627eea]/40 to-[#8a92b2]/20",
     printNote:
-      "Prints as an SPL token on Solana mainnet and is tagged for Ethereum. Pick a Uniswap pool (or paste any pair) when you launch — it is bound on the Story immediately.",
+      "Prints as an SPL token on Solana mainnet and is tagged for Ethereum. Pick a Uniswap pool (or paste any pair) as hop-1 routing — it is bound on the Story, not used as the launch AMM.",
   },
   {
     id: "base",
@@ -125,7 +125,7 @@ export const CHAINS: ChainCard[] = [
     caip2: BASE.caip2,
     accent: "from-[#0052ff]/40 to-[#7aa7ff]/20",
     printNote:
-      "Prints as an SPL token on Solana mainnet and is tagged for Base. Pick a Uniswap or Aerodrome pool when you launch.",
+      "Prints as an SPL token on Solana mainnet and is tagged for Base. Pick a Uniswap or Aerodrome pool as hop-1 routing when you launch.",
   },
   {
     id: "robinhood",
@@ -137,7 +137,7 @@ export const CHAINS: ChainCard[] = [
     caip2: ROBINHOOD_CHAIN.caip2,
     accent: "from-[#00c805]/35 to-[#c9a227]/20",
     printNote:
-      "Prints as an SPL token on Solana mainnet and is tagged for Robinhood Chain / Pons. Pick or paste a Pons pool — factory 0x7ed598… — when you launch.",
+      "Prints as an SPL token on Solana mainnet and is tagged for Robinhood Chain / Pons. Pick or paste a Pons pool — factory 0x7ed598… — as hop-1 routing.",
   },
 ];
 
@@ -151,7 +151,7 @@ export const VENUES: {
     id: "spl",
     title: "SPL coin",
     headline: "Full Solana token",
-    body: "The real printer. You set supply, decimals, metadata, start price, and tokenomics. Pair against a stock, ETF, treasury, bond, SOL, or any live pool. This is not Pump.fun.",
+    body: "The real printer. You set supply, decimals, metadata, start cap, and graduate target. The Chapter Curve is live at create. Pair against a stock, ETF, treasury, bond, SOL, or any quote. This is not Pump.fun.",
   },
   {
     id: "nft",
@@ -162,14 +162,14 @@ export const VENUES: {
   {
     id: "pumpfun",
     title: "PumpSwap pair",
-    headline: "SPL mint · PumpSwap AMM",
-    body: "Still a real SPL token on OnceUpon. After print, sign and pay PumpSwap create_pool (pAMMBay6…). That is not the Pump.fun program. Use SPL unless you specifically want that pair.",
+    headline: "SPL mint · Chapter then PumpSwap",
+    body: "Still a real SPL token on OnceUpon. The Chapter Curve is the launch path. PumpSwap (pAMMBay6…) opens from the vault at graduation — not a two-sided seed at print. That is not the Pump.fun program.",
   },
   {
     id: "pons",
     title: "Pons pair",
     headline: "SPL mint · Pons pool",
-    body: "Still a real SPL token. Tagged for Robinhood Chain / Pons. Bind a Pons pool at print; native Pons lives on Robinhood Chain.",
+    body: "Still a real SPL token. Tagged for Robinhood Chain / Pons. Bind a Pons pool as hop-1 routing; native Pons lives on Robinhood Chain.",
   },
 ];
 

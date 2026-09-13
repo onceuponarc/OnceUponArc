@@ -33,6 +33,7 @@ import { uiToRaw } from "@onceupon/config/quotes";
 import { CHAIN_POOLS, bindingKindForDex, canonicalPoolsForQuote, type DexId } from "@onceupon/config/pools";
 import { type ResolvedPool } from "@/lib/pools/resolve";
 import { createMetadataV3Instruction } from "@/lib/solana/token-metadata";
+import { lpBaseReservedUi, virtualBaseUiFor, virtualQuoteUiFor } from "@onceupon/config/chapter";
 import {
   clampDecimals,
   clampPositiveUi,
@@ -173,7 +174,13 @@ export async function launchOnSolana(input: LaunchInput) {
         );
   const protocolBps = venueFees.protocolBps;
   const graduationUi = clampPositiveUi(input.graduationUi, input.quote.graduationUi);
-  const virtualUi = clampPositiveUi(input.virtualUi, input.quote.virtualUi);
+  const startCapUi = clampPositiveUi(input.virtualUi, input.quote.virtualUi);
+  const virtualBaseUi = isNft ? 0 : virtualBaseUiFor(supplyUi);
+  const virtualUi = isNft ? 0 : virtualQuoteUiFor({ startCapUi, virtualBaseUi, supplyUi });
+  const lpReservedUi = isNft ? 0 : lpBaseReservedUi(supplyUi);
+  const virtualBaseRaw = BigInt(Math.round(virtualBaseUi)) * 10n ** BigInt(decimals);
+  const lpReservedRaw = BigInt(Math.round(lpReservedUi)) * 10n ** BigInt(decimals);
+  const virtualQuoteRaw = uiToRaw(virtualUi, input.quote.decimals);
 
   const slug = `${slugify(input.title) || slugify(input.ticker) || "launch"}-${Math.random().toString(36).slice(2, 6)}`;
   const pairClass = input.quote.pairClass;
@@ -223,8 +230,11 @@ export async function launchOnSolana(input: LaunchInput) {
     snipe_tax_bps: input.venue === "spl" || input.venue === "nft" ? 0 : Math.min(Math.max(0, input.snipeTaxBps ?? venueFees.snipeTaxBps), 500),
     reward_vault_lamports: 0,
     quote_decimals: input.quote.decimals,
-    virtual_quote_raw: uiToRaw(virtualUi, input.quote.decimals).toString(),
+    virtual_quote_raw: isNft ? null : virtualQuoteRaw.toString(),
     graduation_quote_raw: uiToRaw(graduationUi, input.quote.decimals).toString(),
+    virtual_base_raw: isNft ? null : virtualBaseRaw.toString(),
+    lp_base_reserved_raw: isNft ? null : lpReservedRaw.toString(),
+    curve_k: isNft ? null : (virtualQuoteRaw * virtualBaseRaw).toString(),
     linked_pool_address: paired?.address ?? null,
     linked_pool_dex: paired?.dex ?? null,
     linked_pool_label: paired?.label ?? null,
@@ -303,7 +313,10 @@ export async function launchOnSolana(input: LaunchInput) {
       decimals,
       graduationUi,
       virtualUi,
-      startPriceUi: supplyUi ? virtualUi / supplyUi : 0,
+      startCapUi,
+      startPriceUi: virtualBaseUi ? virtualUi / virtualBaseUi : 0,
+      tradableBps: 8_000,
+      lpReservedBps: 2_000,
     },
   };
 }
@@ -317,18 +330,23 @@ const EXTRA_STORY_COLUMNS = [
   "linked_pool_address",
   "linked_pool_dex",
   "linked_pool_label",
+  "virtual_base_raw",
+  "lp_base_reserved_raw",
+  "curve_k",
 ];
 
 async function insertStory(
   service: ReturnType<typeof createServiceClient>,
   row: Record<string, unknown>,
 ) {
-  const first = await service.from("stories").insert(row).select("id, slug, token_address").single();
-  if (!first.error) return first;
-  const missing = EXTRA_STORY_COLUMNS.some((col) => (first.error.message ?? "").includes(col));
-  if (!missing) return first;
   const slim = { ...row };
-  for (const col of EXTRA_STORY_COLUMNS) delete slim[col];
+  for (let attempt = 0; attempt < EXTRA_STORY_COLUMNS.length + 1; attempt += 1) {
+    const result = await service.from("stories").insert(slim).select("id, slug, token_address").single();
+    if (!result.error) return result;
+    const hit = EXTRA_STORY_COLUMNS.filter((col) => (result.error.message ?? "").includes(col));
+    if (!hit.length) return result;
+    for (const col of hit) delete slim[col];
+  }
   return service.from("stories").insert(slim).select("id, slug, token_address").single();
 }
 

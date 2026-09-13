@@ -340,6 +340,11 @@ export default async function StoryPage({
                 venue={story.venue ?? "spl"}
                 curveTokenRaw={(story as { curve_token_raw?: string | number | null }).curve_token_raw ?? 0}
                 mintDecimals={Number(story.mint_decimals ?? 6)}
+                storyStatus={story.status}
+                curveQuoteRaw={(story as { curve_quote_lamports?: string | number | null }).curve_quote_lamports ?? 0}
+                graduationQuoteRaw={
+                  (story as { graduation_quote_raw?: string | number | null }).graduation_quote_raw ?? 0
+                }
               />
             </div>
           ) : null}

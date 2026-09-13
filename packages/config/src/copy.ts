@@ -1,11 +1,11 @@
 /** Canonical OnceUpon copy. Keep this file free of forbidden offering language. */
 
 export const POSITIONING =
-  "OnceUpon is a token launchpad centered on Arc, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print on Solana mainnet so they are live immediately. After print, the Author signs and pays PumpSwap create_pool — the wallet deposits quote (SOL, USDC, or the Story mint such as NVDAx) and the curve seeds the base. Binding an existing quote market tags depth; it does not put your mint in that LP. Other chains tag the Story and bind a destination-chain pool. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
+  "OnceUpon is a token launchpad centered on Arc, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print on Solana mainnet so they are live immediately on a Chapter Curve — buyers pay quote, the vault holds it, and the Story is tradable the instant create lands. The Author does not seed an AMM at print. Graduation opens the book from those vault reserves. Binding an existing quote market (including NVDAx/USDC) is hop-1 routing depth, not the Story pool. Other chains tag the Story and bind a destination-chain pool. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
 
 export const TAGLINE = "OnceUponers write the stories. The chain keeps the receipts.";
 
-export const PAD_TAGLINE = "Launch on Arc. Pair any chain. Print into real liquidity.";
+export const PAD_TAGLINE = "Open the Chapter. Buyers write the book.";
 
 export const MODE_COPY = {
   author: {
@@ -30,8 +30,8 @@ export const LAUNCH_TYPES = [
     how: [
       "Pick a creator fee from 0% to 3.00%. The choice is locked when you launch.",
       "Every buy and sell pushes that cut to your connected Solana wallet in the same transaction. No claim button.",
-      "Protocol takes 0.20% on top. That cut is not yours to set.",
-      "This is a full SPL mint. Pair against a stock, ETF, treasury, bond, SOL, or any live pool.",
+      "Protocol takes 0.20% on top. That cut is not yours to set. Curve fees cap at 4.00%.",
+      "This is a full SPL mint on a Chapter Curve. Pair against a stock, ETF, treasury, bond, SOL, or any quote. You do not deposit inventory.",
     ],
   },
   {
@@ -58,7 +58,7 @@ export const LAUNCH_TYPES = [
     how: [
       "A Story can pair against a listed tokenized asset. That is a quote pair, not studio equity.",
       "Pick USDC, a listed xStock or ETF, USDY/OUSG, or paste any mint. Buys and sells settle in that mint.",
-      "Pairing against a tokenized mint is not a claim on the issuer and it is not studio equity.",
+      "Pairing against a tokenized mint is not a claim on the issuer and it is not studio equity. An existing NVDAx/USDC book is hop-1 routing, never this Story’s pool.",
     ],
   },
 ] as const;
@@ -68,7 +68,7 @@ export const PAIR_TYPES = [
     id: "sol" as const,
     label: "SOL",
     listed: true,
-    body: "Native Solana depth. SPL launches clear in SOL on mainnet against the live pool you pick.",
+    body: "Native Solana depth. SPL launches clear in SOL on the Chapter Curve. Existing SOL/USDC pools are hop-1 routing.",
   },
   {
     id: "btc" as const,
@@ -91,7 +91,7 @@ export const PAIR_TYPES = [
 ] as const;
 
 export const BONDING_COPY =
-  "SPL launches open on a bonding curve against the pair you pick. You set supply, decimals, and start price. SOL pairs default to bonding at 2 SOL. Stables default to 5,000 units. cbBTC defaults to 0.1. Listed xStocks and ETFs default to 10 of the quote mint. The curve is the live launch pool. DexScreener and Jupiter see liquidity after you sign and pay to open PumpSwap LP — your wallet deposits quote and the curve seeds the base. Binding an existing NVDAx/USDC or SOL/USDC pool tags quote depth; it does not put your mint in that LP. Pairing against a tokenized mint is a quote, not studio equity.";
+  "SPL launches open a Chapter Curve the instant create lands. You set supply, decimals, start cap, and graduate target. USDC Chapters default to a ~$3,000 start cap and a $5,000 graduate target. 80% of supply trades on the curve; 20% is reserved for the book at graduation. Buyers pay quote into the vault — the Author does not seed an AMM at print. DexScreener and Jupiter see LP when the Chapter graduates and the vault opens the book. Binding an existing NVDAx/USDC or SOL/USDC pool tags hop-1 routing depth; it does not put your mint in that LP. Pairing against a tokenized mint is a quote, not studio equity.";
 
 export const PIECE_EXPLAINER =
   "Holder claims pay a share of a rewards pool the author deposits. The share is proportional to current holdings. It is not a dividend, not profit-sharing, and not a return on investment.";
@@ -106,10 +106,12 @@ export const MARGIN_DISCLAIMER =
   "The Margin is a doorway to Jupiter. OnceUpon does not custody margin, does not run a matching engine, and does not set your leverage. Longs and shorts live on Jupiter’s accounts.";
 
 export const QUOTE_DISCLAIMER =
-  "You launch against SOL, Bitcoin (cbBTC), Ether, stables, listed stocks, ETFs, treasuries, bonds, memes, or any mint. After print, sign and pay to open a PumpSwap pool in that quote (or SOL / USDC). Binding an existing quote market is a tag, not a deposit. Pairing against a tokenized mint is a quote, not studio equity.";
+  "You launch against SOL, Bitcoin (cbBTC), Ether, stables, listed stocks, ETFs, treasuries, bonds, memes, or any mint. Your USDC (or other quote) stays in the book until graduation. Binding an existing quote market is hop-1 routing, not a deposit. Pairing against a tokenized mint is a quote, not studio equity.";
 
 export const RWA_GATE =
   "Pick a listed quote mint, or paste any Solana mint. A gated name is not a waitlist for shares.";
+
+export const CHAPTER_BUYER_NOTE = "Your USDC stays in the book until graduation.";
 
 export const FORBIDDEN_PHRASES = [
   "Disney shares",

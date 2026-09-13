@@ -16,6 +16,7 @@ type PairBody = {
   recentBlockhash?: string;
   signature?: string;
   pool?: string;
+  fromVault?: boolean;
 };
 
 export async function POST(
@@ -63,6 +64,7 @@ export async function POST(
       quoteUi: Number(body.quoteUi ?? 0),
       baseBps: body.baseBps == null ? undefined : Number(body.baseBps),
       recentBlockhash: body.recentBlockhash,
+      fromVault: Boolean(body.fromVault),
     });
     return NextResponse.json(result);
   } catch (error) {

@@ -44,7 +44,6 @@ next-env.d.ts
 # foundry
 contracts/out
 contracts/cache
-contracts/lib
 
 # local / agent
 uploads/

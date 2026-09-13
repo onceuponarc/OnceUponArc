@@ -25,7 +25,7 @@ export function PoolPicker({
   venue,
   selected,
   onSelect,
-  heading = "3b · Link a live pool",
+  heading = "3b · Hop-1 routing (optional)",
 }: {
   chain: LaunchChain;
   quoteId: string;
@@ -104,9 +104,7 @@ export function PoolPicker({
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">{heading}</p>
       <p className="mt-2 text-sm text-parchment/65">
         {data?.launchPool.note ??
-          (venue === "pumpfun"
-            ? "PumpSwap venue pairs a PumpSwap pool as the linked AMM. The mint is still a full SPL token on OnceUpon."
-            : "Your token opens as a full SPL mint on an OnceUpon launch pool against this quote. Pick the deep pool to attach — Raydium, Orca, PumpSwap, Uniswap, Aerodrome, Pons, or paste any pool.")}
+          "Tag a live book as hop-1 routing for this quote. That is not the Story pool. The Chapter Curve is the market until graduation."}
       </p>
       {data ? (
         <p className="mt-2 text-xs text-parchment/45">

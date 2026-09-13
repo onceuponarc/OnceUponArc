@@ -27,4 +27,21 @@ interface IStoryEvents {
 
     event PieceAccrued(bytes32 indexed story, address indexed asset, uint256 amount);
     event PieceClaimed(bytes32 indexed story, address indexed user, address asset, uint256 amount);
+
+    event CurveOpened(
+        bytes32 indexed storyId,
+        address indexed token,
+        address indexed quote,
+        uint256 virtualQuote,
+        uint256 virtualBase,
+        uint256 graduateQuoteTarget
+    );
+
+    event Graduated(
+        bytes32 indexed storyId,
+        address indexed pool,
+        uint256 realQuote,
+        uint256 realBase,
+        uint256 priceX18
+    );
 }

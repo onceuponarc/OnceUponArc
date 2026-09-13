@@ -4,6 +4,7 @@ import BN from "bn.js";
 import {
   ComputeBudgetProgram,
   PublicKey,
+  SystemProgram,
   Transaction,
 } from "@solana/web3.js";
 import { NATIVE_MINT } from "@solana/spl-token";
@@ -43,6 +44,8 @@ type StoryRow = {
   quote_decimals: number | null;
   mint_decimals: number | null;
   curve_token_raw: string | number | null;
+  curve_quote_lamports: string | number | null;
+  graduation_quote_raw: string | number | null;
   supply: string | number | null;
 };
 
@@ -60,7 +63,7 @@ async function loadStory(slug: string) {
   const { data, error } = await service
     .from("stories")
     .select(
-      "id, slug, ticker, status, venue, author_user_id, token_address, vault_address, quote_mint, pair_label, quote_decimals, mint_decimals, curve_token_raw, supply",
+      "id, slug, ticker, status, venue, author_user_id, token_address, vault_address, quote_mint, pair_label, quote_decimals, mint_decimals, curve_token_raw, curve_quote_lamports, graduation_quote_raw, supply",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -125,6 +128,7 @@ export async function buildPumpSwapPair(opts: {
   quoteUi: number;
   baseBps?: number;
   recentBlockhash?: string | null;
+  fromVault?: boolean;
 }) {
   const story = await loadStory(opts.slug);
   if (story.author_user_id !== opts.userId) {
@@ -135,6 +139,13 @@ export async function buildPumpSwapPair(opts: {
   }
   if (!story.token_address) {
     throw new Error("Mint is not on-chain yet. Finish sign-and-pay print first.");
+  }
+  if (opts.fromVault) {
+    const realQuote = BigInt(story.curve_quote_lamports ?? 0);
+    const target = BigInt(story.graduation_quote_raw ?? 0);
+    if (story.status !== "graduated" && !(target > 0n && realQuote >= target)) {
+      throw new Error("The Chapter has not graduated yet. Buyers feed the book until the target is met.");
+    }
   }
 
   const payer = await assertPayer(opts.userId, opts.payer);
@@ -149,15 +160,6 @@ export async function buildPumpSwapPair(opts: {
   const listed = findQuoteByMint(quoteMint.toBase58());
   const quoteSymbol = listed?.symbol ?? (isNativeQuote(quoteMint) ? "SOL" : "quote");
   const quoteDecimals = quoteMeta.decimals;
-  if (!(opts.quoteUi > 0)) {
-    throw new Error(`Deposit more than zero ${quoteSymbol}.`);
-  }
-
-  const quoteIn = isNativeQuote(quoteMint)
-    ? uiToRaw(opts.quoteUi, 9)
-    : uiToRaw(opts.quoteUi, quoteDecimals);
-  if (quoteIn <= 0n) throw new Error(`Deposit more than zero ${quoteSymbol}.`);
-
   const curve = await loadCurve(story.id);
   const curveAta = ataFor(baseMeta.mint, curve.publicKey, baseMeta.programId);
   const curveBal = await tokenBalance(curveAta, baseMeta.programId);
@@ -165,16 +167,39 @@ export async function buildPumpSwapPair(opts: {
     throw new Error("The curve vault is empty. There are no tokens left to seed LP.");
   }
 
+  let quoteIn: bigint;
+  let fromVaultQuote = 0n;
+  if (opts.fromVault) {
+    if (isNativeQuote(quoteMint)) {
+      const vaultSol = BigInt(await connection.getBalance(curve.publicKey, "confirmed"));
+      const keepAlive = 2_000_000n;
+      fromVaultQuote = vaultSol > keepAlive ? vaultSol - keepAlive : 0n;
+    } else {
+      const curveQuoteAta = ataFor(quoteMeta.mint, curve.publicKey, quoteMeta.programId);
+      fromVaultQuote = await tokenBalance(curveQuoteAta, quoteMeta.programId);
+    }
+    quoteIn = fromVaultQuote;
+    if (quoteIn <= 0n) {
+      throw new Error(`The vault has no ${quoteSymbol} to open the book. Buyers feed the Chapter until graduation.`);
+    }
+  } else {
+    if (!(opts.quoteUi > 0)) {
+      throw new Error(`Deposit more than zero ${quoteSymbol}.`);
+    }
+    quoteIn = isNativeQuote(quoteMint) ? uiToRaw(opts.quoteUi, 9) : uiToRaw(opts.quoteUi, quoteDecimals);
+    if (quoteIn <= 0n) throw new Error(`Deposit more than zero ${quoteSymbol}.`);
+  }
+
   const userBaseAta = ataFor(baseMeta.mint, payer, baseMeta.programId);
   const userBaseBal = await tokenBalance(userBaseAta, baseMeta.programId);
-  const bps = clampBps(opts.baseBps ?? DEFAULT_BASE_BPS);
-  const targetBase = (curveBal * BigInt(bps)) / 10_000n;
+  const bps = opts.fromVault ? 10_000 : clampBps(opts.baseBps ?? DEFAULT_BASE_BPS);
+  const targetBase = opts.fromVault ? curveBal : (curveBal * BigInt(bps)) / 10_000n;
   if (targetBase <= 0n) throw new Error("That share of the curve rounds to zero tokens.");
   const fromCurve = userBaseBal >= targetBase ? 0n : targetBase - userBaseBal;
   if (fromCurve > curveBal) {
     throw new Error("The curve vault does not hold that many tokens.");
   }
-  const baseIn = userBaseBal + fromCurve;
+  const baseIn = opts.fromVault ? fromCurve + userBaseBal : userBaseBal + fromCurve;
   if (baseIn <= 0n) throw new Error("Need a positive token deposit to open the pool.");
 
   const pool = poolPda(POOL_INDEX, payer, baseMint, quoteMint);
@@ -197,17 +222,17 @@ export async function buildPumpSwapPair(opts: {
   }
 
   const sol = BigInt(await connection.getBalance(payer, "confirmed"));
-  const rentNeed = MIN_SOL_FOR_RENT + (isNativeQuote(quoteMint) ? quoteIn : 0n);
+  const rentNeed = MIN_SOL_FOR_RENT + (isNativeQuote(quoteMint) && !opts.fromVault ? quoteIn : 0n);
   if (sol < rentNeed) {
     const needUi = Number(rentNeed) / 1e9;
     throw new Error(
-      `Your wallet needs at least ${needUi.toFixed(3)} SOL for PumpSwap rent, fees${
-        isNativeQuote(quoteMint) ? `, and the ${quoteSymbol} deposit` : ""
+      `Your wallet needs at least ${needUi.toFixed(3)} SOL for PumpSwap rent and fees${
+        isNativeQuote(quoteMint) && !opts.fromVault ? `, and the ${quoteSymbol} deposit` : ""
       }.`,
     );
   }
 
-  if (!isNativeQuote(quoteMint)) {
+  if (!opts.fromVault && !isNativeQuote(quoteMint)) {
     const userQuoteAta = ataFor(quoteMeta.mint, payer, quoteMeta.programId);
     const quoteBal = await tokenBalance(userQuoteAta, quoteMeta.programId);
     if (quoteBal < quoteIn) {
@@ -232,6 +257,32 @@ export async function buildPumpSwapPair(opts: {
         programId: baseMeta.programId,
       }),
     );
+  }
+  if (opts.fromVault && fromVaultQuote > 0n) {
+    if (isNativeQuote(quoteMint)) {
+      seedBody.add(
+        SystemProgram.transfer({
+          fromPubkey: curve.publicKey,
+          toPubkey: payer,
+          lamports: Number(fromVaultQuote),
+        }),
+      );
+    } else {
+      const curveQuoteAta = ataFor(quoteMeta.mint, curve.publicKey, quoteMeta.programId);
+      await pushCreateAtaIfMissing(seedBody, payer, payer, quoteMeta.mint, quoteMeta.programId);
+      const userQuoteAta = ataFor(quoteMeta.mint, payer, quoteMeta.programId);
+      seedBody.add(
+        transferCheckedIx({
+          source: curveQuoteAta,
+          mint: quoteMeta.mint,
+          destination: userQuoteAta,
+          owner: curve.publicKey,
+          amount: fromVaultQuote,
+          decimals: quoteMeta.decimals,
+          programId: quoteMeta.programId,
+        }),
+      );
+    }
   }
 
   const sdk = new OnlinePumpAmmSdk(connection);
@@ -280,7 +331,8 @@ export async function buildPumpSwapPair(opts: {
     quoteIn: quoteIn.toString(),
     fromCurve: fromCurve.toString(),
     baseUi: rawToUi(baseIn, baseMeta.decimals),
-    quoteUi: opts.quoteUi,
+    quoteUi: rawToUi(quoteIn, isNativeQuote(quoteMint) ? 9 : quoteDecimals),
+    fromVault: Boolean(opts.fromVault),
     programId: PUMPSWAP.programId,
     explorer: explorerAddress(pool.toBase58()),
     proofUrl: `https://dexscreener.com/solana/${pool.toBase58()}`,
@@ -332,7 +384,14 @@ export async function confirmPumpSwapPair(opts: {
       const base = await inspectMint(story.token_address);
       const curve = await loadCurve(story.id);
       const remaining = await tokenBalance(ataFor(base.mint, curve.publicKey, base.programId), base.programId);
-      await service.from("stories").update({ curve_token_raw: remaining.toString() }).eq("id", story.id);
+      await service
+        .from("stories")
+        .update({
+          curve_token_raw: remaining.toString(),
+          curve_quote_lamports: "0",
+          status: "graduated",
+        })
+        .eq("id", story.id);
     } catch (error) {
       console.error("curve reserve refresh failed", error);
     }

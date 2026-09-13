@@ -1,30 +1,31 @@
 # OnceUpon
 
-A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as **full SPL** on Solana mainnet — you set supply, decimals, metadata, start price, and tokenomics — then **sign and pay** PumpSwap `create_pool` so DexScreener and Jupiter see real LP. Other chains tag the Story and bind a destination-chain pool.
+A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as **full SPL** on Solana mainnet and open a **Chapter Curve** the instant create lands — buyers pay quote into the vault, the Author does not seed an AMM at print. Graduation opens the book from those vault reserves (PumpSwap on Solana). Other chains tag the Story and bind a destination-chain pool as hop-1 routing.
 
 Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Phantom, Solflare, or Backpack). That address is bound to your handle in Supabase. There is no in-app keypair.
 
 ## Launch types
 
-- **SPL coin** — The default printer. Real Solana mint with Metaplex metadata. You set supply, decimals, virtual depth (start price), and bond target. Pair against a stock, ETF, treasury, bond, SOL, or any live pool. This is not Pump.fun.
+- **SPL coin** — The default printer. Real Solana mint with Metaplex metadata. You set supply, decimals, start cap, and graduate target. 80% of supply trades on the curve; 20% is reserved for the book at graduation. Pair against a stock, ETF, treasury, bond, SOL, or any quote. This is not Pump.fun.
 - **NFT** — Decimals zero, editions 1–10,000, no bonding curve.
-- **PumpSwap pair** — Still a real SPL mint. Linked AMM is PumpSwap (`pAMMBay6…`), not the Pump.fun program.
+- **PumpSwap pair** — Still a real SPL mint. The Chapter Curve is the launch path. PumpSwap (`pAMMBay6…`) opens from the vault at graduation, not a two-sided seed at print. That is not the Pump.fun program.
 - **Pons pair** — Still a real SPL mint, tagged for Robinhood Chain / Pons.
-- **Creator fees** — Your cut (0–3.00%) is pushed to your wallet on every buy and sell. Protocol takes 0.20% on top.
+- **Creator fees** — Your cut (0–3.00%) is pushed to your wallet on every buy and sell. Protocol takes 0.20% on top. Curve fees cap at 4.00%.
 - **Holder claims** — Trades take only the protocol cut. The author deposits quote/SOL into the vault. Holders claim a share proportional to circulating holdings. That is not a dividend.
 - **Coin art** — Required for PumpSwap-pair launches; optional (recommended) for SPL. Upload a PNG/JPEG/WebP or paste an IPFS CID.
 - **Metadata** — Each mint writes Metaplex Token Metadata on-chain. The URI is `https://once-upon-arc.vercel.app/api/token/<mint>/metadata`.
 - **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks such as **NVDAx**), ETFs (SPYx, QQQx), Ondo USDY/OUSG, or any mint. Pairing against a tokenized mint is a quote, not studio equity.
-- **PumpSwap LP** — After print, the Author opens the Story and **signs and pays** PumpSwap `create_pool`. The curve vault moves base tokens; the connected wallet deposits SOL, USDC, or the Story quote (including NVDAx) and pays rent + gas. That is the on-chain pool DexScreener and Jupiter index. Binding an existing NVDAx/USDC (or SOL/USDC) market only tags quote depth — it does not put your mint in that pool.
+- **Chapter Curve** — Create mints the token, metadata, curve, and vaults with `realQuote = 0`. Buyers pay quote; fees come off input; net stays in the vault. You cannot eat the LP reserve unless the buy also graduates. Sell cannot pay virtual quote. At the graduate target the vault seeds the AMM and mint authority is burned.
+- **Hop-1 routing** — Binding an existing NVDAx/USDC (or SOL/USDC) market only tags quote depth — it does not put your mint in that pool. That book is never the Story market.
 - **Linked pools** — Optional tags for Raydium / Orca / Meteora / Uniswap / Pons pools you already created. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
-- Default bond targets: **2 SOL**, **5,000** stables, **0.1** cbBTC, **10** of a listed xStock/ETF — editable at print.
+- Default USDC Chapter: start cap **$3,000** (virtual quote ≈ **3,219**), graduate **$5,000**. SOL defaults **2 SOL** graduate / **30 SOL** start cap. cbBTC **0.1**, listed xStock/ETF **10** — editable at print.
 
 ## Wallets
 
 1. Sign in with X through Supabase.
 2. Connect Phantom, Solflare, or Backpack.
 3. Approve a short message (`OnceUpon:{userId}:{issuedAt}`). The pad stores that address on `user_wallets` as `kind: connected`.
-4. Launch, curve trades, PumpSwap `create_pool`, and Jupiter swaps are extra-signed on the server, then your wallet **signs and pays** them (`signAndSendTransaction` in Phantom, Solflare, or Backpack). PumpSwap pairing spends rent, gas, and the quote you deposit. The browser fetches a recent blockhash so Vercel does not have to talk to public Solana RPC just to print.
+4. Launch, curve trades, vault graduation, and Jupiter swaps are extra-signed on the server, then your wallet **signs and pays** them (`signAndSendTransaction` in Phantom, Solflare, or Backpack). Graduation spends rent and gas; quote comes from the vault. The browser fetches a recent blockhash so Vercel does not have to talk to public Solana RPC just to print.
 
 Curve keypairs (the bonding vault) stay encrypted in Supabase. They are not your wallet.
 
@@ -78,10 +79,10 @@ Production: https://once-upon-arc.vercel.app/
 
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
-- `@solana/web3.js` + `@solana/spl-token` + `@pump-fun/pump-swap-sdk` for real mainnet mints and PumpSwap `create_pool`
+- `@solana/web3.js` + `@solana/spl-token` + `@pump-fun/pump-swap-sdk` for real mainnet mints and vault-seeded PumpSwap at graduation
 - Injected Solana wallets bound through Supabase
 - Jupiter Metis routing for quotes and swaps (`lite-api.jup.ag`)
-- Foundry under `contracts/`
+- Foundry under `contracts/` (`pnpm test:forge` — Chapter Curve invariants)
 
 ## Surfaces
 

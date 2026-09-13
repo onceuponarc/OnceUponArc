@@ -11,8 +11,6 @@ import {
 } from "@onceupon/config/pools";
 import { findQuote, findQuoteByMint } from "@onceupon/config/quotes";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { PoolPicker, type LinkedPoolPick } from "@/components/launch/pool-picker";
@@ -20,13 +18,6 @@ import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
 import { fetchLaunchBlockhash } from "@/lib/solana/blockhash";
 import { readApiJson } from "@/lib/http/read-json";
-
-function defaultQuoteUi(symbol: string) {
-  const upper = symbol.toUpperCase();
-  if (upper === "SOL" || upper === "WSOL") return "0.5";
-  if (upper.includes("USD")) return "50";
-  return "0.25";
-}
 
 function quoteOptions(storyMint: string | null, pairLabel: string) {
   const listed = findQuoteByMint(storyMint) ?? findQuote("sol");
@@ -56,6 +47,9 @@ export function LinkLp({
   venue = "spl",
   curveTokenRaw = "0",
   mintDecimals = 6,
+  storyStatus = "live",
+  curveQuoteRaw = "0",
+  graduationQuoteRaw = "0",
 }: {
   slug: string;
   ticker: string;
@@ -66,6 +60,9 @@ export function LinkLp({
   venue?: string;
   curveTokenRaw?: string | number | null;
   mintDecimals?: number;
+  storyStatus?: string;
+  curveQuoteRaw?: string | number | null;
+  graduationQuoteRaw?: string | number | null;
 }) {
   const router = useRouter();
   const { address, signAndSend, ensureBound } = useWalletSigner();
@@ -75,10 +72,7 @@ export function LinkLp({
   const canonical = canonicalPoolsForQuote(quoteId);
   const catalog = catalogFor("solana");
   const options = useMemo(() => quoteOptions(quoteMint, pairLabel), [quoteMint, pairLabel]);
-  const [pairQuote, setPairQuote] = useState(options[0]?.mint ?? SOLANA.wsolMint);
-  const pairQuoteMeta = options.find((item) => item.mint === pairQuote) ?? options[0];
-  const [quoteAmount, setQuoteAmount] = useState(defaultQuoteUi(pairQuoteMeta?.symbol ?? quoteSymbol));
-  const [basePct, setBasePct] = useState("80");
+  const [pairQuote] = useState(options[0]?.mint ?? SOLANA.wsolMint);
   const [pool, setPool] = useState<LinkedPoolPick | null>(
     canonical[0]
       ? {
@@ -100,11 +94,6 @@ export function LinkLp({
     () => (tokenMint ? createLpLinks(tokenMint, pairQuote || quoteMint) : []),
     [tokenMint, pairQuote, quoteMint],
   );
-
-  const curveUi = Number(curveTokenRaw ?? 0) / 10 ** mintDecimals;
-  const seedUi = curveUi * (Number(basePct) / 100);
-  const quoteUi = Number(quoteAmount);
-  const startPrice = seedUi > 0 && quoteUi > 0 ? quoteUi / seedUi : 0;
 
   async function bind(pick: LinkedPoolPick) {
     setBusy(true);
@@ -140,7 +129,7 @@ export function LinkLp({
     }
   }
 
-  async function pairOnPumpSwap() {
+  async function pairOnPumpSwap(fromVault: boolean) {
     if (!address) {
       setError("Connect a Solana wallet first.");
       return;
@@ -149,14 +138,8 @@ export function LinkLp({
       setError("Mint is not on-chain yet. Finish sign-and-pay print first.");
       return;
     }
-    const quote = Number(quoteAmount);
-    const pct = Number(basePct);
-    if (!(quote > 0)) {
-      setError(`Deposit more than zero ${pairQuoteMeta?.symbol ?? "quote"}.`);
-      return;
-    }
-    if (!(pct >= 1 && pct <= 95)) {
-      setError("Seed between 1% and 95% of the remaining curve tokens.");
+    if (!fromVault) {
+      setError("Author-seeded LP at print is closed. The vault opens the book at graduation.");
       return;
     }
     setBusy(true);
@@ -167,16 +150,17 @@ export function LinkLp({
       const payer = await ensureBound();
       setStatus("Fetching a Solana blockhash…");
       const latest = await fetchLaunchBlockhash();
-      setStatus("Building PumpSwap create_pool…");
+      setStatus("Building vault-seeded PumpSwap…");
       const res = await fetch(`/api/stories/${slug}/pair`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           payer,
-          quoteMint: pairQuote,
-          quoteUi: quote,
-          baseBps: Math.round(pct * 100),
+          quoteMint,
+          quoteUi: 0,
+          baseBps: 10_000,
           recentBlockhash: latest.blockhash,
+          fromVault: true,
         }),
       });
       const body = await readApiJson<{
@@ -213,7 +197,9 @@ export function LinkLp({
           setStatus(
             txs.length > 1
               ? `Sign and pay transaction ${i + 1} of ${txs.length} in your wallet…`
-              : "Sign and pay create_pool in your wallet. This spends gas and deposits quote.",
+              : fromVault
+                ? "Sign and pay gas. Quote comes from the vault, not an extra deposit."
+                : "Sign and pay create_pool in your wallet. This spends gas and deposits quote.",
           );
           sent = await signAndSend(txs[i]);
           if (i < txs.length - 1) {
@@ -270,6 +256,9 @@ export function LinkLp({
   const already = new Set(boundAddresses.map((item) => item.toLowerCase()));
   const quoteDepthBound = canonical.some((item) => already.has(item.address.toLowerCase()));
   const nft = venue === "nft";
+  const realQuote = Number(curveQuoteRaw ?? 0);
+  const graduateTarget = Number(graduationQuoteRaw ?? 0);
+  const canGraduate = storyStatus === "graduated" || (graduateTarget > 0 && realQuote >= graduateTarget);
 
   return (
     <div className="space-y-4">
@@ -279,10 +268,9 @@ export function LinkLp({
           {listed?.group === "stock" || listed?.group === "etf" ? " · quote pair, not studio equity" : ""}
         </p>
         <p className="mt-1">
-          The OnceUpon curve is off-chain math plus a token vault. DexScreener and Jupiter need a real AMM with both
-          sides deposited. PumpSwap <span className="font-mono text-[11px]">create_pool</span> does that: your wallet
-          signs, pays rent and gas, and deposits {pairQuoteMeta?.symbol ?? quoteSymbol}. The curve vault moves the
-          base tokens.
+          This Story trades on a Chapter Curve. Buyers pay {quoteSymbol} into the vault. The Author does not seed an
+          AMM at print. DexScreener and Jupiter index LP when the Chapter graduates and the vault opens the book.
+          Binding {quoteSymbol} depth below is hop-1 routing — it does not put ${ticker} in that pool.
         </p>
         {tokenMint ? (
           <p className="mt-2 break-all font-mono text-[11px] text-parchment/50">Your mint · {tokenMint}</p>
@@ -300,79 +288,34 @@ export function LinkLp({
 
       {nft ? (
         <p className="text-sm text-parchment/70">NFTs do not open a PumpSwap pool.</p>
-      ) : (
+      ) : canGraduate ? (
         <div className="space-y-3 rounded-xl border border-arc/25 bg-arc/5 p-3">
-          <p className="text-sm font-medium text-parchment">1 · Sign and pay PumpSwap LP</p>
+          <p className="text-sm font-medium text-parchment">1 · Graduate the book from the vault</p>
           <p className="text-xs text-parchment/55">
-            Same shape as Pump.fun pairing into PumpSwap with SOL or USDC — plus any quote this Story launched
-            against. Permissionless PumpSwap LP fee is 0.25% and protocol is 0.05%. That is not Pump.fun’s bonding-curve
+            Sign and pay gas. Remaining ${ticker} and {quoteSymbol} in the vault seed PumpSwap. You do not deposit extra
+            quote. Permissionless PumpSwap LP fee is 0.25% and protocol is 0.05%. That is not Pump.fun’s curve
             schedule.
           </p>
           {!address ? (
             <div className="flex items-center justify-between gap-3 rounded-xl border border-arc/20 bg-black/20 px-3 py-2">
-              <p className="text-sm text-parchment/70">Connect the wallet that will pay rent and deposit quote.</p>
+              <p className="text-sm text-parchment/70">Connect the wallet that will pay rent and gas.</p>
               <SolanaConnectButton compact />
             </div>
           ) : null}
-          <div className="flex flex-wrap gap-2">
-            {options.map((option) => (
-              <Button
-                key={option.mint}
-                type="button"
-                size="sm"
-                variant={pairQuote === option.mint ? "default" : "outline"}
-                disabled={busy}
-                onClick={() => {
-                  setPairQuote(option.mint);
-                  setQuoteAmount(defaultQuoteUi(option.symbol));
-                }}
-              >
-                Pair vs {option.symbol}
-              </Button>
-            ))}
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="quote-in">{pairQuoteMeta?.symbol ?? "Quote"} to deposit</Label>
-              <Input
-                id="quote-in"
-                inputMode="decimal"
-                value={quoteAmount}
-                disabled={busy}
-                onChange={(event) => setQuoteAmount(event.target.value)}
-              />
-              <p className="text-[11px] text-parchment/50">
-                {pairQuoteMeta?.mint === SOLANA.wsolMint
-                  ? "Pulled from your SOL balance (wrapped in the same transaction)."
-                  : `Your wallet must already hold this ${pairQuoteMeta?.symbol}.`}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="base-pct">Curve tokens into the pool (%)</Label>
-              <Input
-                id="base-pct"
-                inputMode="numeric"
-                value={basePct}
-                disabled={busy}
-                onChange={(event) => setBasePct(event.target.value)}
-              />
-              <p className="text-[11px] text-parchment/50">
-                {seedUi > 0
-                  ? `~${seedUi.toLocaleString("en-US", { maximumFractionDigits: 2 })} $${ticker} from the vault. ${100 - Number(basePct || 0)}% stays on the curve.`
-                  : "Reads the live curve vault when you sign."}
-              </p>
-            </div>
-          </div>
-          {startPrice > 0 ? (
-            <p className="text-xs text-parchment/60">
-              Opening price ≈ {startPrice.toLocaleString("en-US", { maximumFractionDigits: 8 })}{" "}
-              {pairQuoteMeta?.symbol} per ${ticker}
-            </p>
-          ) : null}
-          <Button type="button" disabled={busy || !tokenMint || !address} onClick={() => void pairOnPumpSwap()}>
-            {busy ? status ?? "Signing…" : `Sign and pay to open $${ticker}/${pairQuoteMeta?.symbol} PumpSwap`}
+          <Button type="button" disabled={busy || !tokenMint || !address} onClick={() => void pairOnPumpSwap(true)}>
+            {busy ? status ?? "Signing…" : `Open $${ticker}/${quoteSymbol} from the vault`}
           </Button>
           {status && busy ? <p className="text-xs text-parchment/55">{status}</p> : null}
+        </div>
+      ) : (
+        <div className="space-y-2 rounded-xl border border-white/10 bg-black/20 p-3">
+          <p className="text-sm font-medium text-parchment">1 · AMM opens at graduation</p>
+          <p className="text-xs text-parchment/55">
+            Buyers feed the book until {graduateTarget > 0 ? graduateTarget.toLocaleString("en-US") : "the"}{" "}
+            {quoteSymbol} target. You do not deposit {quoteSymbol} as inventory at print. Vault still holds{" "}
+            {(Number(curveTokenRaw ?? 0) / 10 ** mintDecimals).toLocaleString("en-US", { maximumFractionDigits: 2 })} $
+            {ticker}.
+          </p>
         </div>
       )}
 

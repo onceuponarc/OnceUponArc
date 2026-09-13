@@ -10,7 +10,8 @@ import {
   type LaunchVenue,
   type PrintableChain,
 } from "@onceupon/config/solana";
-import { MODE_COPY, RIGHTS_TICK, feeExample } from "@onceupon/config/copy";
+import { MODE_COPY, RIGHTS_TICK, CHAPTER_BUYER_NOTE, feeExample } from "@onceupon/config/copy";
+import { CHAPTER } from "@onceupon/config/chapter";
 import { PROTOCOL } from "@onceupon/config/arc";
 import {
   PAD_NAME,
@@ -51,9 +52,9 @@ export function LaunchStudio({
   const { address, signAndSend, ensureBound } = useWalletSigner();
   const [venue, setVenue] = useState<LaunchVenue>("spl");
   const [engine, setEngine] = useState<"author" | "onceuponers">("author");
-  const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>("sol");
-  const [quoteId, setQuoteId] = useState("sol");
-  const [quoteMint, setQuoteMint] = useState("");
+  const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>(chain === "arc" ? "stable" : "sol");
+  const [quoteId, setQuoteId] = useState(chain === "arc" ? "usdc" : "sol");
+  const [quoteMint, setQuoteMint] = useState(chain === "arc" ? findQuote("usdc")?.mint ?? "" : "");
   const [title, setTitle] = useState("");
   const [ticker, setTicker] = useState("");
   const [blurb, setBlurb] = useState("");
@@ -66,8 +67,12 @@ export function LaunchStudio({
   const [nftSupply, setNftSupply] = useState(1);
   const [supplyUi, setSupplyUi] = useState<number>(SOLANA.defaultSupply);
   const [decimals, setDecimals] = useState<number>(SOLANA.defaultDecimals);
-  const [graduationUi, setGraduationUi] = useState<number>(SOLANA.bondingGraduationSol);
-  const [virtualUi, setVirtualUi] = useState<number>(SOLANA.virtualQuoteSol);
+  const [graduationUi, setGraduationUi] = useState<number>(
+    chain === "arc" ? CHAPTER.graduateQuoteUi : SOLANA.bondingGraduationSol,
+  );
+  const [startCapUi, setStartCapUi] = useState<number>(
+    chain === "arc" ? CHAPTER.startCapQuoteUi : SOLANA.virtualQuoteSol,
+  );
   const [rights, setRights] = useState(false);
   const [linkedPool, setLinkedPool] = useState<LinkedPoolPick | null>(null);
   const [busy, setBusy] = useState(false);
@@ -120,7 +125,7 @@ export function LaunchStudio({
           supplyUi: venue === "nft" ? nftSupply : supplyUi,
           decimals: venue === "nft" ? 0 : decimals,
           graduationUi,
-          virtualUi,
+          virtualUi: startCapUi,
           rightsAttested: rights,
           payer,
           recentBlockhash: latest.blockhash,
@@ -295,7 +300,7 @@ export function LaunchStudio({
           const listed = findQuote(id);
           if (listed) {
             setGraduationUi(listed.graduationUi);
-            setVirtualUi(listed.virtualUi);
+            setStartCapUi(listed.virtualUi);
           }
         }}
         onMint={setQuoteMint}
@@ -339,11 +344,11 @@ export function LaunchStudio({
             supplyUi={supplyUi}
             decimals={decimals}
             graduationUi={graduationUi}
-            virtualUi={virtualUi}
+            startCapUi={startCapUi}
             onSupply={setSupplyUi}
             onDecimals={setDecimals}
             onGraduation={setGraduationUi}
-            onVirtual={setVirtualUi}
+            onStartCap={setStartCapUi}
           />
         ) : null}
         <div className="grid gap-4 sm:grid-cols-3">
@@ -424,6 +429,7 @@ export function LaunchStudio({
               {snipeTaxBps > 0 ? ` · snipe +${(snipeTaxBps / 100).toFixed(2)}% (15 min)` : ""}
             </p>
             <p className="mt-1">{venueFees.note}</p>
+            <p className="mt-1 text-parchment/80">{CHAPTER_BUYER_NOTE}</p>
             {venue === "pumpfun" ? (
               <p className="mt-1 text-parchment/55">
                 Pump.fun’s own curve (reference): creator{" "}
@@ -463,7 +469,7 @@ export function LaunchStudio({
             {venue === "nft"
               ? "Mints a real token on Solana mainnet with Metaplex metadata. Your wallet signs and pays rent."
               : selectedQuote
-                ? `SPL mint · ${supplyUi.toLocaleString("en-US")} supply · ${decimals} decimals · bonds at ${graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. After print, sign and pay PumpSwap LP in ${selectedQuote.symbol}, SOL, or USDC.`
+                ? `SPL mint · ${supplyUi.toLocaleString("en-US")} supply · ${decimals} decimals · start cap ${startCapUi.toLocaleString("en-US")} ${selectedQuote.symbol} · graduates at ${graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. The Chapter opens at print. Your ${selectedQuote.symbol} stays in the book until graduation.`
                 : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
           {linkedPool ? (
@@ -477,8 +483,8 @@ export function LaunchStudio({
           ) : (
             <p className="mt-1">
               {venue === "pumpfun"
-                ? "PumpSwap venue auto-pairs PumpSwap for SOL/USDC quotes. Pick or paste a live pool above."
-                : "Pick or paste a live pool above. This is a full SPL mint on the OnceUpon curve."}
+                ? "PumpSwap opens from the vault at graduation. Pick a hop-1 routing pool above if you want a tag."
+                : "Pick or paste a live pool above as hop-1 routing. This is a full SPL mint on the Chapter Curve."}
             </p>
           )}
         </div>
@@ -490,10 +496,10 @@ export function LaunchStudio({
               : !address
                 ? "Connect a wallet to launch"
                 : chain === "arc"
-                  ? `Launch on ${PAD_NAME} · Arc`
+                  ? `Open the Chapter · ${PAD_NAME} · Arc`
                   : chain === "solana"
-                    ? `Launch on ${PAD_NAME}`
-                    : `Launch on ${PAD_NAME} · tagged for ${selectedChain.title}`}
+                    ? `Open the Chapter · ${PAD_NAME}`
+                    : `Open the Chapter · tagged for ${selectedChain.title}`}
         </Button>
         {error ? (
           <Alert variant="destructive">

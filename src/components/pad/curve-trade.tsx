@@ -98,8 +98,8 @@ export function CurveTrade({
   return (
     <div className="space-y-4">
       <p className="text-sm text-parchment/70">
-        Quote is {pairLabel}. Curve fills settle from your connected Solana wallet. After this Story bonds, spot
-        routes through Jupiter.
+        Quote is {pairLabel}. Curve fills settle from your connected Solana wallet. Your {pairLabel} stays in the
+        book until graduation. After this Story bonds, spot routes through Jupiter.
       </p>
       {!address ? (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-arc/20 bg-arc/5 px-3 py-2">
@@ -121,7 +121,7 @@ export function CurveTrade({
       </div>
       <div className="flex flex-wrap gap-2">
         <Button type="button" disabled={busy || !address} onClick={() => void submit(side)}>
-          {busy ? "Sending…" : side === "buy" ? "Buy on the curve" : "Sell on the curve"}
+          {busy ? "Sending…" : side === "buy" ? "Buy on the Chapter" : "Sell on the Chapter"}
         </Button>
         {engine === "onceuponers" ? (
           <Button type="button" variant="secondary" disabled={busy || !address} onClick={() => void submit("claim")}>
