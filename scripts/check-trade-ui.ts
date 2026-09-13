@@ -18,8 +18,21 @@ if (!quotes.includes('return "0.05"')) {
 }
 
 const story = readFileSync(new URL("../src/app/story/[slug]/page.tsx", import.meta.url), "utf8");
-if (!story.includes('story.status === "graduated"') || !story.includes("JupiterSwapPanel")) {
-  throw new Error("Jupiter panel should wait for graduation.");
+if (story.includes("JupiterSwapPanel")) {
+  throw new Error("Story page should not mount Jupiter. OnceUpon trades on Arc.");
+}
+if (!story.includes("ArcTrade") || !story.includes('chain === "arc"')) {
+  throw new Error("Story page should trade Arc Chapters on the curve.");
+}
+
+const launch = readFileSync(new URL("../src/app/launch/[chain]/page.tsx", import.meta.url), "utf8");
+if (!launch.includes('redirect("/launch/arc")')) {
+  throw new Error("Non-Arc launch routes must send people to Arc.");
+}
+
+const home = readFileSync(new URL("../src/app/page.tsx", import.meta.url), "utf8");
+if (/launch\/solana|launch\/robinhood|Print SPL|Robinhood Chain/.test(home)) {
+  throw new Error("Home must not offer Solana or Robinhood launches.");
 }
 
 const blocked = humanizeJupiterQuoteError({
@@ -27,9 +40,9 @@ const blocked = humanizeJupiterQuoteError({
   errorCode: "TOKEN_NOT_TRADABLE",
 });
 if (/Ftc5kjS46Eh78YV1BVuDuUz5NKX6Y8mF42aVzTjdutBr/.test(blocked)) {
-  throw new Error("Jupiter not-tradable copy should not echo the mint.");
+  throw new Error("Not-tradable copy should not echo the mint.");
 }
-if (!/Chapter Curve/i.test(blocked) || !/hop-1/i.test(blocked)) {
+if (!/Arc/i.test(blocked)) {
   throw new Error(`unexpected not-tradable copy: ${blocked}`);
 }
 

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { SignInButton } from "@/components/sign-in-button";
-import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import type { OnceUponer } from "@/lib/auth";
 
@@ -41,7 +40,6 @@ export function SiteHeader({
         <div className="ml-auto flex items-center gap-2">
           <p className="hidden text-[11px] text-parchment/45 lg:block">{onlineCount} online</p>
           <ArcDevnetWallet compact />
-          <SolanaConnectButton compact />
           <SignInButton profile={profile} />
         </div>
       </div>

@@ -36,6 +36,9 @@ const nextConfig: NextConfig = {
       { source: "/trade", destination: "/wallet", permanent: false },
       { source: "/write", destination: "/launch", permanent: false },
       { source: "/bindings/link", destination: "/bindings", permanent: false },
+      { source: "/launch/solana", destination: "/launch/arc", permanent: false },
+      { source: "/launch/robinhood", destination: "/launch/arc", permanent: false },
+      { source: "/launch/rh", destination: "/launch/arc", permanent: false },
     ];
   },
 };

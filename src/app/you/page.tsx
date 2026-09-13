@@ -1,4 +1,4 @@
-import { ConnectedWalletCard } from "@/components/wallet/connected-wallet";
+import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { SignOutButton } from "@/components/sign-in-button";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -34,8 +34,7 @@ export default async function YouPage() {
           {profile ? `@${profile.handle}` : "Your pad"}
         </h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
-          X is identity. A connected Solana wallet signs launches and swaps. Bindings, margin, and the crew
-          live here.
+          X is identity. The funded Arc test wallet prints and trades. Bindings, claims, and the crew live here.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           {profile ? (
@@ -56,12 +55,12 @@ export default async function YouPage() {
         </div>
       </section>
 
-      <ConnectedWalletCard signedIn={Boolean(profile)} />
+      <ArcDevnetWallet />
 
       <section className="grid gap-3 sm:grid-cols-2">
         {[
-          { href: "/bindings", label: "The Binding", body: "Tag an existing pool as hop-1 routing. Graduate the book from the Story." },
-          { href: "/margin", label: "Margin", body: "Doorway to Jupiter perps. OnceUpon does not custody leverage." },
+          { href: "/bindings", label: "The Binding", body: "Tag an Arc pool as hop-1 routing. Graduate the book from the Story." },
+          { href: "/wallet", label: "Trade", body: "Buy and sell on the Arc Chapter Curve in USDC." },
           { href: "/onceuponers", label: "Crew", body: "Handles on the pad — not a PnL board." },
           { href: "/chapter/the-first-chapter", label: "First Chapter", body: "The first official launch window." },
         ].map((item) => (

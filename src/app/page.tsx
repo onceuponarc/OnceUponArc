@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FeedBoard } from "@/components/pad/feed-board";
 import { LiveTape } from "@/components/pad/live-tape";
-import { ChainChooser } from "@/components/launch/chain-chooser";
 import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { loadPadMarket } from "@/lib/market";
 import { getSessionUser } from "@/lib/auth";
@@ -28,7 +27,7 @@ export default async function HomePage() {
         <div className="relative grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-arc">
-              Social launchpad · Arc home
+              Social launchpad · Arc
             </p>
             <h1 className="font-heading mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
               Open a Chapter.
@@ -44,10 +43,7 @@ export default async function HomePage() {
                 <Link href="/launch/arc">Launch on Arc</Link>
               </Button>
               <Button variant="outline" asChild className="rounded-full">
-                <Link href="/launch/solana">Print SPL</Link>
-              </Button>
-              <Button variant="ghost" asChild className="rounded-full">
-                <Link href="/launch/robinhood">Pons / RH</Link>
+                <Link href="/wallet">Trade</Link>
               </Button>
             </div>
           </div>
@@ -78,7 +74,7 @@ export default async function HomePage() {
                 <p className="mt-4 text-xs text-parchment/70">Signed in as @{profile.handle}</p>
               ) : (
                 <p className="mt-4 text-xs text-parchment/55">
-                  Sign in with X for Solana prints. Arc Devnet uses the funded test wallet.
+                  Sign in with X. Arc Devnet uses the funded test wallet to print, buy, and sell.
                 </p>
               )}
             </div>
@@ -92,12 +88,15 @@ export default async function HomePage() {
       <section className="space-y-3">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">Three chains</p>
-            <h2 className="font-heading mt-1 text-2xl font-bold">Arc · Solana SPL · Robinhood Pons</h2>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">Home chain</p>
+            <h2 className="font-heading mt-1 text-2xl font-bold">Arc. USDC in, tape out.</h2>
           </div>
           <Badge>Mainnet Arc in days</Badge>
         </div>
-        <ChainChooser compact />
+        <p className="max-w-2xl text-sm text-parchment/65">
+          OnceUpon prints on Arc only. The funded Devnet wallet signs create, buy, and sell. Graduation opens the book
+          from vault reserves.
+        </p>
       </section>
 
       <FeedBoard launches={launches} />

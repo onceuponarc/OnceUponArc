@@ -50,9 +50,8 @@ export default async function BindingsPage({
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">The Binding</p>
         <h1 className="font-heading mt-2 text-4xl font-extrabold">Tag hop-1 routing</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
-          The Chapter Curve is the Story market until graduation. This page only tags an existing pool — NVDAx/USDC
-          quote depth or an LP you already created — as hop-1 routing. It does not put your mint in that LP. Open the
-          Story to graduate the book from the vault. Pairing against a tokenized mint is a quote, not studio equity.
+          The Chapter Curve is the Story market until graduation. This page only tags an existing Arc pool as hop-1
+          routing. It does not put your Chapter in that LP. Open the Story to graduate the book from the vault.
         </p>
       </section>
       <BindingForm signedIn={Boolean(profile)} stories={stories} initialSlug={initialSlug} />

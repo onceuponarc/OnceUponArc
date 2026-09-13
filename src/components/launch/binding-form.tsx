@@ -12,7 +12,7 @@ import { readApiJson } from "@/lib/http/read-json";
 
 type StoryOption = { slug: string; title: string; ticker: string; quoteMint?: string | null; pairLabel?: string | null };
 
-const BIND_CHAINS: LaunchChain[] = ["arc", "solana", "robinhood"];
+const BIND_CHAINS: LaunchChain[] = ["arc"];
 
 export function BindingForm({
   signedIn,
@@ -24,8 +24,8 @@ export function BindingForm({
   initialSlug?: string;
 }) {
   const [storySlug, setStorySlug] = useState(initialSlug || stories[0]?.slug || "");
-  const [chain, setChain] = useState<LaunchChain>("solana");
-  const [quoteId, setQuoteId] = useState("sol");
+  const [chain, setChain] = useState<LaunchChain>("arc");
+  const [quoteId, setQuoteId] = useState("usdc");
   const [quoteMint, setQuoteMint] = useState("");
   const [pool, setPool] = useState<LinkedPoolPick | null>(null);
   const [busy, setBusy] = useState(false);
@@ -51,7 +51,7 @@ export function BindingForm({
       .then((body: { quote_mint?: string | null; pair_label?: string }) => {
         const mint = body.quote_mint ?? "";
         setQuoteMint(mint);
-        setQuoteId(findQuoteByMint(mint || null)?.id ?? "sol");
+        setQuoteId(findQuoteByMint(mint || null)?.id ?? "usdc");
       })
       .catch(() => undefined);
   }, [storySlug, stories]);
@@ -112,7 +112,7 @@ export function BindingForm({
         <h2 className="font-heading text-xl font-bold">No Stories to bind</h2>
         <p className="mt-2 text-sm text-parchment/65">Launch a token first, then tag hop-1 routing if you want a label.</p>
         <Button asChild className="mt-4" size="sm">
-          <a href="/launch/solana">Open the Solana press</a>
+          <a href="/launch/arc">Open the Arc press</a>
         </Button>
       </div>
     );

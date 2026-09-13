@@ -3,9 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CurveTrade } from "@/components/pad/curve-trade";
-import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
 import { findChain, SOLANA, type LaunchVenue } from "@onceupon/config/solana";
+import { ARC_TESTNET } from "@onceupon/config/arc";
 import { PAD_NAME, PUMPFUN_CURVE_REFERENCE, feesForVenue, venueLabel } from "@onceupon/config/launchpad";
 import { catalogByCaip2, explorerUrlForPool } from "@onceupon/config/pools";
 import { notFound } from "next/navigation";
@@ -190,7 +190,7 @@ export default async function StoryPage({
   const hue = tickerHue(story.ticker);
   const engineLabel = story.engine === "author" ? "Creator fees" : "Holder claims";
   const statusLabel = story.status === "graduated" ? "Bonded" : story.status;
-  const chain = story.chain ?? "solana";
+  const chain = story.chain ?? "arc";
   const chainCard = findChain(chain);
   const isAuthor = Boolean(profile && story.author_user_id === profile.id);
   const coverUrl = (story as { cover_url?: string | null }).cover_url;
@@ -231,6 +231,7 @@ export default async function StoryPage({
                 <LaunchLinks
                   mint={story.token_address}
                   venue={story.venue}
+                  chain={chain}
                   twitterUrl={twitterUrl}
                   telegramUrl={telegramUrl}
                   websiteUrl={websiteUrl}
@@ -249,6 +250,12 @@ export default async function StoryPage({
           </div>
         </div>
       </section>
+
+      {chain !== "arc" ? (
+        <div className="glass rounded-2xl border border-arc/25 px-4 py-3 text-sm text-parchment/75">
+          This Story printed before OnceUpon became Arc-only. New Chapters launch on Arc in USDC.
+        </div>
+      ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
         <PriceChart
@@ -285,7 +292,7 @@ export default async function StoryPage({
                   vaultRaw={Number((story as { reward_vault_lamports?: number | string | null }).reward_vault_lamports ?? 0)}
                 />
               ) : (
-                <p className="text-sm text-parchment/70">This Story bonded. Spot now routes through Jupiter.</p>
+                <p className="text-sm text-parchment/70">This Chapter graduated. The book is open.</p>
               )}
             </CardContent>
           </Card>
@@ -349,7 +356,11 @@ export default async function StoryPage({
                 Mint{" "}
                 <a
                   className="break-all text-gold hover:underline"
-                  href={explorerAddress(story.token_address)}
+                  href={
+                    chain === "arc"
+                      ? `${ARC_TESTNET.explorer}/address/${story.token_address}`
+                      : explorerAddress(story.token_address)
+                  }
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -359,7 +370,14 @@ export default async function StoryPage({
             ) : null}
             {story.created_tx ? (
               <p>
-                <a className="text-gold hover:underline" href={explorerTx(story.created_tx)} target="_blank" rel="noreferrer">
+                <a
+                  className="text-gold hover:underline"
+                  href={
+                    chain === "arc" ? `${ARC_TESTNET.explorer}/tx/${story.created_tx}` : explorerTx(story.created_tx)
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   Launch transaction
                 </a>
               </p>
@@ -397,32 +415,17 @@ export default async function StoryPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Jupiter</CardTitle>
+          <CardTitle>The book</CardTitle>
           <CardDescription>
-            Jupiter indexes this mint after the Chapter graduates and the vault opens the book. Until then the Story
-            market is the curve above. A tagged {story.pair_label} book is hop-1 routing, not this mint’s pool.
+            The Chapter Curve is the Story market from T0. Buyers pay USDC into the vault. Graduation opens the Arc AMM
+            from those reserves. The Author does not seed an AMM at print.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {chain !== "arc" && story.status === "graduated" && story.token_address ? (
-            <JupiterSwapPanel
-              signedIn={Boolean(profile)}
-              title={`Jupiter · $${story.ticker}`}
-              extraMint={story.token_address}
-              extraSymbol={story.ticker}
-              extraDecimals={Number(story.mint_decimals ?? 6)}
-              defaultOutput={story.ticker}
-            />
-          ) : chain === "arc" ? (
-            <p className="text-sm text-parchment/60">
-              Arc Chapters trade on the curve above. Jupiter is for Solana SPL mints.
-            </p>
+        <CardContent className="text-sm text-parchment/70">
+          {chain === "arc" ? (
+            <p>Trade on the curve above. Quote is USDC on Arc.</p>
           ) : (
-            <p className="text-sm text-parchment/70">
-              Jupiter has no route for <span className="font-mono text-xs">{story.token_address ?? "this mint"}</span>{" "}
-              yet. Buy and sell ${story.ticker} on the Chapter Curve with {story.pair_label}. Pairing against{" "}
-              {story.pair_label} is a quote, not studio equity.
-            </p>
+            <p>OnceUpon no longer prints on this chain. Open a new Chapter on Arc.</p>
           )}
         </CardContent>
       </Card>
@@ -431,9 +434,7 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>The Binding</CardTitle>
           <CardDescription>
-            The Chapter Curve is the Story market from T0. DexScreener and Jupiter see LP when the Chapter graduates
-            and the vault opens the book. Binding an existing quote market is hop-1 routing — it does not put this mint
-            in that LP.
+            Graduation opens the Arc book from the vault. Binding an existing market is not this Story’s pool.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
@@ -473,7 +474,7 @@ export default async function StoryPage({
               })}
             </ul>
           )}
-          {isAuthor ? (
+          {isAuthor && chain !== "arc" ? (
             <div className="pt-2">
               <LinkLp
                 slug={slug}

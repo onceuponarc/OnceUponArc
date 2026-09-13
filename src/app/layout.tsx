@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s · OnceUpon",
   },
   description:
-    "Open a Chapter on Arc. Watch live buys and sells, holders, and the curve. Launch on Arc, Solana SPL, or Robinhood Chain via Pons. Sign in with X.",
+    "Open a Chapter on Arc. Watch live buys and sells, holders, and the curve. OnceUpon prints on Arc only. Sign in with X.",
   applicationName: "OnceUpon",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

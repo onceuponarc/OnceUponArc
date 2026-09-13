@@ -46,6 +46,7 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
         "id, slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, curve_quote_lamports, graduation_quote_raw, quote_decimals, mint_decimals, supply, users:author_user_id(handle)",
       )
       .in("status", ["live", "graduated"])
+      .eq("chain", "arc")
       .order("created_at", { ascending: false })
       .limit(48);
 
@@ -106,7 +107,7 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
           coverUrl: row.cover_url,
           handle: author && "handle" in author ? String(author.handle) : null,
           createdAt: row.created_at,
-          chain: row.chain ?? "solana",
+          chain: row.chain ?? "arc",
           venue: row.venue ?? "spl",
         },
         tradesByStory.get(row.id) ?? [],

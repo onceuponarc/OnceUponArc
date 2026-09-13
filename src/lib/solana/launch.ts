@@ -14,7 +14,7 @@ import {
   MINT_SIZE,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { SOLANA, type LaunchVenue, type PrintableChain } from "@onceupon/config/solana";
+import { SOLANA, type LaunchChain, type LaunchVenue } from "@onceupon/config/solana";
 import { PROTOCOL } from "@onceupon/config/arc";
 import {
   PAD_NAME,
@@ -43,7 +43,7 @@ import {
 export type LaunchInput = {
   userId: string;
   handle: string;
-  chain: PrintableChain;
+  chain: LaunchChain;
   title: string;
   ticker: string;
   blurb: string;

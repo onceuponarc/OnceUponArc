@@ -307,11 +307,13 @@ export async function resolvePools(input: {
       dex: "onceupon",
       label: `OnceUpon launch pool · ${quoteSymbol}`,
       note:
-        listed?.group === "stock"
-          ? `The mint prints on Solana and bonds against ${quoteSymbol}. You pair into the live ${quoteSymbol} DEX pool — that depth already exists. You do not seed a fresh empty pool. Pairing against ${quoteSymbol} is a quote, not studio equity.`
+        chain === "arc"
+          ? `The Chapter opens on Arc in USDC. Buyers write the book. Graduation seeds the AMM from the vault. ${quoteSymbol} hop-1 is optional routing, not the Story pool.`
+          : listed?.group === "stock"
+          ? `This is a leftover Story. Pairing against ${quoteSymbol} is a quote, not studio equity.`
           : input.preferDex === "pumpswap" && (quoteId === "sol" || quoteId === "usdc")
-            ? "The mint prints on OnceUpon. The curve is live from block one. Pump.fun venue pairs a PumpSwap pool (pAMMBay6…) as the linked AMM — that is the pool this launch is paired with."
-            : "The mint prints on Solana. The curve is the live pool against this quote from block one. You do not seed an empty AMM.",
+            ? "This is a leftover Story. The curve was live from block one."
+            : "This is a leftover Story. OnceUpon prints on Arc only.",
     },
     linked: linked.slice(0, 8),
     destination: destination.slice(0, 8),

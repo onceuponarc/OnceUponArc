@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/launch", label: "Launch", icon: Rocket, match: "/launch" },
+  { href: "/launch/arc", label: "Launch", icon: Rocket, match: "/launch" },
   { href: "/wallet", label: "Trade", icon: ArrowLeftRight },
   { href: "/ledger", label: "Claims", icon: Sparkles },
   { href: "/you", label: "You", icon: UserRound },
@@ -30,7 +30,7 @@ export function TabBar() {
               : "match" in tab && tab.match
                 ? pathname.startsWith(tab.match)
                 : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
-          const launch = tab.href === "/launch";
+                const launch = tab.href === "/launch/arc";
           return (
             <Link
               key={tab.href}

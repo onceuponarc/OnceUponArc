@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { POSITIONING } from "@onceupon/config/copy";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { JupiterStatusRow } from "@/components/jupiter/status-row";
 
 export async function generateMetadata({
   params,
@@ -45,19 +44,18 @@ export default async function ChapterPage({
         <h1 className="font-heading mt-3 text-5xl font-extrabold sm:text-6xl">{chapter.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-parchment/80">{POSITIONING}</p>
         <p className="mt-3 max-w-2xl text-parchment/65">
-          First official launch window on OnceUpon. Arc is home. Every other chain is open. Pair into SOL, Bitcoin, stocks, memes, or any mint. This is not studio equity.
+          First official launch window on OnceUpon. The press is Arc. Quote is USDC. This is not studio equity.
         </p>
         {chapter.opens_at ? (
           <p className="mt-4 text-sm text-gold">Opens {new Date(chapter.opens_at).toUTCString()}</p>
         ) : null}
         <div className="mt-6 space-y-4">
-          <JupiterStatusRow />
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild>
               <Link href="/launch/arc">Launch on Arc</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/launch">Choose a chain</Link>
+              <Link href="/wallet">Trade</Link>
             </Button>
           </div>
         </div>

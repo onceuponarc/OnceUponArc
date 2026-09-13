@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "OnceUpon — Arc launchpad",
     short_name: "OnceUpon",
     description:
-      "Social token launchpad on Arc. Open a Chapter Curve, watch live buys and sells, then graduate the book. Solana SPL and Robinhood Chain Pons are also live.",
+      "Social token launchpad on Arc. Open a Chapter Curve in USDC, watch live buys and sells, then graduate the book.",
     start_url: "/",
     scope: "/",
     display: "standalone",

@@ -90,7 +90,7 @@ export function PoolPicker({
 
   const prefer = venue === "pumpfun" ? "pumpswap" : venue === "pons" ? "pons" : null;
   const pools = [
-    ...(data?.linked ?? []).map((pool) => ({ ...pool, lane: "Solana depth" })),
+    ...(data?.linked ?? []).map((pool) => ({ ...pool, lane: chain === "arc" ? "Arc depth" : "Linked depth" })),
     ...(data?.destination ?? []).map((pool) => ({ ...pool, lane: `${data?.chain} destination` })),
   ].sort((a, b) => {
     if (!prefer) return 0;
@@ -182,7 +182,7 @@ export function PoolPicker({
               });
             }
           }}
-          placeholder="Solana pool pubkey or 0x pair"
+          placeholder={chain === "arc" ? "0x pair address" : "Pool address"}
         />
       </div>
     </section>

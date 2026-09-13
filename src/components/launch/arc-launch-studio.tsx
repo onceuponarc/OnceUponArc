@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CHAPTER } from "@onceupon/config/chapter";
 import { PROTOCOL } from "@onceupon/config/arc";
@@ -192,7 +191,7 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Print on Arc</p>
           <p className="text-sm text-parchment/70">
             {handle ? `@${handle}` : "Devnet"} · {PAD_NAME} · native Chapter · USDC quote. The funded Arc test wallet
-            signs create. No Solana wallet needed on this path.
+            signs create.
           </p>
           <label className="flex items-start gap-3 text-sm">
             <Switch checked={rights} onCheckedChange={setRights} />
@@ -218,9 +217,6 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
               <AlertDescription>{status}</AlertDescription>
             </Alert>
           ) : null}
-          <Link href="/launch" className="block text-sm text-arc hover:underline">
-            Launch on Solana or Robinhood Chain instead
-          </Link>
         </section>
       ) : null}
     </form>

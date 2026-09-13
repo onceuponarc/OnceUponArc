@@ -1,5 +1,3 @@
-import { ConnectedWalletCard } from "@/components/wallet/connected-wallet";
-import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
 import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { getSessionUser } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -15,18 +13,22 @@ export default async function WalletPage() {
     <div className="space-y-6">
       <section className="glass rounded-[28px] border border-arc/25 p-6 sm:p-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">Trade</p>
-        <h1 className="font-heading mt-2 text-4xl font-extrabold">Arc Devnet. Solana Jupiter.</h1>
+        <h1 className="font-heading mt-2 text-4xl font-extrabold">Arc Chapter Curve</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">
-          The Arc test wallet is funded for Chapter buys and sells. For Solana, connect Phantom, Solflare, or
-          Backpack and sign in with X. Jupiter quotes those mints — OnceUpon never holds a Solana key.
+          The funded Arc test wallet signs buy and sell. Quote is USDC. Your USDC stays in the book until graduation.
+          OnceUpon is an Arc launchpad.
         </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Button asChild className="rounded-full">
+            <Link href="/launch/arc">Open a Chapter</Link>
+          </Button>
+        </div>
       </section>
       <ArcDevnetWallet />
-      <ConnectedWalletCard signedIn={Boolean(profile)} />
-      <JupiterSwapPanel signedIn={Boolean(profile)} />
       {!profile ? (
         <div className="glass rounded-2xl border border-arc/20 p-5">
-          <h2 className="font-heading text-xl font-bold">Sign in with X to bind a Solana wallet</h2>
+          <h2 className="font-heading text-xl font-bold">Sign in with X</h2>
+          <p className="mt-2 text-sm text-parchment/65">Identity is X. The Arc Devnet wallet prints and trades.</p>
           <Button asChild className="mt-4 rounded-full">
             <Link href="/auth/login">
               <XMark className="size-3.5" />

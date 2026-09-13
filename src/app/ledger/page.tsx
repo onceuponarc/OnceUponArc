@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { PIECE_EXPLAINER } from "@onceupon/config/copy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { JupiterStatusRow } from "@/components/jupiter/status-row";
 import { XMark } from "@/components/x-mark";
 import Link from "next/link";
 
@@ -19,6 +18,7 @@ export default async function LedgerPage() {
       .from("stories")
       .select("slug, title, ticker, engine, vault_address")
       .eq("engine", "onceuponers")
+      .eq("chain", "arc")
       .in("status", ["live", "graduated"]);
     live = data;
   } catch (error) {
@@ -31,9 +31,6 @@ export default async function LedgerPage() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">The Piece</p>
         <h1 className="font-heading mt-2 text-4xl font-extrabold">Claims</h1>
         <p className="mt-3 max-w-2xl text-parchment/75">{PIECE_EXPLAINER}</p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <JupiterStatusRow />
-        </div>
       </section>
 
       {!profile ? (
