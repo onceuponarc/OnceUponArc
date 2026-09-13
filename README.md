@@ -129,7 +129,11 @@ Production: https://once-upon-arc.vercel.app/
 ## Apply schema
 
 ```bash
-npx supabase db push --linked
+pnpm sql:apply
 ```
 
-Migrations live in `supabase/migrations`. Never run them against the OrbitX/Soltools project.
+That stamps `supabase/migrations` onto the isolated OnceUpon project through the IPv4 session-mode pooler (`aws-0-us-east-1.pooler.supabase.com:5432`). Direct `db.*.supabase.co:5432` is IPv6-only from some hosts. `0001` is skipped when `public.stories` already exists; `0002`–`0007` are idempotent (`IF NOT EXISTS` / `DROP IF EXISTS`).
+
+You can also `npx supabase db push --linked` from a machine that can reach the direct DB host.
+
+Never run these against the OrbitX/Soltools project. Arc launches write `stories` + `trades` with the service role (unsigned Devnet prints keep `author_user_id` null). Local `data/arc-stories.json` is a cache; Postgres is the source of truth on Vercel.

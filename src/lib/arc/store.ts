@@ -47,23 +47,32 @@ export type LocalArcStory = {
 
 const FILE = process.env.ARC_STORIES_FILE || join(process.cwd(), "data", "arc-stories.json");
 
+let memory: LocalArcStory[] | null = null;
+
 function empty(): LocalArcStory[] {
   return [];
 }
 
 function readAll(): LocalArcStory[] {
+  if (memory) return memory;
   if (!existsSync(FILE)) return empty();
   try {
     const parsed = JSON.parse(readFileSync(FILE, "utf8")) as LocalArcStory[];
-    return Array.isArray(parsed) ? parsed : empty();
+    memory = Array.isArray(parsed) ? parsed : empty();
+    return memory;
   } catch {
     return empty();
   }
 }
 
 function writeAll(stories: LocalArcStory[]) {
-  mkdirSync(dirname(FILE), { recursive: true });
-  writeFileSync(FILE, JSON.stringify(stories, null, 2));
+  memory = stories;
+  try {
+    mkdirSync(dirname(FILE), { recursive: true });
+    writeFileSync(FILE, JSON.stringify(stories, null, 2));
+  } catch (error) {
+    console.error("Arc local store write skipped", error instanceof Error ? error.message : error);
+  }
 }
 
 export function listLocalArcStories(): LocalArcStory[] {

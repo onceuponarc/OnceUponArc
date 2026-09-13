@@ -333,6 +333,7 @@ const EXTRA_STORY_COLUMNS = [
   "virtual_base_raw",
   "lp_base_reserved_raw",
   "curve_k",
+  "curve_address",
 ];
 
 async function insertStory(

@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     }
   }
   return NextResponse.json({
-    stories: allArcStories(),
+    stories: await allArcStories(),
     tape: localTape(30),
   });
 }

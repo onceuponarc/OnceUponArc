@@ -18,6 +18,7 @@ import { ArcTrade } from "@/components/arc/arc-trade";
 import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { HoldersTable, PriceChart, StoryTape, type ChartTrade } from "@/components/story/market-panel";
 import { getLocalArcStory } from "@/lib/arc/store";
+import { loadArcStory } from "@/lib/arc/persist";
 import { chapterStartPriceUi, virtualQuoteUiFor } from "@onceupon/config/chapter";
 
 const STORY_SELECT =
@@ -67,7 +68,7 @@ function mapLocalArc(local: NonNullable<ReturnType<typeof getLocalArcStory>>) {
 }
 
 async function loadStory(slug: string) {
-  const local = getLocalArcStory(slug);
+  const local = await loadArcStory(slug);
   let supabase: Awaited<ReturnType<typeof createClient>>;
   try {
     supabase = await createClient();
@@ -172,7 +173,7 @@ export default async function StoryPage({
     holders = loaded.holders;
   } catch (error) {
     console.error("Story load failed", error);
-    const local = getLocalArcStory(slug);
+    const local = await loadArcStory(slug);
     if (!local) {
       return (
         <div className="glass mx-auto max-w-lg space-y-3 rounded-3xl border border-arc/25 p-8">

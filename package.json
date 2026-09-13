@@ -19,7 +19,8 @@
     "check:mint-tx": "node scripts/check-mint-tx.mjs",
     "check:read-json": "node --experimental-strip-types --no-warnings scripts/check-read-json.ts",
     "test:forge": "forge test --root contracts -vv",
-    "arc:devnet": "node scripts/arc-devnet.mjs"
+    "arc:devnet": "node scripts/arc-devnet.mjs",
+    "sql:apply": "node scripts/apply-sql.mjs"
   },
   "dependencies": {
     "@pump-fun/pump-swap-sdk": "^1.20.0",

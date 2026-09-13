@@ -7,11 +7,10 @@ import { publicArc, requireArcNetwork, traderWallet } from "@/lib/arc/client";
 import { loadArcNetwork } from "@/lib/arc/env";
 import {
   appendLocalArcTrade,
-  getLocalArcStory,
-  listLocalArcStories,
   upsertLocalArcStory,
   type LocalArcStory,
 } from "@/lib/arc/store";
+import { listPersistedArcStories, loadArcStory, persistArcStory, persistArcTrade } from "@/lib/arc/persist";
 
 function slugify(input: string) {
   return input
@@ -127,6 +126,7 @@ export async function launchOnArc(input: {
   graduateUi: number;
   handle: string | null;
   coverUrl?: string | null;
+  userId?: string | null;
 }) {
   const net = requireArcNetwork();
   const pub = publicArc(net);
@@ -199,11 +199,12 @@ export async function launchOnArc(input: {
     trades: [],
   };
   upsertLocalArcStory(story);
+  await persistArcStory(story, { userId: input.userId ?? null, authorWallet: wallet.account.address });
   return { slug, mint: tokenAddr, curve: curveAddr, tx: hash, story };
 }
 
 export async function quoteArcTrade(slug: string, side: "buy" | "sell", amountUi: number) {
-  const story = getLocalArcStory(slug);
+  const story = await loadArcStory(slug);
   if (!story) throw new Error("Unknown Arc Chapter.");
   const net = requireArcNetwork();
   const pub = publicArc(net);
@@ -242,7 +243,7 @@ export async function quoteArcTrade(slug: string, side: "buy" | "sell", amountUi
 }
 
 export async function tradeOnArc(slug: string, side: "buy" | "sell", amountUi: number) {
-  const story = getLocalArcStory(slug);
+  const story = await loadArcStory(slug);
   if (!story) throw new Error("Unknown Arc Chapter.");
   const net = requireArcNetwork();
   const pub = publicArc(net);
@@ -301,30 +302,29 @@ export async function tradeOnArc(slug: string, side: "buy" | "sell", amountUi: n
     functionName: "snapshot",
   });
   const priceUsd = tokensUi > 0 ? quoteUi / tokensUi : 0;
-  const updated = appendLocalArcTrade(
-    slug,
-    {
-      txHash: hash,
-      side,
-      trader: owner,
-      amountIn: amountIn.toString(),
-      amountOut: amountOut.toString(),
-      priceUsd,
-      tradedAt: new Date().toISOString(),
-    },
-    {
-      status: snap[0] ? "graduated" : "live",
-      curveQuoteRaw: snap[3].toString(),
-      curveTokenRaw: snap[4].toString(),
-      virtualQuoteRaw: snap[1].toString(),
-      virtualBaseRaw: snap[2].toString(),
-    },
-  );
-  return { hash, amountOut: amountOut.toString(), priceUsd, story: updated ?? getLocalArcStory(slug) };
+  const trade = {
+    txHash: hash,
+    side,
+    trader: owner,
+    amountIn: amountIn.toString(),
+    amountOut: amountOut.toString(),
+    priceUsd,
+    tradedAt: new Date().toISOString(),
+  };
+  const patch = {
+    status: snap[0] ? ("graduated" as const) : ("live" as const),
+    curveQuoteRaw: snap[3].toString(),
+    curveTokenRaw: snap[4].toString(),
+    virtualQuoteRaw: snap[1].toString(),
+    virtualBaseRaw: snap[2].toString(),
+  };
+  const updated = appendLocalArcTrade(slug, trade, patch);
+  await persistArcTrade(slug, trade, patch);
+  return { hash, amountOut: amountOut.toString(), priceUsd, story: updated ?? (await loadArcStory(slug)) };
 }
 
 export async function arcSnapshot(slug: string) {
-  const story = getLocalArcStory(slug);
+  const story = await loadArcStory(slug);
   if (!story) return null;
   const net = loadArcNetwork();
   if (!net) return { story, onchain: null };
@@ -365,6 +365,6 @@ export async function arcSnapshot(slug: string) {
   };
 }
 
-export function allArcStories() {
-  return listLocalArcStories();
+export async function allArcStories() {
+  return listPersistedArcStories();
 }

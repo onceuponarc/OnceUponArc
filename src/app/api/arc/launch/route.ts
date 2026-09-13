@@ -34,6 +34,7 @@ export async function POST(request: Request) {
       graduateUi: Number(body.graduateUi ?? 5000),
       handle: profile?.handle ?? "devnet",
       coverUrl: body.coverUrl ?? null,
+      userId: profile?.id ?? null,
     });
     return NextResponse.json(result);
   } catch (error) {
