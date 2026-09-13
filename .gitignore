@@ -44,8 +44,10 @@ next-env.d.ts
 # foundry
 contracts/out
 contracts/cache
+contracts/broadcast
 
 # local / agent
 uploads/
 agent-tools/
 supabase/.temp
+data/

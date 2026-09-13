@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
 import { PAD_TAGLINE } from "@onceupon/config/copy";
 import { Providers } from "@/components/providers";
+import { PwaRegister } from "@/components/pwa-register";
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
   let profile = null as Awaited<ReturnType<typeof getSessionUser>>["profile"];
@@ -24,7 +25,8 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <div className="relative flex min-h-full flex-col text-parchment">
         <PadBackground />
         <SiteHeader profile={profile} onlineCount={onlineCount} />
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-8 pt-5 sm:pt-8">
+        <PwaRegister />
+        <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-8 pt-5 sm:pt-8">
           {children}
         </main>
         <p className="px-4 pb-28 pt-4 text-center text-[11px] text-parchment/40">{PAD_TAGLINE}</p>

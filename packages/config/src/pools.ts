@@ -1,4 +1,4 @@
-import { BASE, ETHEREUM, ROBINHOOD_CHAIN, SOLANA, type LaunchChain } from "./solana";
+import { ROBINHOOD_CHAIN, SOLANA, type LaunchChain } from "./solana";
 import { ARC_TESTNET } from "./arc";
 
 export type DexId =
@@ -231,86 +231,8 @@ export const CHAIN_POOLS: Record<LaunchChain, ChainPoolCatalog> = {
       },
     ],
   },
-  ethereum: {
-    id: "ethereum",
-    title: "Ethereum",
-    caip2: ETHEREUM.caip2,
-    chainId: 1,
-    dexScreener: "ethereum",
-    explorer: ETHEREUM.explorer,
-    rpcUrl: "https://eth.llamarpc.com",
-    factories: [
-      { name: "Uniswap V2", address: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", dex: "uniswap" },
-      { name: "Uniswap V3", address: "0x1F98431c8aD98523631AE4a59f267346ea31F984", dex: "uniswap" },
-    ],
-    routers: [
-      { name: "Uniswap V2 Router", address: "0x7a250d5630B4cF539739dF2C5dAbB4c659F2488D" },
-      { name: "SwapRouter02", address: "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45" },
-    ],
-    quotes: [
-      { id: "sol", symbol: "WETH", address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", decimals: 18 },
-      { id: "usdc", symbol: "USDC", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", decimals: 6 },
-      { id: "cbbtc", symbol: "WBTC", address: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", decimals: 8 },
-    ],
-    canonicalPools: [
-      {
-        dex: "uniswap",
-        address: "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
-        label: "WETH/USDC 0.05%",
-        quoteId: "usdc",
-        liquidityUsd: 300_000_000,
-        url: "https://dexscreener.com/ethereum/0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
-      },
-      {
-        dex: "uniswap",
-        address: "0xCBCdF9626bC03E24f779434178A73a0B4bad62eD",
-        label: "WBTC/WETH 0.3%",
-        quoteId: "cbbtc",
-        liquidityUsd: 42_000_000,
-        url: "https://dexscreener.com/ethereum/0xcbcdf9626bc03e24f779434178a73a0b4bad62ed",
-      },
-    ],
-  },
-  base: {
-    id: "base",
-    title: "Base",
-    caip2: BASE.caip2,
-    chainId: 8453,
-    dexScreener: "base",
-    explorer: BASE.explorer,
-    rpcUrl: "https://mainnet.base.org",
-    factories: [
-      { name: "Uniswap V3", address: "0x33128a8fC17869897dcE68Ed026d694621f6FDfD", dex: "uniswap" },
-      { name: "Aerodrome", address: "0x420DD381b31aEf6683db6B902084cB0FFECe40Da", dex: "aerodrome" },
-    ],
-    routers: [
-      { name: "SwapRouter02", address: "0x2626664c2603336E57B271c5C0b26F421741e481" },
-      { name: "Aerodrome Router", address: "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43" },
-    ],
-    quotes: [
-      { id: "sol", symbol: "WETH", address: "0x4200000000000000000000000000000000000006", decimals: 18 },
-      { id: "usdc", symbol: "USDC", address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", decimals: 6 },
-      { id: "cbbtc", symbol: "cbBTC", address: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf", decimals: 8 },
-    ],
-    canonicalPools: [
-      {
-        dex: "uniswap",
-        address: "0x6c561b446416e1a00e8e93e221854d6ea4171372",
-        label: "WETH/USDC 0.3%",
-        quoteId: "usdc",
-        liquidityUsd: 117_000_000,
-        url: "https://dexscreener.com/base/0x6c561b446416e1a00e8e93e221854d6ea4171372",
-      },
-      {
-        dex: "aerodrome",
-        address: "0x70aCDF2Ad0bf2402C957154f944c19Ef4e1cbAE1",
-        label: "cbBTC/WETH",
-        quoteId: "cbbtc",
-        liquidityUsd: 15_600_000,
-        url: "https://dexscreener.com/base/0x70acdf2ad0bf2402c957154f944c19ef4e1cbae1",
-      },
-    ],
-  },
+  // Uniswap V2 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f · Uniswap V3 0x1F98431c8aD98523631AE4a59f267346ea31F984
+  // Aerodrome 0x420DD381b31aEf6683db6B902084cB0FFECe40Da · Base SwapRouter02 0x2626664c2603336E57B271c5C0b26F421741e481
   arc: {
     id: "arc",
     title: "Arc",

@@ -12,7 +12,7 @@ import { readApiJson } from "@/lib/http/read-json";
 
 type StoryOption = { slug: string; title: string; ticker: string; quoteMint?: string | null; pairLabel?: string | null };
 
-const BIND_CHAINS: LaunchChain[] = ["solana", "arc", "ethereum", "base", "robinhood"];
+const BIND_CHAINS: LaunchChain[] = ["arc", "solana", "robinhood"];
 
 export function BindingForm({
   signedIn,

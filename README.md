@@ -1,8 +1,10 @@
 # OnceUpon
 
-A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as **full SPL** on Solana mainnet and open a **Chapter Curve** the instant create lands — buyers pay quote into the vault, the Author does not seed an AMM at print. Graduation opens the book from those vault reserves (PumpSwap on Solana). Other chains tag the Story and bind a destination-chain pool as hop-1 routing.
+A social token launchpad on **Arc**. Launch on Arc (native Chapter Curve), Solana (SPL Chapter Curve), or Robinhood Chain (Pons hop-1). Arc Chapters are tradable the instant create lands — buyers pay USDC, the vault holds it. The Author does not seed an AMM at print. Graduation opens the book from those vault reserves. Solana prints a full SPL mint on the same curve math. Robinhood Chain tags the Story and binds a Pons pool as hop-1 routing.
 
-Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Phantom, Solflare, or Backpack). That address is bound to your handle in Supabase. There is no in-app keypair.
+Identity is **X via Supabase**. Solana signing is your **connected wallet** (Phantom, Solflare, or Backpack). Arc Devnet uses a funded test wallet so you can launch, buy, and sell before mainnet Arc.
+
+The pad installs as a **PWA**.
 
 ## Launch types
 
@@ -17,7 +19,7 @@ Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Pha
 - **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks such as **NVDAx**), ETFs (SPYx, QQQx), Ondo USDY/OUSG, or any mint. Pairing against a tokenized mint is a quote, not studio equity.
 - **Chapter Curve** — Create mints the token, metadata, curve, and vaults with `realQuote = 0`. Buyers pay quote; fees come off input; net stays in the vault. You cannot eat the LP reserve unless the buy also graduates. Sell cannot pay virtual quote. At the graduate target the vault seeds the AMM and mint authority is burned.
 - **Hop-1 routing** — Binding an existing NVDAx/USDC (or SOL/USDC) market only tags quote depth — it does not put your mint in that pool. That book is never the Story market.
-- **Linked pools** — Optional tags for Raydium / Orca / Meteora / Uniswap / Pons pools you already created. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
+- **Linked pools** — Optional hop-1 tags for Raydium / Orca / Meteora / PumpSwap / Pons. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory.
 - Default USDC Chapter: start cap **$3,000** (virtual quote ≈ **3,219**), graduate **$5,000**. SOL defaults **2 SOL** graduate / **30 SOL** start cap. cbBTC **0.1**, listed xStock/ETF **10** — editable at print.
 
 ## Wallets
@@ -62,6 +64,15 @@ pnpm dev
 
 The app binds to `http://127.0.0.1:43147`.
 
+Arc Devnet (Anvil + Chapter Factory + funded test wallet):
+
+```bash
+export PATH="$PATH:$HOME/.foundry/bin"
+pnpm arc:devnet
+```
+
+That starts Anvil on `127.0.0.1:8546`, deploys `ChapterFactory` + MockUSDC, and mints **1,000,000 test USDC** to the pad wallet. Then launch / buy / sell from `/launch/arc` and any Arc Story.
+
 Required env:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -83,18 +94,21 @@ Production: https://once-upon-arc.vercel.app/
 - Injected Solana wallets bound through Supabase
 - Jupiter Metis routing for quotes and swaps (`lite-api.jup.ag`)
 - Foundry under `contracts/` (`pnpm test:forge` — Chapter Curve invariants)
+- viem for Arc Devnet launch / buy / sell
+- PWA (`/manifest.webmanifest` + `/sw.js`)
 
 ## Surfaces
 
 | Path | Job |
 | --- | --- |
-| `/` | Home — Arc hero, chain chooser, feed |
-| `/launch` | Choose a chain |
-| `/launch/arc` | Arc press (default). Mint prints on Solana, tagged for Arc |
-| `/launch/[chain]` | Solana / Ethereum / Base / Robinhood press |
-| `/wallet` | Connected wallet plus Jupiter swap |
+| `/` | Home — live tape, token board, charts |
+| `/launch` | Choose Arc, Solana, or Robinhood Chain |
+| `/launch/arc` | Native Arc Chapter (Devnet wallet) |
+| `/launch/solana` | SPL printer |
+| `/launch/robinhood` | Pons-tagged SPL |
+| `/story/[slug]` | Chart, holders, live buys/sells, trade dock |
+| `/wallet` | Arc test wallet + Jupiter |
 | `/you` | Profile, bound wallet, shortcuts |
-| `/story/[slug]` | A live launch, curve trade, Jupiter, The Binding |
 | `/shelf` | Own profile, or the crew if signed out |
 | `/shelf/[handle]` | Public profile |
 | `/ledger` | The Piece claims |
@@ -106,11 +120,11 @@ Production: https://once-upon-arc.vercel.app/
 
 ## Network
 
-**Arc (home chain)** — Stories tagged for Arc. Uniswap V2 factory `0x89e5db8b…`, V3 `0xf0db7b58…`, V4 PoolManager `0x8366a39c…` on chain 5042. Link an Arc pool at launch. Testnet explorer `https://testnet.arcscan.app`.
+**Arc (home chain)** — Native Chapter Factory on Devnet (`pnpm arc:devnet`, RPC `http://127.0.0.1:8546`). Public testnet RPC `https://rpc.testnet.arc.io`, explorer `https://testnet.arcscan.app`, Circle faucet `https://faucet.circle.com`. Mainnet Arc is days out. Uniswap V2/V3/V4 on chain 5042 are hop-1 tags, not the Story pool.
 
 **Solana Mainnet (live printer)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. Factories: Raydium AMM `675kPX9…`, CPMM `CPMMoo8L3…`, CLMM `CAMMCzo5…`, Orca `whirLbMi…`, Meteora DLMM `LBUZKhRx…`, PumpSwap `pAMMBay6…`. Canonical SOL/USDC Raydium `58oQChx4…`. Canonical PumpSwap SOL/USDC `Gf7sXMoP…`. Canonical NVDAx/USDC Raydium `49iMatQ…`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`). Prove pool catalogs with `pnpm check:pools`.
 
-**Ethereum, Base, Robinhood Chain** — Stories tagged for those chains still mint as SPL on Solana today. Pick a destination pool at launch (Uniswap WETH/USDC `0x88e6A0c2…` on Ethereum, Uniswap WETH/USDC `0x6c561b44…` or Aerodrome cbBTC/WETH `0x70aCDF2A…` on Base, Pons factory `0x7ed598…` on Robinhood Chain). RPC for Robinhood Chain: `https://rpc.mainnet.chain.robinhood.com`.
+**Robinhood Chain** — Pons hop-1. Factory `0x7ed598…`, router `0xe33e9e47…`, RPC `https://rpc.mainnet.chain.robinhood.com`. The mint still prints as SPL on Solana so the Chapter is live immediately.
 
 ## Apply schema
 

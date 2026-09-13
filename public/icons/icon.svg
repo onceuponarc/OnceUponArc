@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="OnceUpon">
+  <rect width="512" height="512" rx="112" fill="#041018"/>
+  <circle cx="256" cy="256" r="168" fill="none" stroke="#00E5C3" stroke-width="28"/>
+  <path d="M164 292c28-88 156-88 184 0" fill="none" stroke="#3D7CFF" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="256" cy="196" r="36" fill="#00E5C3"/>
+</svg>

@@ -36,6 +36,7 @@ import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
 import { readApiJson } from "@/lib/http/read-json";
 import { fetchLaunchBlockhash } from "@/lib/solana/blockhash";
+import { ArcLaunchStudio } from "@/components/launch/arc-launch-studio";
 import { cn } from "@/lib/utils";
 
 export function LaunchStudio({
@@ -50,7 +51,7 @@ export function LaunchStudio({
   const router = useRouter();
   const selectedChain = findChain(chain)!;
   const { address, signAndSend, ensureBound } = useWalletSigner();
-  const [venue, setVenue] = useState<LaunchVenue>("spl");
+  const [venue, setVenue] = useState<LaunchVenue>(chain === "robinhood" ? "pons" : "spl");
   const [engine, setEngine] = useState<"author" | "onceuponers">("author");
   const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>(chain === "arc" ? "stable" : "sol");
   const [quoteId, setQuoteId] = useState(chain === "arc" ? "usdc" : "sol");
@@ -85,6 +86,11 @@ export function LaunchStudio({
   const example = useMemo(() => feeExample(1000, Math.min(authorBps, cap)), [authorBps, cap]);
   const needsArt = venue === "pumpfun";
   const canSubmit = signedIn && Boolean(address) && rights && !busy && (!needsArt || Boolean(cover?.url));
+  const [step, setStep] = useState(0);
+
+  if (chain === "arc") {
+    return <ArcLaunchStudio handle={handle} />;
+  }
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
@@ -196,6 +202,23 @@ export function LaunchStudio({
 
   return (
     <form onSubmit={launch} className="space-y-5">
+      <ol className="grid grid-cols-3 gap-2">
+        {["Venue", "Pair", "Print"].map((label, index) => (
+          <li key={label}>
+            <button
+              type="button"
+              onClick={() => setStep(index)}
+              className={cn(
+                "w-full rounded-2xl border px-3 py-2 text-left text-sm",
+                step === index ? "border-arc bg-arc/15" : "border-white/10 bg-white/5",
+              )}
+            >
+              <span className="text-[11px] uppercase tracking-[0.18em] text-arc">0{index + 1}</span>
+              <p className="font-heading font-bold">{label}</p>
+            </button>
+          </li>
+        ))}
+      </ol>
       <section className="glass flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-arc/20 px-4 py-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">The Press</p>
@@ -205,7 +228,7 @@ export function LaunchStudio({
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <Badge>{chain === "arc" ? "Home chain" : chain === "solana" ? "Prints here" : `Tagged for ${selectedChain.title}`}</Badge>
+          <Badge>{chain === "solana" ? "Prints here" : `Tagged for ${selectedChain.title}`}</Badge>
           <Link href="/launch" className="text-sm text-arc hover:underline">
             Change chain
           </Link>
@@ -495,9 +518,7 @@ export function LaunchStudio({
               ? "Sign in with X to launch"
               : !address
                 ? "Connect a wallet to launch"
-                : chain === "arc"
-                  ? `Open the Chapter · ${PAD_NAME} · Arc`
-                  : chain === "solana"
+                : chain === "solana"
                     ? `Open the Chapter · ${PAD_NAME}`
                     : `Open the Chapter · tagged for ${selectedChain.title}`}
         </Button>

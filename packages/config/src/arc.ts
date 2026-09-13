@@ -44,6 +44,18 @@ export const ARC_TESTNET = {
   feeHook: null as `0x${string}` | null,
 } as const;
 
+/** Local Anvil slice that mirrors Arc Chapter contracts for launch / buy / sell. */
+export const ARC_DEVNET = {
+  name: "Arc Devnet",
+  chainId: 31337,
+  hexChainId: "0x7A69",
+  caip2: "eip155:31337",
+  rpcUrl: "http://127.0.0.1:8546",
+  explorer: "http://127.0.0.1:8546",
+  nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+  note: "ETH for gas, MockUSDC as Chapter quote. Same factory and curve as Arc Testnet. Public Arc uses USDC for gas.",
+} as const;
+
 export const ARC_MAINNET_PENDING = {
   name: "Arc",
   chainId: 1243,

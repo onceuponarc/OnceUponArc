@@ -53,18 +53,12 @@ export const BASE = {
   rpcUrl: "https://mainnet.base.org",
 } as const;
 
-export type LaunchChain = "arc" | "solana" | "ethereum" | "base" | "robinhood";
+export type LaunchChain = "arc" | "solana" | "robinhood";
 export type PrintableChain = LaunchChain;
 export type LaunchVenue = "spl" | "nft" | "pumpfun" | "pons";
 export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
 
-export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = [
-  "arc",
-  "solana",
-  "ethereum",
-  "base",
-  "robinhood",
-];
+export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = ["arc", "solana", "robinhood"];
 
 export type ChainCard = {
   id: LaunchChain;
@@ -84,60 +78,36 @@ export const CHAINS: ChainCard[] = [
     title: "Arc",
     live: true,
     prints: true,
-    badge: "Home chain",
-    body: "OnceUpon lives on Arc. Launch here, pair into any Solana-deep asset — BTC, stocks, memes, stables — and tag a Uniswap pool on Arc mainnet (chain 5042) as hop-1 routing. The Chapter Curve is the Story market from T0.",
+    badge: "Home · native",
+    body: "OnceUpon lives on Arc. Open a Chapter Curve in USDC the instant create lands. Buyers write the book. Graduation seeds the AMM from the vault. Mainnet Arc is days out — Devnet and Testnet are wired for launch, buy, and sell now.",
     caip2: "eip155:5042002",
-    accent: "from-[#3ee0c6]/45 to-[#6d7cff]/25",
+    accent: "from-[#00e5c3]/45 to-[#3d7cff]/30",
     printNote:
-      "Tagged for Arc. The mint prints as SPL on Solana so it is live on a Chapter Curve immediately. Native Arc Uniswap V2/V3 factories on chain 5042 are hop-1 tags, not the Story pool.",
+      "Native Chapter Curve on Arc. MockUSDC (Devnet) or Circle USDC (Testnet) is the quote. You do not seed an AMM at print. Your USDC stays in the book until graduation.",
   },
   {
     id: "solana",
     title: "Solana",
     live: true,
     prints: true,
-    badge: "Live printer",
-    body: "The working printer. Full SPL coins, NFTs, Chapter Curves, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, memes, stocks, ETFs, treasuries, bonds, or any mint. Existing Raydium, Orca, Meteora, or PumpSwap books are hop-1 routing — never this Story’s pool until graduation.",
+    badge: "SPL printer",
+    body: "Full SPL coins, NFTs, and Chapter Curves mint here. Pair against SOL, cbBTC, USDC, memes, stocks, ETFs, treasuries, bonds, or any mint. Existing Raydium, Orca, Meteora, or PumpSwap books are hop-1 routing — never this Story’s pool until graduation.",
     caip2: SOLANA.caip2,
     accent: "from-[#9945ff]/40 to-[#14f195]/25",
     printNote:
       "Mints a real SPL token on Solana mainnet. Your connected wallet pays rent. The Chapter opens at print with zero real quote in the vault. Buyers feed the book until graduation.",
   },
   {
-    id: "ethereum",
-    title: "Ethereum",
-    live: true,
-    prints: true,
-    badge: "Open · tagged",
-    body: "Pick Ethereum as the Story’s home chain. The token still prints on Solana today so it is live immediately. Link a Uniswap V2/V3 pool at launch.",
-    caip2: ETHEREUM.caip2,
-    accent: "from-[#627eea]/40 to-[#8a92b2]/20",
-    printNote:
-      "Prints as an SPL token on Solana mainnet and is tagged for Ethereum. Pick a Uniswap pool (or paste any pair) as hop-1 routing — it is bound on the Story, not used as the launch AMM.",
-  },
-  {
-    id: "base",
-    title: "Base",
-    live: true,
-    prints: true,
-    badge: "Open · tagged",
-    body: "Same engines, tagged for Base. The mint lands on Solana now. Link a Uniswap or Aerodrome pool at launch.",
-    caip2: BASE.caip2,
-    accent: "from-[#0052ff]/40 to-[#7aa7ff]/20",
-    printNote:
-      "Prints as an SPL token on Solana mainnet and is tagged for Base. Pick a Uniswap or Aerodrome pool as hop-1 routing when you launch.",
-  },
-  {
     id: "robinhood",
     title: "Robinhood Chain",
     live: true,
     prints: true,
-    badge: "Open · Pons tagged",
-    body: "Pons-style launches tagged for Robinhood Chain. The token prints on Solana today. Link the Pons factory pool at launch via RPC https://rpc.mainnet.chain.robinhood.com.",
+    badge: "Pons API",
+    body: "Tag a Story for Robinhood Chain and bind the Pons v2 factory as hop-1 routing. The mint prints as SPL on Solana so it is tradable immediately. Native Pons lives on chain 4663.",
     caip2: ROBINHOOD_CHAIN.caip2,
-    accent: "from-[#00c805]/35 to-[#c9a227]/20",
+    accent: "from-[#00c805]/35 to-[#00e5c3]/20",
     printNote:
-      "Prints as an SPL token on Solana mainnet and is tagged for Robinhood Chain / Pons. Pick or paste a Pons pool — factory 0x7ed598… — as hop-1 routing.",
+      "Prints as an SPL token on Solana and is tagged for Robinhood Chain / Pons. Pick or paste a Pons pool — factory 0x7ed598… — as hop-1 routing via the Pons API.",
   },
 ];
 

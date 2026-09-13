@@ -14,27 +14,120 @@ import { tickerHue } from "@/lib/feed";
 import { explorerAddress, explorerTx } from "@/lib/solana/explorer";
 import { LaunchLinks } from "@/components/story/launch-links";
 import { LinkLp } from "@/components/story/link-lp";
+import { ArcTrade } from "@/components/arc/arc-trade";
+import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
+import { HoldersTable, PriceChart, StoryTape, type ChartTrade } from "@/components/story/market-panel";
+import { getLocalArcStory } from "@/lib/arc/store";
+import { chapterStartPriceUi, virtualQuoteUiFor } from "@onceupon/config/chapter";
 
 const STORY_SELECT =
   "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
 const STORY_SELECT_MIN =
   "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, supply, reward_vault_lamports, quote_mint, users:author_user_id(handle, display_name, portrait_url)";
 
+function mapLocalArc(local: NonNullable<ReturnType<typeof getLocalArcStory>>) {
+  return {
+    story: {
+      id: local.id,
+      title: local.title,
+      ticker: local.ticker,
+      blurb: local.blurb,
+      engine: local.engine,
+      status: local.status,
+      pair_label: local.pairLabel,
+      author_bps: local.authorBps,
+      protocol_bps: local.protocolBps,
+      snipe_tax_bps: 0,
+      vault_address: local.curveAddress,
+      token_address: local.tokenAddress,
+      chain: "arc",
+      venue: "spl",
+      mint_decimals: 18,
+      created_tx: local.createdTx,
+      curve_quote_lamports: local.curveQuoteRaw,
+      curve_token_raw: local.curveTokenRaw,
+      auto_buy_rewards: false,
+      quote_decimals: 6,
+      graduation_quote_raw: local.graduationQuoteRaw,
+      author_user_id: null,
+      cover_url: local.coverUrl,
+      quote_mint: local.quoteAddress,
+      supply: local.supply,
+      users: local.handle ? { handle: local.handle } : null,
+    },
+    bindings: [] as BindingRow[],
+    trades: local.trades.map((trade) => ({
+      at: trade.tradedAt,
+      priceUsd: trade.priceUsd,
+      side: trade.side,
+      quoteUi: Number(trade.side === "buy" ? trade.amountIn : trade.amountOut) / 1e6,
+    })),
+    holders: holdersFromLocal(local.trades),
+  };
+}
+
 async function loadStory(slug: string) {
-  const supabase = await createClient();
+  const local = getLocalArcStory(slug);
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    supabase = await createClient();
+  } catch {
+    if (local) return mapLocalArc(local);
+    throw new Error("Supabase did not answer.");
+  }
   const full = await supabase.from("stories").select(STORY_SELECT).eq("slug", slug).maybeSingle();
   const story =
     full.data ??
     (full.error
       ? (await supabase.from("stories").select(STORY_SELECT_MIN).eq("slug", slug).maybeSingle()).data
       : null);
-  if (!story) return { story: null, bindings: [] as BindingRow[] };
+  if (!story && !local) return { story: null, bindings: [] as BindingRow[], trades: [] as ChartTrade[], holders: [] as { address: string; bought: number; sold: number; net: number }[] };
+  if (!story && local) return mapLocalArc(local);
   const { data: bindings } = await supabase
     .from("bindings")
     .select("id, kind, chain_caip2, pool_address, mechanism, is_primary, proof_url, depth_usd, quote_address")
-    .eq("story_id", story.id)
+    .eq("story_id", story!.id)
     .order("is_primary", { ascending: false });
-  return { story, bindings: bindings ?? [] };
+  const { data: tradeRows } = await supabase
+    .from("trades")
+    .select("side, trader, amount_in, amount_out, traded_at, price_usd")
+    .eq("story_id", story!.id)
+    .order("traded_at", { ascending: true });
+  const qDec = Number((story as { quote_decimals?: number }).quote_decimals ?? 6);
+  const bDec = Number((story as { mint_decimals?: number }).mint_decimals ?? 6);
+  const trades: ChartTrade[] = (tradeRows ?? []).map((row) => {
+    const quoteUi = row.side === "buy" ? Number(row.amount_in ?? 0) / 10 ** qDec : Number(row.amount_out ?? 0) / 10 ** qDec;
+    const tokens = row.side === "buy" ? Number(row.amount_out ?? 0) / 10 ** bDec : Number(row.amount_in ?? 0) / 10 ** bDec;
+    return {
+      at: String(row.traded_at),
+      priceUsd: row.price_usd != null ? Number(row.price_usd) : tokens > 0 ? quoteUi / tokens : 0,
+      side: row.side === "sell" ? "sell" : "buy",
+      quoteUi,
+    };
+  });
+  const holderMap = new Map<string, { address: string; bought: number; sold: number; net: number }>();
+  for (const row of tradeRows ?? []) {
+    const addr = String(row.trader ?? "unknown");
+    const cur = holderMap.get(addr) ?? { address: addr, bought: 0, sold: 0, net: 0 };
+    const tokens = row.side === "buy" ? Number(row.amount_out ?? 0) / 10 ** bDec : Number(row.amount_in ?? 0) / 10 ** bDec;
+    if (row.side === "buy") cur.bought += tokens;
+    else cur.sold += tokens;
+    cur.net = cur.bought - cur.sold;
+    holderMap.set(addr, cur);
+  }
+  return { story, bindings: bindings ?? [], trades, holders: [...holderMap.values()].sort((a, b) => b.net - a.net) };
+}
+
+function holdersFromLocal(trades: { trader: string; side: string; amountIn: string; amountOut: string }[]) {
+  const map = new Map<string, { address: string; bought: number; sold: number; net: number }>();
+  for (const trade of trades) {
+    const cur = map.get(trade.trader) ?? { address: trade.trader, bought: 0, sold: 0, net: 0 };
+    if (trade.side === "buy") cur.bought += Number(trade.amountOut) / 1e18;
+    else cur.sold += Number(trade.amountIn) / 1e18;
+    cur.net = cur.bought - cur.sold;
+    map.set(trade.trader, cur);
+  }
+  return [...map.values()].sort((a, b) => b.net - a.net);
 }
 
 type BindingRow = {
@@ -48,6 +141,8 @@ type BindingRow = {
   depth_usd: number | string | null;
   quote_address: string | null;
 };
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -67,18 +162,25 @@ export default async function StoryPage({
   const { profile } = await getSessionUser();
   let story: Awaited<ReturnType<typeof loadStory>>["story"] = null;
   let bindings: Awaited<ReturnType<typeof loadStory>>["bindings"] = [];
+  let trades: Awaited<ReturnType<typeof loadStory>>["trades"] = [];
+  let holders: Awaited<ReturnType<typeof loadStory>>["holders"] = [];
   try {
     const loaded = await loadStory(slug);
     story = loaded.story;
     bindings = loaded.bindings;
+    trades = loaded.trades;
+    holders = loaded.holders;
   } catch (error) {
     console.error("Story load failed", error);
-    return (
-      <div className="glass mx-auto max-w-lg space-y-3 rounded-3xl border border-gold/25 p-8">
-        <h1 className="font-heading text-3xl font-bold">This Story could not load</h1>
-        <p className="text-parchment/70">Supabase did not answer. Reload, then sign in with X if you were trading.</p>
-      </div>
-    );
+    const local = getLocalArcStory(slug);
+    if (!local) {
+      return (
+        <div className="glass mx-auto max-w-lg space-y-3 rounded-3xl border border-arc/25 p-8">
+          <h1 className="font-heading text-3xl font-bold">This Story could not load</h1>
+          <p className="text-parchment/70">Supabase did not answer. Reload, then sign in with X if you were trading.</p>
+        </div>
+      );
+    }
   }
 
   if (!story) notFound();
@@ -118,7 +220,7 @@ export default async function StoryPage({
         )}
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">
               {PAD_NAME} · ${story.ticker}
             </p>
             <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">{story.title}</h1>
@@ -138,7 +240,7 @@ export default async function StoryPage({
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge>{PAD_NAME}</Badge>
-            <Badge variant="outline">{venueLabel(story.venue)}</Badge>
+            <Badge variant="outline">{venueLabel(story.venue, chain)}</Badge>
             <Badge>{engineLabel}</Badge>
             <Badge variant="outline">{story.pair_label}</Badge>
             <Badge variant="secondary">{statusLabel}</Badge>
@@ -146,6 +248,53 @@ export default async function StoryPage({
           </div>
         </div>
       </section>
+
+      <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+        <PriceChart
+          trades={trades}
+          fallbackPrice={chapterStartPriceUi(virtualQuoteUiFor(), 1_073_000_000)}
+        />
+        <div className="space-y-4">
+          {chain === "arc" ? <ArcDevnetWallet compact /> : null}
+          <Card>
+            <CardHeader>
+              <CardTitle>Trade</CardTitle>
+              <CardDescription>
+                {chain === "arc"
+                  ? "The funded Arc test wallet signs buy and sell on the Chapter Curve. Your USDC stays in the book until graduation."
+                  : "Bonding buys use the Chapter Curve. Your quote stays in the vault until graduation."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {chain === "arc" ? (
+                story.status !== "graduated" ? (
+                  <ArcTrade slug={slug} pairLabel={story.pair_label} />
+                ) : (
+                  <p className="text-sm text-parchment/70">This Chapter graduated. The book is open.</p>
+                )
+              ) : story.status !== "graduated" ? (
+                <CurveTrade
+                  slug={slug}
+                  venue={story.venue ?? "spl"}
+                  engine={story.engine}
+                  pairLabel={story.pair_label}
+                  decimals={Number(story.mint_decimals ?? 6)}
+                  quoteDecimals={Number(story.quote_decimals ?? 9)}
+                  isAuthor={isAuthor}
+                  vaultRaw={Number((story as { reward_vault_lamports?: number | string | null }).reward_vault_lamports ?? 0)}
+                />
+              ) : (
+                <p className="text-sm text-parchment/70">This Story bonded. Spot now routes through Jupiter.</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <StoryTape trades={trades} />
+        <HoldersTable holders={holders} />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -247,28 +396,14 @@ export default async function StoryPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Trade</CardTitle>
+          <CardTitle>Jupiter</CardTitle>
           <CardDescription>
             Bonding buys use the Chapter Curve. Your quote stays in the vault until graduation. After a route exists,
             Jupiter quotes the mint and your connected Solana wallet signs the swap.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {story.status !== "graduated" ? (
-            <CurveTrade
-              slug={slug}
-              venue={story.venue ?? "spl"}
-              engine={story.engine}
-              pairLabel={story.pair_label}
-              decimals={Number(story.mint_decimals ?? 6)}
-              quoteDecimals={Number(story.quote_decimals ?? 9)}
-              isAuthor={isAuthor}
-              vaultRaw={Number((story as { reward_vault_lamports?: number | string | null }).reward_vault_lamports ?? 0)}
-            />
-          ) : (
-            <p className="text-sm text-parchment/70">This Story bonded. Spot now routes through Jupiter.</p>
-          )}
-          {story.token_address ? (
+          {chain !== "arc" && story.token_address ? (
             <JupiterSwapPanel
               signedIn={Boolean(profile)}
               title={`Jupiter · $${story.ticker}`}
@@ -277,6 +412,10 @@ export default async function StoryPage({
               extraDecimals={Number(story.mint_decimals ?? 6)}
               defaultOutput={story.ticker}
             />
+          ) : chain === "arc" ? (
+            <p className="text-sm text-parchment/60">
+              Arc Chapters trade on the curve above. Jupiter is for Solana SPL mints.
+            </p>
           ) : (
             <p className="text-sm text-parchment/60">Jupiter can quote this mint once the printer lands it.</p>
           )}

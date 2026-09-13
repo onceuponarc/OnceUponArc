@@ -1,0 +1,370 @@
+import "server-only";
+
+import { formatUnits, parseUnits, zeroHash } from "viem";
+import { CHAPTER } from "@onceupon/config/chapter";
+import { curveAbi, erc20Abi, factoryAbi } from "@/lib/arc/abi";
+import { publicArc, requireArcNetwork, traderWallet } from "@/lib/arc/client";
+import { loadArcNetwork } from "@/lib/arc/env";
+import {
+  appendLocalArcTrade,
+  getLocalArcStory,
+  listLocalArcStories,
+  upsertLocalArcStory,
+  type LocalArcStory,
+} from "@/lib/arc/store";
+
+function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
+}
+
+async function ensureAllowance(
+  token: `0x${string}`,
+  owner: `0x${string}`,
+  spender: `0x${string}`,
+  amount: bigint,
+) {
+  const net = requireArcNetwork();
+  const pub = publicArc(net);
+  const wallet = traderWallet(net);
+  const current = await pub.readContract({
+    address: token,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [owner, spender],
+  });
+  if (current >= amount) return;
+  const hash = await wallet.writeContract({
+    address: token,
+    abi: erc20Abi,
+    functionName: "approve",
+    args: [spender, amount],
+  });
+  await pub.waitForTransactionReceipt({ hash });
+}
+
+export async function arcStatus() {
+  const net = loadArcNetwork();
+  if (!net) {
+    return {
+      ready: false as const,
+      label: "Arc Devnet",
+      error: "Factory is not deployed. Run pnpm arc:devnet.",
+    };
+  }
+  const pub = publicArc(net);
+  const wallet = traderWallet(net);
+  const address = wallet.account.address;
+  let gas = 0n;
+  let usdc = 0n;
+  let tokenBalance = 0n;
+  try {
+    gas = await pub.getBalance({ address });
+    usdc = await pub.readContract({
+      address: net.usdc,
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: [address],
+    });
+  } catch (error) {
+    return {
+      ready: false as const,
+      label: net.label,
+      chainId: net.chainId,
+      rpcUrl: net.rpcUrl,
+      factory: net.factory,
+      usdc: net.usdc,
+      address,
+      error: error instanceof Error ? error.message : "Arc RPC is down.",
+    };
+  }
+  return {
+    ready: true as const,
+    label: net.label,
+    chainId: net.chainId,
+    rpcUrl: net.rpcUrl,
+    explorer: net.explorer,
+    factory: net.factory,
+    usdc: net.usdc,
+    nativeGas: net.nativeGas,
+    address,
+    gasEth: formatUnits(gas, 18),
+    usdcUi: Number(formatUnits(usdc, 6)),
+    tokenBalance: tokenBalance.toString(),
+    note:
+      net.nativeGas === "usdc"
+        ? "Public Arc uses USDC for gas. This wallet is funded on the live testnet."
+        : "Arc Devnet mirrors Chapter math on Anvil. ETH pays gas. MockUSDC is the Chapter quote. Mainnet Arc lands in days — same factory, same curve.",
+  };
+}
+
+export async function dripFaucet() {
+  const net = requireArcNetwork();
+  const { deployerWallet } = await import("@/lib/arc/client");
+  const pub = publicArc(net);
+  const deployer = deployerWallet(net);
+  const trader = traderWallet(net).account.address;
+  const amount = parseUnits("25000", 6);
+  const hash = await deployer.writeContract({
+    address: net.usdc,
+    abi: erc20Abi,
+    functionName: "mint",
+    args: [trader, amount],
+  });
+  await pub.waitForTransactionReceipt({ hash });
+  return { hash, amountUi: 25_000 };
+}
+
+export async function launchOnArc(input: {
+  title: string;
+  ticker: string;
+  blurb: string;
+  engine: "author" | "onceuponers";
+  authorBps: number;
+  graduateUi: number;
+  handle: string | null;
+  coverUrl?: string | null;
+}) {
+  const net = requireArcNetwork();
+  const pub = publicArc(net);
+  const wallet = traderWallet(net);
+  const ticker = input.ticker.trim().toUpperCase().slice(0, 12);
+  const title = input.title.trim();
+  const graduate = parseUnits(String(input.graduateUi || CHAPTER.graduateQuoteUi), 6);
+  const authorBps = Math.min(Math.max(0, input.authorBps), input.engine === "author" ? 300 : 100);
+
+  const { request, result } = await pub.simulateContract({
+    account: wallet.account,
+    address: net.factory,
+    abi: factoryAbi,
+    functionName: "createStory",
+    args: [
+      {
+        name: title.slice(0, 32),
+        symbol: ticker.slice(0, 10),
+        uri: input.coverUrl || "https://once-upon-arc.vercel.app/onceupon-cover.svg",
+        quote: net.usdc,
+        engine: input.engine === "onceuponers" ? 1 : 0,
+        authorBps,
+        protocolBps: 20,
+        pieceBps: input.engine === "onceuponers" ? 0 : 0,
+        graduateQuoteTarget: graduate,
+        feeRecipient: wallet.account.address,
+        seedQuote: 0n,
+        minBaseOut: 0n,
+      },
+    ],
+  });
+  const hash = await wallet.writeContract(request);
+  await pub.waitForTransactionReceipt({ hash });
+  const [storyId, curveAddr, tokenAddr] = result;
+  const snap = await pub.readContract({
+    address: curveAddr,
+    abi: curveAbi,
+    functionName: "snapshot",
+  });
+  const slug = `${slugify(title) || slugify(ticker) || "chapter"}-${Math.random().toString(36).slice(2, 6)}`;
+  const story: LocalArcStory = {
+    id: storyId,
+    slug,
+    title,
+    ticker,
+    blurb: input.blurb.trim(),
+    engine: input.engine,
+    status: snap[0] ? "graduated" : "live",
+    chain: "arc",
+    venue: "spl",
+    pairLabel: "USDC",
+    authorBps,
+    protocolBps: 20,
+    handle: input.handle,
+    coverUrl: input.coverUrl ?? null,
+    createdAt: new Date().toISOString(),
+    tokenAddress: tokenAddr,
+    curveAddress: curveAddr,
+    quoteAddress: net.usdc,
+    storyId,
+    createdTx: hash,
+    mintDecimals: 18,
+    quoteDecimals: 6,
+    supply: (1_000_000_000n * 10n ** 18n).toString(),
+    graduationQuoteRaw: graduate.toString(),
+    curveQuoteRaw: snap[3].toString(),
+    curveTokenRaw: snap[4].toString(),
+    virtualQuoteRaw: snap[1].toString(),
+    virtualBaseRaw: snap[2].toString(),
+    trades: [],
+  };
+  upsertLocalArcStory(story);
+  return { slug, mint: tokenAddr, curve: curveAddr, tx: hash, story };
+}
+
+export async function quoteArcTrade(slug: string, side: "buy" | "sell", amountUi: number) {
+  const story = getLocalArcStory(slug);
+  if (!story) throw new Error("Unknown Arc Chapter.");
+  const net = requireArcNetwork();
+  const pub = publicArc(net);
+  if (side === "buy") {
+    const quoteIn = parseUnits(String(amountUi), 6);
+    const [baseOut, fee] = await pub.readContract({
+      address: story.curveAddress,
+      abi: curveAbi,
+      functionName: "quoteBuy",
+      args: [zeroHash, quoteIn],
+    });
+    return {
+      side,
+      quoteIn: quoteIn.toString(),
+      baseOut: baseOut.toString(),
+      fee: fee.toString(),
+      baseOutUi: Number(formatUnits(baseOut, 18)),
+      feeUi: Number(formatUnits(fee, 6)),
+    };
+  }
+  const baseIn = parseUnits(String(amountUi), 18);
+  const [quoteOut, fee] = await pub.readContract({
+    address: story.curveAddress,
+    abi: curveAbi,
+    functionName: "quoteSell",
+    args: [zeroHash, baseIn],
+  });
+  return {
+    side,
+    baseIn: baseIn.toString(),
+    quoteOut: quoteOut.toString(),
+    fee: fee.toString(),
+    quoteOutUi: Number(formatUnits(quoteOut, 6)),
+    feeUi: Number(formatUnits(fee, 6)),
+  };
+}
+
+export async function tradeOnArc(slug: string, side: "buy" | "sell", amountUi: number) {
+  const story = getLocalArcStory(slug);
+  if (!story) throw new Error("Unknown Arc Chapter.");
+  const net = requireArcNetwork();
+  const pub = publicArc(net);
+  const wallet = traderWallet(net);
+  const owner = wallet.account.address;
+  let hash: `0x${string}`;
+  let amountIn: bigint;
+  let amountOut: bigint;
+  let quoteUi: number;
+  let tokensUi: number;
+
+  if (side === "buy") {
+    amountIn = parseUnits(String(amountUi), 6);
+    await ensureAllowance(story.quoteAddress, owner, story.curveAddress, amountIn);
+    const quoted = await pub.readContract({
+      address: story.curveAddress,
+      abi: curveAbi,
+      functionName: "quoteBuy",
+      args: [zeroHash, amountIn],
+    });
+    amountOut = quoted[0];
+    const minOut = (amountOut * 95n) / 100n;
+    hash = await wallet.writeContract({
+      address: story.curveAddress,
+      abi: curveAbi,
+      functionName: "buy",
+      args: [amountIn, minOut],
+    });
+    quoteUi = amountUi;
+    tokensUi = Number(formatUnits(amountOut, 18));
+  } else {
+    amountIn = parseUnits(String(amountUi), 18);
+    await ensureAllowance(story.tokenAddress, owner, story.curveAddress, amountIn);
+    const quoted = await pub.readContract({
+      address: story.curveAddress,
+      abi: curveAbi,
+      functionName: "quoteSell",
+      args: [zeroHash, amountIn],
+    });
+    amountOut = quoted[0];
+    const minOut = (amountOut * 95n) / 100n;
+    hash = await wallet.writeContract({
+      address: story.curveAddress,
+      abi: curveAbi,
+      functionName: "sell",
+      args: [amountIn, minOut],
+    });
+    quoteUi = Number(formatUnits(amountOut, 6));
+    tokensUi = amountUi;
+  }
+
+  await pub.waitForTransactionReceipt({ hash });
+  const snap = await pub.readContract({
+    address: story.curveAddress,
+    abi: curveAbi,
+    functionName: "snapshot",
+  });
+  const priceUsd = tokensUi > 0 ? quoteUi / tokensUi : 0;
+  const updated = appendLocalArcTrade(
+    slug,
+    {
+      txHash: hash,
+      side,
+      trader: owner,
+      amountIn: amountIn.toString(),
+      amountOut: amountOut.toString(),
+      priceUsd,
+      tradedAt: new Date().toISOString(),
+    },
+    {
+      status: snap[0] ? "graduated" : "live",
+      curveQuoteRaw: snap[3].toString(),
+      curveTokenRaw: snap[4].toString(),
+      virtualQuoteRaw: snap[1].toString(),
+      virtualBaseRaw: snap[2].toString(),
+    },
+  );
+  return { hash, amountOut: amountOut.toString(), priceUsd, story: updated ?? getLocalArcStory(slug) };
+}
+
+export async function arcSnapshot(slug: string) {
+  const story = getLocalArcStory(slug);
+  if (!story) return null;
+  const net = loadArcNetwork();
+  if (!net) return { story, onchain: null };
+  const pub = publicArc(net);
+  const snap = await pub.readContract({
+    address: story.curveAddress,
+    abi: curveAbi,
+    functionName: "snapshot",
+  });
+  const wallet = traderWallet(net);
+  const tokenBal = await pub.readContract({
+    address: story.tokenAddress,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [wallet.account.address],
+  });
+  const usdcBal = await pub.readContract({
+    address: story.quoteAddress,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [wallet.account.address],
+  });
+  const realQuote = Number(formatUnits(snap[3], 6));
+  const target = Number(formatUnits(snap[6], 6));
+  const vq = Number(formatUnits(snap[1], 6));
+  const vb = Number(formatUnits(snap[2], 18));
+  return {
+    story,
+    onchain: {
+      graduated: snap[0],
+      realQuote,
+      target,
+      progressBps: target > 0 ? Math.min(10_000, Math.round((realQuote / target) * 10_000)) : 0,
+      spot: vb > 0 ? vq / vb : 0,
+      tokenUi: Number(formatUnits(tokenBal, 18)),
+      usdcUi: Number(formatUnits(usdcBal, 6)),
+    },
+  };
+}
+
+export function allArcStories() {
+  return listLocalArcStories();
+}

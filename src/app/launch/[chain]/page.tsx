@@ -48,7 +48,7 @@ export default async function LaunchChainPage({ params }: Props) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">The Press · {card.title}</p>
         <h1 className="font-heading mt-2 text-3xl font-extrabold sm:text-4xl">
           {chain === "arc"
-            ? "Launch on Arc. Pair into real liquidity."
+            ? "Native Chapter on Arc. Funded Devnet wallet signs create, buy, and sell."
             : chain === "solana"
               ? "Print a real Solana token."
               : `Launch tagged for ${card.title}.`}
@@ -56,7 +56,7 @@ export default async function LaunchChainPage({ params }: Props) {
         <p className="mt-3 max-w-2xl text-parchment/75">{card.printNote}</p>
       </section>
 
-      <ConnectedWalletCard signedIn={Boolean(profile)} />
+      {chain !== "arc" ? <ConnectedWalletCard signedIn={Boolean(profile)} /> : null}
 
       <LaunchStudio chain={chain} handle={profile?.handle ?? null} signedIn={Boolean(profile)} />
     </div>

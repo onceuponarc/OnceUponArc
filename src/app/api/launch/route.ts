@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     const chain = body.chain ?? "arc";
     if (!isPrintableChain(chain)) {
       return NextResponse.json(
-        { error: "Unknown chain. Pick Arc, Solana, Ethereum, Base, or Robinhood Chain." },
+        { error: "Unknown chain. Pick Arc, Solana, or Robinhood Chain." },
         { status: 400 },
       );
     }

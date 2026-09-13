@@ -95,7 +95,8 @@ export function preferDexForVenue(venue: LaunchVenue): DexId | null {
   return null;
 }
 
-export function venueLabel(venue: string | null | undefined) {
+export function venueLabel(venue: string | null | undefined, chain?: string | null) {
+  if (chain === "arc") return "Chapter";
   if (venue === "pumpfun") return "PumpSwap pair";
   if (venue === "pons") return "Pons pair";
   if (venue === "nft") return "NFT";
