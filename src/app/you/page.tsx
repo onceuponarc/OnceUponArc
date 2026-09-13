@@ -60,7 +60,7 @@ export default async function YouPage() {
 
       <section className="grid gap-3 sm:grid-cols-2">
         {[
-          { href: "/bindings", label: "Link LP", body: "Tag an existing pool. Sign and pay PumpSwap from the Story." },
+          { href: "/bindings", label: "The Binding", body: "Tag an existing pool as hop-1 routing. Graduate the book from the Story." },
           { href: "/margin", label: "Margin", body: "Doorway to Jupiter perps. OnceUpon does not custody leverage." },
           { href: "/onceuponers", label: "Crew", body: "Handles on the pad — not a PnL board." },
           { href: "/chapter/the-first-chapter", label: "First Chapter", body: "The first official launch window." },
@@ -97,7 +97,7 @@ export default async function YouPage() {
                     </span>
                   </Link>
                   <Link href={`/bindings?story=${story.slug}`} className="shrink-0 text-sm text-arc hover:underline">
-                    Link LP
+                    Tag hop-1
                   </Link>
                 </li>
               ))}
