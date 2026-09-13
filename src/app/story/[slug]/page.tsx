@@ -249,8 +249,8 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>Trade</CardTitle>
           <CardDescription>
-            Bonding buys use the pad curve. After a route exists, Jupiter quotes the mint and your connected
-            Solana wallet signs the swap.
+            Bonding buys use the Chapter Curve. Your quote stays in the vault until graduation. After a route exists,
+            Jupiter quotes the mint and your connected Solana wallet signs the swap.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -287,15 +287,16 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>The Binding</CardTitle>
           <CardDescription>
-            The curve is the launch pool from T0. DexScreener and Jupiter need a PumpSwap pool with both sides
-            deposited. The Author signs, pays gas, and seeds that LP from this page.
+            The Chapter Curve is the Story market from T0. DexScreener and Jupiter see LP when the Chapter graduates
+            and the vault opens the book. Binding an existing quote market is hop-1 routing — it does not put this mint
+            in that LP.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           {!bindings?.length ? (
             <p className="text-parchment/65">
-              No AMM yet. Launching against {story.pair_label} does not put this mint in that LP. Sign and pay to
-              open PumpSwap below.
+              No AMM yet. The Chapter is live against {story.pair_label}. That quote market is hop-1 routing, not this
+              mint’s pool. The book opens from the vault at graduation.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -306,7 +307,7 @@ export default async function StoryPage({
                 return (
                   <li key={binding.id} className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2">
                     <p className="font-medium text-parchment">
-                      {binding.is_primary ? "Launch pool · " : "Linked · "}
+                      {binding.is_primary ? "Chapter · " : "Hop-1 · "}
                       {binding.mechanism ?? binding.kind.replaceAll("_", " ")} ·{" "}
                       {catalog?.title ?? binding.chain_caip2}
                     </p>

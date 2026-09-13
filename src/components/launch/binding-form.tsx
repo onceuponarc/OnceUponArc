@@ -95,7 +95,7 @@ export function BindingForm({
     return (
       <div className="glass rounded-2xl border border-gold/20 p-6">
         <h2 className="font-heading text-xl font-bold">Sign in to bind a pool</h2>
-        <p className="mt-2 text-sm text-parchment/65">Only the Author of a Story can attach a pool.</p>
+        <p className="mt-2 text-sm text-parchment/65">Only the Author of a Story can tag a pool as hop-1 routing.</p>
         <Button asChild className="mt-4" size="sm">
           <a href="/auth/login">
             <XMark className="size-3.5" />
@@ -110,7 +110,7 @@ export function BindingForm({
     return (
       <div className="glass rounded-2xl border border-gold/20 p-6">
         <h2 className="font-heading text-xl font-bold">No Stories to bind</h2>
-        <p className="mt-2 text-sm text-parchment/65">Launch a token first, then attach a pool.</p>
+        <p className="mt-2 text-sm text-parchment/65">Launch a token first, then tag hop-1 routing if you want a label.</p>
         <Button asChild className="mt-4" size="sm">
           <a href="/launch/solana">Open the Solana press</a>
         </Button>
@@ -143,14 +143,14 @@ export function BindingForm({
           </select>
           {selectedStory?.pairLabel ? (
             <p className="text-xs text-parchment/50">
-              This launch quotes {selectedStory.pairLabel}. Tag that live market here, or open the Story to sign and
-              pay PumpSwap LP.
+              This launch quotes {selectedStory.pairLabel}. Tag that live market as hop-1 routing. It does not put
+              your mint in that LP.
             </p>
           ) : null}
           {storySlug ? (
             <p className="text-xs">
               <a className="text-gold hover:underline" href={`/story/${storySlug}`}>
-                Sign and pay PumpSwap from the Story
+                Open the Story
               </a>
             </p>
           ) : null}
@@ -187,7 +187,7 @@ export function BindingForm({
         mint={quoteMint}
         selected={pool}
         onSelect={setPool}
-        heading="Link a live pool"
+        heading="Hop-1 routing (optional)"
       />
 
       <Button type="submit" disabled={busy || !pool?.address}>
