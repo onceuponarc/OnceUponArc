@@ -20,16 +20,16 @@ export type QuoteAsset = {
 };
 
 const XSTOCKS: [id: string, symbol: string, name: string, mint: string][] = [
+  ["nvdax", "NVDAx", "NVIDIA xStock", "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"],
   ["aaplx", "AAPLx", "Apple xStock", "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"],
   ["tslax", "TSLAx", "Tesla xStock", "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"],
-  ["nvdax", "NVDAx", "NVIDIA xStock", "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"],
   ["msftx", "MSFTx", "Microsoft xStock", "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX"],
+  ["spyx", "SPYx", "S&P 500 xStock", "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"],
+  ["qqqx", "QQQx", "Nasdaq-100 xStock", "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"],
   ["amznx", "AMZNx", "Amazon xStock", "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg"],
   ["googlx", "GOOGLx", "Alphabet xStock", "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"],
   ["metax", "METAx", "Meta xStock", "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"],
   ["nflxx", "NFLXx", "Netflix xStock", "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL"],
-  ["spyx", "SPYx", "S&P 500 xStock", "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"],
-  ["qqqx", "QQQx", "Nasdaq-100 xStock", "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"],
   ["crclx", "CRCLx", "Circle xStock", "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"],
   ["coinx", "COINx", "Coinbase xStock", "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"],
   ["mstrx", "MSTRx", "MicroStrategy xStock", "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"],
@@ -273,7 +273,7 @@ export const QUOTE_GROUPS: { id: QuoteGroup; label: string; hint: string }[] = [
   { id: "btc", label: "BTC / ETH", hint: "Pair into Bitcoin and Ether liquidity already on Solana. No new pool to fund." },
   { id: "stable", label: "Stables", hint: "USDC, USDT, PYUSD." },
   { id: "meme", label: "Memes", hint: "Pair into BONK, WIF, JUP, PENGU and other live mints." },
-  { id: "stock", label: "Stocks", hint: "Listed xStocks. Quote pair, not studio equity." },
+  { id: "stock", label: "Stocks", hint: "Listed xStocks such as NVDAx. Quote pair, not studio equity — you bind the live deep pool, you do not seed a fresh one." },
   { id: "treasury", label: "Treasuries", hint: "Ondo USDY and OUSG." },
   { id: "custom", label: "Any mint", hint: "Paste any SPL mint — another chain’s wrap, a meme, anything on-chain." },
 ];

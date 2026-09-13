@@ -20,11 +20,13 @@ const MINTS = {
   bonk: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
   weth: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   wethBase: "0x4200000000000000000000000000000000000006",
+  nvdax: "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
 };
 
 const CANONICAL = {
   solUsdcRaydium: "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
   solUsdcPumpswap: "Gf7sXMoP8iRw4iiXmJ1nq4vxcRycbGXy5RL8a8LnTd3v",
+  nvdaxUsdcRaydium: "49iMatQtoyabsYAQc8GafVq6aeBFVDxSRH44oiatyyw6",
   ethWethUsdc: "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
 };
 
@@ -60,6 +62,7 @@ async function main() {
   const usdc = await dexPairs("solana", MINTS.usdc);
   const cbbtc = await dexPairs("solana", MINTS.cbbtc);
   const bonk = await dexPairs("solana", MINTS.bonk);
+  const nvdax = await dexPairs("solana", MINTS.nvdax);
   const eth = await dexPairs("ethereum", MINTS.weth);
   const base = await dexPairs("base", MINTS.wethBase);
 
@@ -67,12 +70,16 @@ async function main() {
   assert(usdc.length > 0, "no Solana USDC pairs");
   assert(cbbtc.length > 0, "no Solana cbBTC pairs");
   assert(bonk.length > 0, "no Solana BONK pairs");
+  assert(nvdax.length > 0, "no Solana NVDAx pairs");
   assert(eth.length > 0, "no Ethereum WETH pairs");
   assert(base.length > 0, "no Base WETH pairs");
 
   const solAddrs = new Set(sol.map((p) => p.pairAddress));
   assert(solAddrs.has(CANONICAL.solUsdcRaydium), "canonical SOL/USDC Raydium pool missing from DexScreener");
   assert(src.includes(CANONICAL.solUsdcPumpswap), "catalog missing PumpSwap SOL/USDC pool");
+  assert(src.includes(CANONICAL.nvdaxUsdcRaydium), "catalog missing NVDAx/USDC Raydium pool");
+  const nvdaxAddrs = new Set(nvdax.map((p) => p.pairAddress));
+  assert(nvdaxAddrs.has(CANONICAL.nvdaxUsdcRaydium), "canonical NVDAx/USDC Raydium pool missing from DexScreener");
 
   const ethAddrs = new Set(eth.map((p) => (p.pairAddress ?? "").toLowerCase()));
   assert(ethAddrs.has(CANONICAL.ethWethUsdc.toLowerCase()), "canonical WETH/USDC Uniswap pool missing");
@@ -88,7 +95,7 @@ async function main() {
     JSON.stringify(
       {
         ok: true,
-        solana: { sol: sol.length, usdc: usdc.length, cbbtc: cbbtc.length, bonk: bonk.length },
+        solana: { sol: sol.length, usdc: usdc.length, cbbtc: cbbtc.length, bonk: bonk.length, nvdax: nvdax.length },
         ethereum: eth.length,
         base: base.length,
         factories: Object.keys(FACTORIES),

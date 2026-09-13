@@ -31,7 +31,7 @@ import { parsePayer } from "@/lib/wallets/bound";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { QuoteAsset } from "@onceupon/config/quotes";
 import { graduationRaw, virtualRaw } from "@onceupon/config/quotes";
-import { CHAIN_POOLS, bindingKindForDex, type DexId } from "@onceupon/config/pools";
+import { CHAIN_POOLS, bindingKindForDex, canonicalPoolsForQuote, type DexId } from "@onceupon/config/pools";
 import { type ResolvedPool } from "@/lib/pools/resolve";
 import { createMetadataV3Instruction } from "@/lib/solana/token-metadata";
 
@@ -157,6 +157,9 @@ export async function launchOnSolana(input: LaunchInput) {
   const coverUrl = input.coverUrl?.trim() || `${PAD_URL}/onceupon-cover.svg`;
   const imageUri = input.imageUri?.trim() || coverUrl;
 
+  const linked = await collectLinkedPools(input);
+  const paired = linked[0] ?? null;
+
   const service = createServiceClient();
   const storyRow: Record<string, unknown> = {
     slug,
@@ -199,6 +202,9 @@ export async function launchOnSolana(input: LaunchInput) {
     quote_decimals: input.quote.decimals,
     virtual_quote_raw: virtualRaw(input.quote).toString(),
     graduation_quote_raw: graduationRaw(input.quote).toString(),
+    linked_pool_address: paired?.address ?? null,
+    linked_pool_dex: paired?.dex ?? null,
+    linked_pool_label: paired?.label ?? null,
   };
 
   const inserted = await insertStory(service, storyRow);
@@ -230,7 +236,6 @@ export async function launchOnSolana(input: LaunchInput) {
     });
   }
 
-  const linked = await collectLinkedPools(input);
   for (const pool of linked) {
     const { error: linkError } = await service.from("bindings").insert({
       story_id: story.id,
@@ -248,7 +253,6 @@ export async function launchOnSolana(input: LaunchInput) {
       verified_at: null,
     });
     if (linkError) {
-      // Shared quote pools can collide until migration 0004 is applied.
       console.error("Linked pool bind failed", linkError.message);
     }
   }
@@ -271,7 +275,16 @@ export async function launchOnSolana(input: LaunchInput) {
   };
 }
 
-const EXTRA_STORY_COLUMNS = ["twitter_url", "telegram_url", "website_url", "image_uri", "metadata_uri"];
+const EXTRA_STORY_COLUMNS = [
+  "twitter_url",
+  "telegram_url",
+  "website_url",
+  "image_uri",
+  "metadata_uri",
+  "linked_pool_address",
+  "linked_pool_dex",
+  "linked_pool_label",
+];
 
 async function insertStory(
   service: ReturnType<typeof createServiceClient>,
@@ -288,12 +301,16 @@ async function insertStory(
 
 async function collectLinkedPools(input: LaunchInput): Promise<ResolvedPool[]> {
   const prefer = preferDexForVenue(input.venue);
+  const quoteId = input.quote.id;
+  const solUsdc = quoteId === "sol" || quoteId === "usdc";
   const picked = input.linkedPool ?? null;
   const fallback: ResolvedPool[] = [];
-  const solana = CHAIN_POOLS.solana.canonicalPools.filter((pool) => {
-    if (prefer && pool.dex === prefer) return true;
-    return pool.quoteId === input.quote.id || pool.quoteId === "sol" || pool.quoteId === "usdc";
-  });
+  const matching = canonicalPoolsForQuote(quoteId);
+  const solana = matching.length
+    ? matching
+    : solUsdc
+      ? CHAIN_POOLS.solana.canonicalPools.filter((pool) => pool.quoteId === "sol" || pool.quoteId === "usdc")
+      : [];
   for (const pool of solana) {
     fallback.push({
       id: `solana:${pool.address}`,
@@ -308,12 +325,27 @@ async function collectLinkedPools(input: LaunchInput): Promise<ResolvedPool[]> {
       source: "canonical",
     });
   }
+  if (solUsdc && prefer === "pumpswap") {
+    const pump = CHAIN_POOLS.solana.canonicalPools.find((pool) => pool.dex === "pumpswap");
+    if (pump) {
+      fallback.unshift({
+        id: `solana:${pump.address}`,
+        dex: pump.dex,
+        address: pump.address,
+        label: pump.label,
+        liquidityUsd: pump.liquidityUsd,
+        url: pump.url,
+        chain: "solana",
+        chainCaip2: SOLANA.caip2,
+        quoteAddress: input.quote.mint,
+        source: "canonical",
+      });
+    }
+  }
   if (input.chain !== "solana") {
     const catalog = CHAIN_POOLS[input.chain];
     const dest =
-      catalog.canonicalPools.find((pool) => (prefer ? pool.dex === prefer : false)) ??
-      catalog.canonicalPools.find((pool) => pool.quoteId === input.quote.id) ??
-      catalog.canonicalPools[0];
+      catalog.canonicalPools.find((pool) => pool.quoteId === quoteId) ?? catalog.canonicalPools[0];
     if (dest) {
       fallback.push({
         id: `${catalog.id}:${dest.address}`,
@@ -340,18 +372,9 @@ async function collectLinkedPools(input: LaunchInput): Promise<ResolvedPool[]> {
     out.push(pool);
   };
 
-  const preferredPick = prefer && picked?.dex === prefer ? picked : null;
-  const preferredFallback = prefer ? fallback.find((pool) => pool.dex === prefer) : null;
-  push(preferredPick);
-  push(preferredFallback);
-  if (!preferredPick) push(picked);
-  if (input.chain !== "solana") {
-    push(fallback.find((pool) => pool.chain === input.chain));
-  }
-  if (!out.length) {
-    for (const pool of fallback) push(pool);
-  }
-  return out.slice(0, prefer ? 3 : picked ? 2 : 4);
+  push(picked);
+  for (const pool of fallback) push(pool);
+  return out.slice(0, 3);
 }
 
 export async function confirmLaunch(userId: string, slug: string, signature: string) {

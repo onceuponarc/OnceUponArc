@@ -3,6 +3,7 @@ import {
   CHAIN_POOLS,
   MAJOR_MINTS,
   bindingKindForDex,
+  canonicalPoolsForQuote,
   type CanonicalPool,
   type DexId,
 } from "@onceupon/config/pools";
@@ -248,14 +249,13 @@ export async function resolvePools(input: {
     const hops = await jupiterHopPools(solanaMint);
     linked = mergePools([...linked, ...hops]);
   }
-  const canonical = CHAIN_POOLS.solana.canonicalPools.filter(
-    (pool) => pool.quoteId === quoteId || pool.quoteId === listed?.id,
-  );
+  const canonical = canonicalPoolsForQuote(quoteId);
   linked = mergePools([
-    ...linked,
     ...canonical.map((pool) => canonicalAsResolved("solana", pool, solanaMint)),
+    ...linked,
   ]);
-  if (input.preferDex === "pumpswap") {
+  const preferOnSolUsdc = input.preferDex === "pumpswap" && (quoteId === "sol" || quoteId === "usdc" || listed?.id === "sol");
+  if (preferOnSolUsdc) {
     const pumpCanonical = CHAIN_POOLS.solana.canonicalPools.filter((pool) => pool.dex === "pumpswap");
     linked = mergePools([
       ...pumpCanonical.map((pool) => canonicalAsResolved("solana", pool, solanaMint)),
@@ -263,19 +263,21 @@ export async function resolvePools(input: {
     ]);
   }
   if (!linked.length) {
-    linked = CHAIN_POOLS.solana.canonicalPools
-      .filter((pool) => pool.quoteId === "sol" || pool.quoteId === "usdc")
-      .map((pool) => canonicalAsResolved("solana", pool, SOLANA.wsolMint));
+    linked = canonicalPoolsForQuote("sol").map((pool) => canonicalAsResolved("solana", pool, SOLANA.wsolMint));
   }
-  if (input.preferDex) {
-    const prefer = input.preferDex;
-    linked = [...linked].sort((a, b) => {
-      const ap = a.dex === prefer ? 1 : 0;
-      const bp = b.dex === prefer ? 1 : 0;
+  linked = [...linked].sort((a, b) => {
+    if (preferOnSolUsdc) {
+      const ap = a.dex === "pumpswap" ? 1 : 0;
+      const bp = b.dex === "pumpswap" ? 1 : 0;
       if (ap !== bp) return bp - ap;
-      return b.liquidityUsd - a.liquidityUsd;
-    });
-  }
+    }
+    if (quoteId !== "sol" && quoteId !== "usdc") {
+      const ap = a.dex === "pumpswap" ? 0 : 1;
+      const bp = b.dex === "pumpswap" ? 0 : 1;
+      if (ap !== bp) return bp - ap;
+    }
+    return b.liquidityUsd - a.liquidityUsd;
+  });
 
   let destination: ResolvedPool[] = [];
   if (chain !== "solana") {
@@ -305,9 +307,11 @@ export async function resolvePools(input: {
       dex: "onceupon",
       label: `OnceUpon launch pool · ${quoteSymbol}`,
       note:
-        input.preferDex === "pumpswap"
-          ? "The mint prints on OnceUpon. The curve is live from block one. Pump.fun venue pairs a PumpSwap pool (pAMMBay6…) as the linked AMM — that is the pool this launch is paired with."
-          : "The mint prints on Solana. The curve is the live pool against this quote from block one. You do not seed an empty AMM.",
+        listed?.group === "stock"
+          ? `The mint prints on Solana and bonds against ${quoteSymbol}. You pair into the live ${quoteSymbol} DEX pool — that depth already exists. You do not seed a fresh empty pool. Pairing against ${quoteSymbol} is a quote, not studio equity.`
+          : input.preferDex === "pumpswap" && (quoteId === "sol" || quoteId === "usdc")
+            ? "The mint prints on OnceUpon. The curve is live from block one. Pump.fun venue pairs a PumpSwap pool (pAMMBay6…) as the linked AMM — that is the pool this launch is paired with."
+            : "The mint prints on Solana. The curve is the live pool against this quote from block one. You do not seed an empty AMM.",
     },
     linked: linked.slice(0, 8),
     destination: destination.slice(0, 8),

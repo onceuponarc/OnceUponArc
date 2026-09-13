@@ -79,7 +79,10 @@ export const CHAIN_POOLS: Record<LaunchChain, ChainPoolCatalog> = {
       { id: "bonk", symbol: "BONK", address: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", decimals: 5 },
       { id: "wif", symbol: "WIF", address: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopJLuG5ZuYxCjs", decimals: 6 },
       { id: "jup", symbol: "JUP", address: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN", decimals: 6 },
-      { id: "pengu", symbol: "PENGU", address: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv", decimals: 6 },
+      { id: "aaplx", symbol: "AAPLx", address: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp", decimals: 8 },
+      { id: "nvdax", symbol: "NVDAx", address: "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", decimals: 8 },
+      { id: "tslax", symbol: "TSLAx", address: "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB", decimals: 8 },
+      { id: "spyx", symbol: "SPYx", address: "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W", decimals: 8 },
     ],
     canonicalPools: [
       {
@@ -137,6 +140,70 @@ export const CHAIN_POOLS: Record<LaunchChain, ChainPoolCatalog> = {
         quoteId: "aaplx",
         liquidityUsd: 335_000,
         url: "https://dexscreener.com/solana/ckwjzwm7oj3nu4653n1epdrqxbxayxopfipeenlouf8y",
+      },
+      {
+        dex: "raydium",
+        address: "49iMatQtoyabsYAQc8GafVq6aeBFVDxSRH44oiatyyw6",
+        label: "NVDAx/USDC",
+        quoteId: "nvdax",
+        liquidityUsd: 2_130_000,
+        url: "https://dexscreener.com/solana/49imatqtoyabsyaqc8gafvq6aebfvdxsrh44oiatyyw6",
+      },
+      {
+        dex: "raydium",
+        address: "8aDaBQkTrS6HVMjyc6EZebgdiaXhLYGriDWKWWp1NpFF",
+        label: "TSLAx/USDC",
+        quoteId: "tslax",
+        liquidityUsd: 2_117_000,
+        url: "https://dexscreener.com/solana/8adabqktrs6hvmjyc6ezebgdiaxhlygridwkwwp1npff",
+      },
+      {
+        dex: "raydium",
+        address: "6truu3rZuiB9rKQg4VYC3Dt3QwV7DgwGqXrYUcrvnDDE",
+        label: "SPYx/USDC",
+        quoteId: "spyx",
+        liquidityUsd: 2_847_000,
+        url: "https://dexscreener.com/solana/6truu3rzuib9rkqg4vyc3dt3qwv7dgwgqxryucrvndde",
+      },
+      {
+        dex: "raydium",
+        address: "GMjGLWzvK75LPetrgAmdeXnvxc4fUuQPwJxeQqTDU1aG",
+        label: "QQQx/USDC",
+        quoteId: "qqqx",
+        liquidityUsd: 2_176_000,
+        url: "https://dexscreener.com/solana/gmjglwzvk75lpetrgamdexnvxc4fuuqpwjxeqqtdu1ag",
+      },
+      {
+        dex: "raydium",
+        address: "CLu4kFM4nb67xrdN7vJnMxXXir8Z5hA4HJUzPFccXjsL",
+        label: "MSFTx/USDC",
+        quoteId: "msftx",
+        liquidityUsd: 317_000,
+        url: "https://dexscreener.com/solana/clu4kfm4nb67xrdn7vjnmxxxir8z5ha4hjuzpfccxjsl",
+      },
+      {
+        dex: "raydium",
+        address: "B8YAwjGYk6qidWzGBXMAxP7nYfG8g74EZ3Y4gFSsobRw",
+        label: "GOOGLx/USDC",
+        quoteId: "googlx",
+        liquidityUsd: 353_000,
+        url: "https://dexscreener.com/solana/b8yawjgyk6qidwzgbxmaxp7nyfg8g74ez3y4gfssobrw",
+      },
+      {
+        dex: "raydium",
+        address: "6m5aXAve4uh6Kt4ytKyCLWNMjd8PYP5vujwNCtycrUiD",
+        label: "AMZNx/USDC",
+        quoteId: "amznx",
+        liquidityUsd: 288_000,
+        url: "https://dexscreener.com/solana/6m5axave4uh6kt4ytkyclwnmjd8pyp5vujwnctycruid",
+      },
+      {
+        dex: "raydium",
+        address: "3L7KbPVaAQA4UTecaGQYsm6UCq5F3sZM9zAYkxqYt63j",
+        label: "METAx/USDC",
+        quoteId: "metax",
+        liquidityUsd: 210_000,
+        url: "https://dexscreener.com/solana/3l7kbpvaaqa4utecagqysm6ucq5f3szm9zaykxqyt63j",
       },
       {
         dex: "orca",
@@ -301,6 +368,19 @@ export const CHAIN_POOLS: Record<LaunchChain, ChainPoolCatalog> = {
   },
 };
 
+export function canonicalPoolsForQuote(quoteId: string) {
+  const exact = CHAIN_POOLS.solana.canonicalPools.filter((pool) => pool.quoteId === quoteId);
+  if (exact.length) return exact;
+  if (quoteId === "sol" || quoteId === "usdc") {
+    return CHAIN_POOLS.solana.canonicalPools.filter((pool) => pool.quoteId === "sol" || pool.quoteId === "usdc");
+  }
+  return [];
+}
+
+export function isSolUsdcQuote(quoteId: string) {
+  return quoteId === "sol" || quoteId === "usdc";
+}
+
 export function catalogFor(chain: LaunchChain): ChainPoolCatalog {
   return CHAIN_POOLS[chain];
 }
@@ -339,4 +419,8 @@ export const MAJOR_MINTS = new Set([
   "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913".toLowerCase(),
   "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf".toLowerCase(),
   ARC_MAINNET.usdc.toLowerCase(),
+  "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+  "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+  "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+  "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W",
 ]);
