@@ -22,7 +22,10 @@ import { solanaConnection, explorerTx } from "@/lib/solana/connection";
 import { generateKeypair, protocolKeypair, sealKeypair } from "@/lib/solana/keys";
 import { loadUserKeypair, requireSolBalance } from "@/lib/wallets/embedded";
 import { createServiceClient } from "@/lib/supabase/service";
-import type { LaunchVenue, QuoteKind } from "@onceupon/config/solana";
+import type { LaunchVenue } from "@onceupon/config/solana";
+import type { QuoteAsset } from "@onceupon/config/quotes";
+import { graduationRaw, virtualRaw } from "@onceupon/config/quotes";
+import { inspectMint, pushCreateAtaIfMissing } from "@/lib/solana/mint";
 
 export type LaunchInput = {
   userId: string;
@@ -34,9 +37,7 @@ export type LaunchInput = {
   venue: LaunchVenue;
   authorBps: number;
   snipeTaxBps: number;
-  quoteKind: QuoteKind;
-  quoteMint: string | null;
-  pairLabel: string;
+  quote: QuoteAsset;
   rewardMint: string | null;
   autoBuyRewards: boolean;
   nftSupply: number;
@@ -111,9 +112,19 @@ export async function launchOnSolana(input: LaunchInput) {
       SystemProgram.transfer({
         fromPubkey: user.publicKey,
         toPubkey: curve.publicKey,
-        lamports: 5_000_000,
+        lamports: 8_000_000,
       }),
     );
+    if (input.quote.mint) {
+      const quoteMint = await inspectMint(input.quote.mint);
+      await pushCreateAtaIfMissing(
+        tx,
+        user.publicKey,
+        curve.publicKey,
+        quoteMint.mint,
+        quoteMint.programId,
+      );
+    }
   }
 
   const signers: Keypair[] = isNft ? [user, mint] : [user, mint, curve];
@@ -128,14 +139,7 @@ export async function launchOnSolana(input: LaunchInput) {
   );
 
   const slug = `${slugify(input.title) || slugify(input.ticker) || "launch"}-${Math.random().toString(36).slice(2, 6)}`;
-  const pairClass =
-    input.quoteKind === "usdc"
-      ? "usdc"
-      : input.quoteKind === "stock"
-        ? "rwa_equity"
-        : input.quoteKind === "sol"
-          ? "sol"
-          : "other";
+  const pairClass = input.quote.pairClass;
 
   const service = createServiceClient();
   const { data: story, error } = await service
@@ -154,23 +158,27 @@ export async function launchOnSolana(input: LaunchInput) {
       fee_recipient: input.engine === "author" ? user.publicKey.toBase58() : curve.publicKey.toBase58(),
       author_bps: authorBps,
       protocol_bps: PROTOCOL.protocolBpsDefault,
-      quote_address: input.quoteMint,
+      quote_address: input.quote.mint,
       pair_class: pairClass,
-      pair_label: input.pairLabel,
+      pair_label: input.quote.symbol,
+      rwa_issuer: input.quote.issuer,
       supply: rawSupply.toString(),
       decimals,
       rights_attested: true,
       created_tx: signature,
       chain: "solana",
       venue: input.venue,
-      quote_mint: input.quoteMint,
-      reward_mint: input.autoBuyRewards ? (input.rewardMint ?? input.quoteMint) : null,
+      quote_mint: input.quote.mint,
+      reward_mint: input.autoBuyRewards ? (input.rewardMint ?? input.quote.mint) : null,
       auto_buy_rewards: input.autoBuyRewards,
       curve_quote_lamports: 0,
       curve_token_raw: isNft ? 0 : rawSupply.toString(),
       mint_decimals: decimals,
       snipe_tax_bps: Math.min(Math.max(0, input.snipeTaxBps), 500),
       reward_vault_lamports: 0,
+      quote_decimals: input.quote.decimals,
+      virtual_quote_raw: virtualRaw(input.quote).toString(),
+      graduation_quote_raw: graduationRaw(input.quote).toString(),
     })
     .select("id, slug, token_address")
     .single();
@@ -191,7 +199,7 @@ export async function launchOnSolana(input: LaunchInput) {
       is_primary: true,
       chain_caip2: SOLANA.caip2,
       pool_address: curve.publicKey.toBase58(),
-      quote_address: input.quoteMint,
+      quote_address: input.quote.mint,
       dest_token_mint: mint.publicKey.toBase58(),
       mechanism: input.venue,
       fee_routing: "solana_curve",

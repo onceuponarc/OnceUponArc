@@ -28,7 +28,7 @@ export default async function StoryPage({
   const { data: story } = await supabase
     .from("stories")
     .select(
-      "title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, users:author_user_id(handle, display_name, portrait_url)",
+      "title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, users:author_user_id(handle, display_name, portrait_url)",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -106,7 +106,17 @@ export default async function StoryPage({
               </p>
             ) : null}
             <p>
-              Curve {Number(story.curve_quote_lamports ?? 0) / 1_000_000_000} / {SOLANA.bondingGraduationSol} SOL
+              Curve{" "}
+              {(Number(story.curve_quote_lamports ?? 0) / 10 ** Number(story.quote_decimals ?? 9)).toLocaleString(
+                "en-US",
+                { maximumFractionDigits: 4 },
+              )}{" "}
+              /{" "}
+              {(
+                Number(story.graduation_quote_raw ?? SOLANA.bondingGraduationSol * 1_000_000_000) /
+                10 ** Number(story.quote_decimals ?? 9)
+              ).toLocaleString("en-US")}{" "}
+              {story.pair_label}
             </p>
           </CardContent>
         </Card>
@@ -138,6 +148,7 @@ export default async function StoryPage({
             engine={story.engine}
             pairLabel={story.pair_label}
             decimals={Number(story.mint_decimals ?? 6)}
+            quoteDecimals={Number(story.quote_decimals ?? 9)}
           />
         </CardContent>
       </Card>

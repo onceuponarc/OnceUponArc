@@ -8,7 +8,9 @@
     "start": "next start --hostname 127.0.0.1 --port 43147",
     "lint": "eslint",
     "check:copy": "node scripts/check-copy.mjs",
-    "smoke:solana": "node scripts/solana-smoke.mjs"
+    "smoke:solana": "node scripts/solana-smoke.mjs",
+    "check:quotes": "node scripts/verify-quotes.mjs",
+    "check:curve": "node scripts/curve-math.mjs"
   },
   "dependencies": {
     "@solana/spl-token": "^0.4.15",

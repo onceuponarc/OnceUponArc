@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CHAINS, SOLANA, VENUES, type LaunchChain, type LaunchVenue, type QuoteKind } from "@onceupon/config/solana";
-import { MODE_COPY, RIGHTS_TICK, RWA_GATE, feeExample } from "@onceupon/config/copy";
+import { CHAINS, VENUES, type LaunchChain, type LaunchVenue } from "@onceupon/config/solana";
+import { MODE_COPY, RIGHTS_TICK, feeExample } from "@onceupon/config/copy";
 import { PROTOCOL } from "@onceupon/config/arc";
+import { findQuote, type QuoteGroup } from "@onceupon/config/quotes";
+import { QuotePicker } from "@/components/launch/quote-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,14 +15,6 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-
-const QUOTES: { id: QuoteKind; label: string; listed: boolean }[] = [
-  { id: "sol", label: "SOL", listed: true },
-  { id: "usdc", label: "USDC", listed: true },
-  { id: "meme", label: "Any meme mint", listed: true },
-  { id: "custom", label: "Any SPL mint", listed: true },
-  { id: "stock", label: "Tokenized name / stock", listed: false },
-];
 
 export function LaunchStudio({
   handle,
@@ -35,7 +29,8 @@ export function LaunchStudio({
   const [chain, setChain] = useState<LaunchChain>("solana");
   const [venue, setVenue] = useState<LaunchVenue>("spl");
   const [engine, setEngine] = useState<"author" | "onceuponers">("author");
-  const [quoteKind, setQuoteKind] = useState<QuoteKind>("sol");
+  const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>("sol");
+  const [quoteId, setQuoteId] = useState("sol");
   const [quoteMint, setQuoteMint] = useState("");
   const [autoBuy, setAutoBuy] = useState(true);
   const [title, setTitle] = useState("");
@@ -52,9 +47,8 @@ export function LaunchStudio({
   const cap = engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap;
   const selectedChain = CHAINS.find((item) => item.id === chain);
   const canPrint = selectedChain?.prints ?? false;
-  const selectedQuote = QUOTES.find((item) => item.id === quoteKind)!;
+  const selectedQuote = findQuote(quoteId);
   const example = useMemo(() => feeExample(1000, Math.min(authorBps, cap)), [authorBps, cap]);
-  const needsMint = quoteKind === "meme" || quoteKind === "custom" || quoteKind === "stock";
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
@@ -74,16 +68,8 @@ export function LaunchStudio({
           blurb,
           authorBps: Math.min(authorBps, cap),
           snipeTaxBps,
-          quoteKind,
-          quoteMint: quoteMint.trim() || (quoteKind === "usdc" ? SOLANA.usdcMint : undefined),
-          pairLabel:
-            quoteKind === "sol"
-              ? "SOL"
-              : quoteKind === "usdc"
-                ? "USDC"
-                : quoteKind === "stock"
-                  ? "Tokenized name"
-                  : "Custom mint",
+          quoteId,
+          quoteMint: quoteMint.trim() || selectedQuote?.mint || undefined,
           autoBuyRewards: engine === "onceuponers" && autoBuy,
           rewardMint: quoteMint.trim() || undefined,
           nftSupply,
@@ -173,47 +159,14 @@ export function LaunchStudio({
         </div>
       </section>
 
-      <section className="glass rounded-2xl border border-gold/20 p-5">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">4 · Pair & rewards</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {QUOTES.map((item) => (
-            <Button
-              key={item.id}
-              type="button"
-              variant={quoteKind === item.id ? "default" : "outline"}
-              onClick={() => setQuoteKind(item.id)}
-            >
-              {item.label}
-            </Button>
-          ))}
-        </div>
-        {needsMint ? (
-          <div className="mt-4 space-y-2">
-            <Label htmlFor="mint">Quote / reward mint</Label>
-            <Input
-              id="mint"
-              value={quoteMint}
-              onChange={(e) => setQuoteMint(e.target.value)}
-              placeholder="Solana mint address"
-            />
-          </div>
-        ) : null}
-        {!selectedQuote.listed ? (
-          <Alert className="mt-4">
-            <AlertTitle>Not listed as a quote mint yet</AlertTitle>
-            <AlertDescription>{RWA_GATE}</AlertDescription>
-          </Alert>
-        ) : null}
-        {engine === "onceuponers" ? (
-          <label className="mt-4 flex items-start gap-3 text-sm">
-            <Switch checked={autoBuy} onCheckedChange={setAutoBuy} />
-            <span>
-              Auto-buy the pair with every vault cut. Holders claim that bag as The Piece — SOL today,
-              the paired mint when that market exists.
-            </span>
-          </label>
-        ) : null}
-      </section>
+      <QuotePicker
+        group={quoteGroup}
+        quoteId={quoteId}
+        mint={quoteMint}
+        onGroup={setQuoteGroup}
+        onQuoteId={setQuoteId}
+        onMint={setQuoteMint}
+      />
 
       <section className="glass rounded-2xl border border-gold/20 p-5 space-y-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">5 · Print it</p>
@@ -283,6 +236,14 @@ export function LaunchStudio({
             <p className="text-sm text-gold">{(snipeTaxBps / 100).toFixed(2)}%</p>
           </div>
         ) : null}
+        {engine === "onceuponers" ? (
+          <label className="flex items-start gap-3 text-sm">
+            <Switch checked={autoBuy} onCheckedChange={setAutoBuy} />
+            <span>
+              Auto-buy the quote with every vault cut. Holders claim that bag as The Piece.
+            </span>
+          </label>
+        ) : null}
         <label className="flex items-start gap-3 text-sm">
           <Switch checked={rights} onCheckedChange={setRights} />
           <span>{RIGHTS_TICK}</span>
@@ -297,7 +258,9 @@ export function LaunchStudio({
               ? "Arc testnet is live for wallets. The token factory is not deployed yet — print on Solana mainnet."
               : venue === "nft"
                 ? "Mints a real token on Solana mainnet. Needs SOL in the pad wallet."
-                : `Bonds until ${SOLANA.bondingGraduationSol} SOL on mainnet, then marks bonded.`}
+                : selectedQuote
+                  ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}.`
+                  : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
         </div>
         <Button type="submit" size="lg" className="h-11 w-full sm:w-auto" disabled={busy || !rights || !canPrint}>

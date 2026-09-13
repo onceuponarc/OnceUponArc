@@ -9,8 +9,8 @@ This is a working Solana launchpad: X identity, an encrypted pad wallet per acco
 - **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
 - **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%). Optional auto-buy converts each vault cut into the pair you chose.
 - **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every chain.
-- **Quotes** — SOL, USDC, any meme/SPL mint, or a tokenized name when that mint exists (otherwise gated).
-- Solana bonding graduates at **2 SOL** on mainnet. Arc still uses **5,000 USDC** when that factory ships.
+- **Quotes** — SOL, USDC/USDT/PYUSD, listed tokenized stocks (xStocks), Ondo USDY/OUSG, or any mint. Buys settle in that quote. Pairing against a tokenized mint is a quote, not studio equity.
+- Solana bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, and **10** of a listed xStock. Arc still uses **5,000 USDC** when that factory ships.
 
 ## Pad wallet
 

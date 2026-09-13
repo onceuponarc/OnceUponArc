@@ -15,7 +15,9 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { solanaConnection, explorerTx } from "@/lib/solana/connection";
 import { openKeypair, protocolKeypair } from "@/lib/solana/keys";
 import { loadUserKeypair } from "@/lib/wallets/embedded";
-import { quoteOutForSell, splitBuyFees, tokensOutForBuy, graduationLamports } from "@/lib/solana/curve";
+import { quoteOutForSell, splitBuyFees, tokensOutForBuy } from "@/lib/solana/curve";
+import { inspectMint, pushCreateAtaIfMissing, tokenBalance, transferCheckedIx, ataFor } from "@/lib/solana/mint";
+import { findQuoteByMint, graduationRaw, rawToUi, uiToRaw, virtualRaw } from "@onceupon/config/quotes";
 
 type StoryRow = {
   id: string;
@@ -35,6 +37,11 @@ type StoryRow = {
   auto_buy_rewards: boolean;
   reward_vault_lamports: string | number;
   venue: string;
+  quote_mint: string | null;
+  pair_label: string;
+  quote_decimals: number | null;
+  virtual_quote_raw: string | number | null;
+  graduation_quote_raw: string | number | null;
 };
 
 async function loadStory(slug: string) {
@@ -42,12 +49,32 @@ async function loadStory(slug: string) {
   const { data, error } = await service
     .from("stories")
     .select(
-      "id, slug, engine, status, author_user_id, author_wallet, token_address, vault_address, author_bps, protocol_bps, snipe_tax_bps, created_at, curve_quote_lamports, curve_token_raw, auto_buy_rewards, reward_vault_lamports, venue",
+      "id, slug, engine, status, author_user_id, author_wallet, token_address, vault_address, author_bps, protocol_bps, snipe_tax_bps, created_at, curve_quote_lamports, curve_token_raw, auto_buy_rewards, reward_vault_lamports, venue, quote_mint, pair_label, quote_decimals, virtual_quote_raw, graduation_quote_raw",
     )
     .eq("slug", slug)
     .maybeSingle();
   if (error || !data?.token_address) throw new Error("Launch not found.");
   return data as StoryRow;
+}
+
+function quoteMeta(story: StoryRow) {
+  const listed = findQuoteByMint(story.quote_mint);
+  const decimals = Number(story.quote_decimals ?? listed?.decimals ?? 9);
+  const virtual =
+    story.virtual_quote_raw != null
+      ? BigInt(story.virtual_quote_raw)
+      : listed
+        ? virtualRaw(listed)
+        : 30_000_000_000n;
+  const graduation =
+    story.graduation_quote_raw != null
+      ? BigInt(story.graduation_quote_raw)
+      : listed
+        ? graduationRaw(listed)
+        : 2_000_000_000n;
+  const symbol = story.pair_label || listed?.symbol || "SOL";
+  const maxBuy = listed?.maxBuyUi ?? 50;
+  return { decimals, virtual, graduation, symbol, maxBuy, mint: story.quote_mint };
 }
 
 async function loadCurve(storyId: string) {
@@ -61,7 +88,7 @@ async function loadCurve(storyId: string) {
   return openKeypair(data.ciphertext);
 }
 
-async function ensureAta(
+async function ensureStoryAta(
   payer: PublicKey,
   owner: PublicKey,
   mint: PublicKey,
@@ -81,13 +108,17 @@ function snipeBps(story: StoryRow): number {
   return Number(story.snipe_tax_bps ?? 0);
 }
 
-export async function buyOnCurve(userId: string, slug: string, sol: number) {
-  if (sol <= 0 || sol > 50) throw new Error("Buy size must be between 0 and 50 SOL.");
+export async function buyOnCurve(userId: string, slug: string, amountUi: number) {
   const story = await loadStory(slug);
   if (story.venue === "nft") throw new Error("NFTs do not trade on the curve.");
   if (story.status !== "live" && story.status !== "graduated") throw new Error("This launch is not trading.");
 
-  const quoteIn = BigInt(Math.round(sol * 1_000_000_000));
+  const meta = quoteMeta(story);
+  if (amountUi <= 0 || amountUi > meta.maxBuy) {
+    throw new Error(`Buy size must be between 0 and ${meta.maxBuy} ${meta.symbol}.`);
+  }
+
+  const quoteIn = uiToRaw(amountUi, meta.decimals);
   const fees = splitBuyFees(
     quoteIn,
     Number(story.author_bps),
@@ -96,7 +127,7 @@ export async function buyOnCurve(userId: string, slug: string, sol: number) {
   );
   const quoteReserve = BigInt(story.curve_quote_lamports);
   const tokenReserve = BigInt(story.curve_token_raw);
-  const tokensOut = tokensOutForBuy(quoteReserve, tokenReserve, fees.toCurve);
+  const tokensOut = tokensOutForBuy(quoteReserve, tokenReserve, fees.toCurve, meta.virtual);
   if (tokensOut <= 0n) throw new Error("Curve would return zero tokens.");
 
   const user = await loadUserKeypair(userId);
@@ -104,39 +135,100 @@ export async function buyOnCurve(userId: string, slug: string, sol: number) {
   const protocol = protocolKeypair();
   const mint = new PublicKey(story.token_address);
   const connection = solanaConnection();
-
   const tx = new Transaction();
-  const userAta = await ensureAta(user.publicKey, user.publicKey, mint, tx);
+  const userAta = await ensureStoryAta(user.publicKey, user.publicKey, mint, tx);
   const curveAta = getAssociatedTokenAddressSync(mint, curve.publicKey, false, TOKEN_PROGRAM_ID);
 
   const vaultCut = story.engine === "onceuponers" ? fees.author : 0n;
   const authorCut = story.engine === "author" ? fees.author : 0n;
 
-  tx.add(
-    SystemProgram.transfer({
-      fromPubkey: user.publicKey,
-      toPubkey: curve.publicKey,
-      lamports: Number(fees.toCurve + vaultCut),
-    }),
-  );
-  if (authorCut > 0n) {
+  if (!meta.mint) {
     tx.add(
       SystemProgram.transfer({
         fromPubkey: user.publicKey,
-        toPubkey: new PublicKey(story.author_wallet),
-        lamports: Number(authorCut),
+        toPubkey: curve.publicKey,
+        lamports: Number(fees.toCurve + vaultCut),
       }),
     );
-  }
-  if (fees.protocol + fees.snipe > 0n) {
+    if (authorCut > 0n) {
+      tx.add(
+        SystemProgram.transfer({
+          fromPubkey: user.publicKey,
+          toPubkey: new PublicKey(story.author_wallet),
+          lamports: Number(authorCut),
+        }),
+      );
+    }
+    if (fees.protocol + fees.snipe > 0n) {
+      tx.add(
+        SystemProgram.transfer({
+          fromPubkey: user.publicKey,
+          toPubkey: protocol.publicKey,
+          lamports: Number(fees.protocol + fees.snipe),
+        }),
+      );
+    }
+  } else {
+    const quote = await inspectMint(meta.mint);
+    const userQuote = ataFor(quote.mint, user.publicKey, quote.programId);
+    const held = await tokenBalance(userQuote, quote.programId);
+    if (held < quoteIn) {
+      throw new Error(`Pad wallet needs ${amountUi} ${meta.symbol} to buy.`);
+    }
+    const curveQuote = await pushCreateAtaIfMissing(tx, user.publicKey, curve.publicKey, quote.mint, quote.programId);
+    if (authorCut > 0n) {
+      const authorQuote = await pushCreateAtaIfMissing(
+        tx,
+        user.publicKey,
+        new PublicKey(story.author_wallet),
+        quote.mint,
+        quote.programId,
+      );
+      tx.add(
+        transferCheckedIx({
+          source: userQuote,
+          mint: quote.mint,
+          destination: authorQuote,
+          owner: user.publicKey,
+          amount: authorCut,
+          decimals: quote.decimals,
+          programId: quote.programId,
+        }),
+      );
+    }
+    if (fees.protocol + fees.snipe > 0n) {
+      const protoQuote = await pushCreateAtaIfMissing(
+        tx,
+        user.publicKey,
+        protocol.publicKey,
+        quote.mint,
+        quote.programId,
+      );
+      tx.add(
+        transferCheckedIx({
+          source: userQuote,
+          mint: quote.mint,
+          destination: protoQuote,
+          owner: user.publicKey,
+          amount: fees.protocol + fees.snipe,
+          decimals: quote.decimals,
+          programId: quote.programId,
+        }),
+      );
+    }
     tx.add(
-      SystemProgram.transfer({
-        fromPubkey: user.publicKey,
-        toPubkey: protocol.publicKey,
-        lamports: Number(fees.protocol + fees.snipe),
+      transferCheckedIx({
+        source: userQuote,
+        mint: quote.mint,
+        destination: curveQuote,
+        owner: user.publicKey,
+        amount: fees.toCurve + vaultCut,
+        decimals: quote.decimals,
+        programId: quote.programId,
       }),
     );
   }
+
   tx.add(createTransferInstruction(curveAta, userAta, curve.publicKey, tokensOut, [], TOKEN_PROGRAM_ID));
 
   const signature = await sendAndConfirmTransaction(connection, tx, [user, curve], {
@@ -151,7 +243,7 @@ export async function buyOnCurve(userId: string, slug: string, sol: number) {
   }
 
   const service = createServiceClient();
-  const graduated = nextQuote >= graduationLamports();
+  const graduated = nextQuote >= meta.graduation;
   await service
     .from("stories")
     .update({
@@ -168,7 +260,7 @@ export async function buyOnCurve(userId: string, slug: string, sol: number) {
     log_index: 0,
     trader: user.publicKey.toBase58(),
     side: "buy",
-    token_in: "SOL",
+    token_in: meta.mint ?? "SOL",
     token_out: story.token_address,
     amount_in: quoteIn.toString(),
     amount_out: tokensOut.toString(),
@@ -181,7 +273,7 @@ export async function buyOnCurve(userId: string, slug: string, sol: number) {
       log_index: 1,
       block_number: 0,
       swapper: user.publicKey.toBase58(),
-      asset: "SOL",
+      asset: meta.mint ?? "SOL",
       author_amount: 0,
       vault_amount: fees.author.toString(),
       protocol_amount: (fees.protocol + fees.snipe).toString(),
@@ -193,6 +285,7 @@ export async function buyOnCurve(userId: string, slug: string, sol: number) {
     explorer: explorerTx(signature),
     tokensOut: tokensOut.toString(),
     graduated,
+    quote: meta.symbol,
   };
 }
 
@@ -201,13 +294,14 @@ export async function sellOnCurve(userId: string, slug: string, tokenUi: number,
   const story = await loadStory(slug);
   if (story.venue === "nft") throw new Error("NFTs do not trade on the curve.");
 
-  const tokensIn = BigInt(Math.round(tokenUi * 10 ** decimals));
+  const meta = quoteMeta(story);
+  const tokensIn = uiToRaw(tokenUi, decimals);
   const quoteReserve = BigInt(story.curve_quote_lamports);
   const tokenReserve = BigInt(story.curve_token_raw);
-  const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn);
+  const quoteOut = quoteOutForSell(quoteReserve, tokenReserve, tokensIn, meta.virtual);
   const fees = splitBuyFees(quoteOut, Number(story.author_bps), Number(story.protocol_bps), 0);
   const userGets = fees.toCurve;
-  if (userGets <= 0n) throw new Error("Curve would return zero SOL.");
+  if (userGets <= 0n) throw new Error(`Curve would return zero ${meta.symbol}.`);
 
   const user = await loadUserKeypair(userId);
   const curve = await loadCurve(story.id);
@@ -222,29 +316,89 @@ export async function sellOnCurve(userId: string, slug: string, tokenUi: number,
 
   const tx = new Transaction().add(
     createTransferInstruction(userAta, curveAta, user.publicKey, tokensIn, [], TOKEN_PROGRAM_ID),
-    SystemProgram.transfer({
-      fromPubkey: curve.publicKey,
-      toPubkey: user.publicKey,
-      lamports: Number(userGets),
-    }),
   );
-  if (story.engine === "author" && fees.author > 0n) {
+
+  if (!meta.mint) {
     tx.add(
       SystemProgram.transfer({
         fromPubkey: curve.publicKey,
-        toPubkey: new PublicKey(story.author_wallet),
-        lamports: Number(fees.author),
+        toPubkey: user.publicKey,
+        lamports: Number(userGets),
       }),
     );
-  }
-  if (fees.protocol > 0n) {
+    if (story.engine === "author" && fees.author > 0n) {
+      tx.add(
+        SystemProgram.transfer({
+          fromPubkey: curve.publicKey,
+          toPubkey: new PublicKey(story.author_wallet),
+          lamports: Number(fees.author),
+        }),
+      );
+    }
+    if (fees.protocol > 0n) {
+      tx.add(
+        SystemProgram.transfer({
+          fromPubkey: curve.publicKey,
+          toPubkey: protocol.publicKey,
+          lamports: Number(fees.protocol),
+        }),
+      );
+    }
+  } else {
+    const quote = await inspectMint(meta.mint);
+    const curveQuote = ataFor(quote.mint, curve.publicKey, quote.programId);
+    const userQuote = await pushCreateAtaIfMissing(tx, user.publicKey, user.publicKey, quote.mint, quote.programId);
     tx.add(
-      SystemProgram.transfer({
-        fromPubkey: curve.publicKey,
-        toPubkey: protocol.publicKey,
-        lamports: Number(fees.protocol),
+      transferCheckedIx({
+        source: curveQuote,
+        mint: quote.mint,
+        destination: userQuote,
+        owner: curve.publicKey,
+        amount: userGets,
+        decimals: quote.decimals,
+        programId: quote.programId,
       }),
     );
+    if (story.engine === "author" && fees.author > 0n) {
+      const authorQuote = await pushCreateAtaIfMissing(
+        tx,
+        user.publicKey,
+        new PublicKey(story.author_wallet),
+        quote.mint,
+        quote.programId,
+      );
+      tx.add(
+        transferCheckedIx({
+          source: curveQuote,
+          mint: quote.mint,
+          destination: authorQuote,
+          owner: curve.publicKey,
+          amount: fees.author,
+          decimals: quote.decimals,
+          programId: quote.programId,
+        }),
+      );
+    }
+    if (fees.protocol > 0n) {
+      const protoQuote = await pushCreateAtaIfMissing(
+        tx,
+        user.publicKey,
+        protocol.publicKey,
+        quote.mint,
+        quote.programId,
+      );
+      tx.add(
+        transferCheckedIx({
+          source: curveQuote,
+          mint: quote.mint,
+          destination: protoQuote,
+          owner: curve.publicKey,
+          amount: fees.protocol,
+          decimals: quote.decimals,
+          programId: quote.programId,
+        }),
+      );
+    }
   }
 
   const signature = await sendAndConfirmTransaction(connection, tx, [user, curve], {
@@ -269,12 +423,17 @@ export async function sellOnCurve(userId: string, slug: string, tokenUi: number,
     trader: user.publicKey.toBase58(),
     side: "sell",
     token_in: story.token_address,
-    token_out: "SOL",
+    token_out: meta.mint ?? "SOL",
     amount_in: tokensIn.toString(),
     amount_out: userGets.toString(),
   });
 
-  return { signature, explorer: explorerTx(signature), solOut: Number(userGets) / 1_000_000_000 };
+  return {
+    signature,
+    explorer: explorerTx(signature),
+    quoteOut: rawToUi(userGets, meta.decimals),
+    quote: meta.symbol,
+  };
 }
 
 export async function claimPiece(userId: string, slug: string) {
@@ -282,6 +441,7 @@ export async function claimPiece(userId: string, slug: string) {
   if (story.engine !== "onceuponers") throw new Error("Author launches push fees. There is nothing to claim.");
   const reward = BigInt(story.reward_vault_lamports);
   if (reward <= 0n) throw new Error("The vault is empty.");
+  const meta = quoteMeta(story);
 
   const user = await loadUserKeypair(userId);
   const curve = await loadCurve(story.id);
@@ -289,19 +449,37 @@ export async function claimPiece(userId: string, slug: string) {
   const connection = solanaConnection();
   const userAta = getAssociatedTokenAddressSync(mint, user.publicKey, false, TOKEN_PROGRAM_ID);
   const held = await getAccount(connection, userAta).catch(() => null);
-  const supply = BigInt(story.curve_token_raw) + (held?.amount ?? 0n);
-  if (!held || held.amount === 0n || supply === 0n) throw new Error("You need to hold the token to claim The Piece.");
+  if (!held || held.amount === 0n) throw new Error("You need to hold the token to claim The Piece.");
 
   const share = (reward * held.amount) / (held.amount + BigInt(story.curve_token_raw));
   if (share <= 0n) throw new Error("Your share rounds to zero.");
 
-  const tx = new Transaction().add(
-    SystemProgram.transfer({
-      fromPubkey: curve.publicKey,
-      toPubkey: user.publicKey,
-      lamports: Number(share),
-    }),
-  );
+  const tx = new Transaction();
+  if (!meta.mint) {
+    tx.add(
+      SystemProgram.transfer({
+        fromPubkey: curve.publicKey,
+        toPubkey: user.publicKey,
+        lamports: Number(share),
+      }),
+    );
+  } else {
+    const quote = await inspectMint(meta.mint);
+    const curveQuote = ataFor(quote.mint, curve.publicKey, quote.programId);
+    const userQuote = await pushCreateAtaIfMissing(tx, user.publicKey, user.publicKey, quote.mint, quote.programId);
+    tx.add(
+      transferCheckedIx({
+        source: curveQuote,
+        mint: quote.mint,
+        destination: userQuote,
+        owner: curve.publicKey,
+        amount: share,
+        decimals: quote.decimals,
+        programId: quote.programId,
+      }),
+    );
+  }
+
   const signature = await sendAndConfirmTransaction(connection, tx, [curve], { commitment: "confirmed" });
 
   const service = createServiceClient();
@@ -314,9 +492,14 @@ export async function claimPiece(userId: string, slug: string) {
     user_id: userId,
     wallet: user.publicKey.toBase58(),
     tx_hash: signature,
-    asset: "SOL",
+    asset: meta.mint ?? "SOL",
     amount: share.toString(),
   });
 
-  return { signature, explorer: explorerTx(signature), sol: Number(share) / 1_000_000_000 };
+  return {
+    signature,
+    explorer: explorerTx(signature),
+    amount: rawToUi(share, meta.decimals),
+    quote: meta.symbol,
+  };
 }

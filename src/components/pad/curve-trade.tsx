@@ -12,15 +12,17 @@ export function CurveTrade({
   engine,
   pairLabel,
   decimals,
+  quoteDecimals = 9,
 }: {
   slug: string;
   venue: string;
   engine: string;
   pairLabel: string;
   decimals: number;
+  quoteDecimals?: number;
 }) {
   const [side, setSide] = useState<"buy" | "sell">("buy");
-  const [amount, setAmount] = useState("0.1");
+  const [amount, setAmount] = useState(pairLabel === "SOL" ? "0.1" : pairLabel.includes("USD") ? "10" : "0.25");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function CurveTrade({
   return (
     <div className="space-y-4">
       <p className="text-sm text-parchment/70">
-        Quote is {pairLabel}. Buys and sells settle on Solana mainnet from your pad wallet.
+        Quote is {pairLabel}. Buys and sells settle in {pairLabel} on Solana mainnet from your pad wallet.
       </p>
       <div className="flex gap-2">
         <Button type="button" variant={side === "buy" ? "default" : "outline"} onClick={() => setSide("buy")}>
@@ -68,7 +70,7 @@ export function CurveTrade({
         </Button>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="amt">{side === "buy" ? "SOL in" : `Tokens out (decimals ${decimals})`}</Label>
+        <Label htmlFor="amt">{side === "buy" ? `${pairLabel} in` : `Tokens in (decimals ${decimals})`}</Label>
         <Input id="amt" value={amount} onChange={(e) => setAmount(e.target.value)} />
       </div>
       <div className="flex flex-wrap gap-2">

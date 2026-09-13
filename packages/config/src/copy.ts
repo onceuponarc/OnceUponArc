@@ -50,14 +50,14 @@ export const LAUNCH_TYPES = [
   {
     id: "rwa" as const,
     title: "Tokenized RWA / single-name",
-    headline: "Not listed as a quote mint yet",
-    badge: "Gated",
+    headline: "Pair against listed mints",
+    badge: "Listed quotes",
     summary:
-      "This pair is not listed as a quote mint yet. Launch against SOL or USDC, or paste a real mint when a licensed issuer lists that name.",
+      "Launch against SOL, stables, listed tokenized stocks, treasuries, or paste any mint. That is a quote pair, not studio equity.",
     how: [
       "A Story can pair against a listed tokenized asset. That is a quote pair, not studio equity.",
-      "Until a licensed issuer lists the name on the chain you chose, the pair stays gated unless you paste an existing mint.",
-      "A gated pair is not a waitlist for shares. Childhood language is aesthetic only.",
+      "Pick USDC, a listed xStock, USDY/OUSG, or paste any mint. Buys and sells settle in that mint.",
+      "Pairing against a tokenized mint is not a claim on the issuer and it is not studio equity.",
     ],
   },
 ] as const;
@@ -73,7 +73,7 @@ export const PAIR_TYPES = [
     id: "usdc" as const,
     label: "USDC",
     listed: true,
-    body: "Solana mainnet USDC, or Arc testnet pool USDC for that chain’s wallets and quotes.",
+    body: "Solana mainnet USDC, USDT, and PYUSD. Buys settle in the stable you pick.",
   },
   {
     id: "meme" as const,
@@ -84,13 +84,13 @@ export const PAIR_TYPES = [
   {
     id: "rwa" as const,
     label: "Tokenized RWA / single-name",
-    listed: false,
-    body: "Not listed as a quote mint yet. Launch against SOL, or paste a mint when a licensed issuer lists that name.",
+    listed: true,
+    body: "Listed xStocks, Ondo USDY/OUSG, or paste any mint. Quote pair only — not studio equity and not a claim on the issuer.",
   },
 ] as const;
 
 export const BONDING_COPY =
-  "Solana launches open on a bonding curve. At 2 SOL on mainnet the Story marks bonded. Pump.fun-style and Pons-style use the same curve with extra snipe tax. Arc still graduates at 5,000 USDC when that factory ships.";
+  "Solana launches open on a bonding curve. SOL pairs bond at 2 SOL. Stables bond at 5,000 units. Listed xStocks bond at 10 of the quote mint. Pump.fun-style and Pons-style use the same curve with extra snipe tax.";
 
 export const PIECE_EXPLAINER =
   "The Piece is a protocol fee split among current holders of a Story. It is not a dividend, not profit-sharing, and not a return on investment.";
@@ -104,8 +104,11 @@ export const RIGHTS_TICK =
 export const MARGIN_DISCLAIMER =
   "The Margin is a doorway to Jupiter. OnceUpon does not custody margin, does not run a matching engine, and does not set your leverage. Longs and shorts live on Jupiter’s accounts.";
 
+export const QUOTE_DISCLAIMER =
+  "Pairing against a tokenized mint is a quote. It is not studio equity and it is not a claim on the issuer.";
+
 export const RWA_GATE =
-  "This pair is not listed as a quote mint yet. Launch against SOL, or paste a mint when a licensed issuer lists that name.";
+  "Pick a listed quote mint, or paste any Solana mint. A gated name is not a waitlist for shares.";
 
 export const FORBIDDEN_PHRASES = [
   "Disney shares",

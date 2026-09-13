@@ -15,7 +15,7 @@ export function LaunchTypeGrid({
           key={type.id}
           className={cn(
             "glass rounded-2xl border p-5",
-            type.id === "rwa" ? "border-burgundy/40" : "border-gold/20",
+            type.id === "rwa" ? "border-gold/30" : "border-gold/20",
             type.id === "author" && "hover:border-gold/50",
             type.id === "onceuponers" && "hover:border-teal/50",
           )}
@@ -24,7 +24,7 @@ export function LaunchTypeGrid({
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
               {type.title}
             </p>
-            <Badge variant={type.id === "rwa" ? "destructive" : "outline"}>{type.badge}</Badge>
+            <Badge variant={type.id === "rwa" ? "secondary" : "outline"}>{type.badge}</Badge>
           </div>
           <h3 className="font-heading mt-2 text-2xl font-bold">{type.headline}</h3>
           <p className="mt-2 text-sm text-parchment/70">{type.summary}</p>

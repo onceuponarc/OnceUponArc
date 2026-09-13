@@ -1,15 +1,40 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { launchOnSolana, parseMint } from "@/lib/solana/launch";
+import { inspectMint } from "@/lib/solana/mint";
 import { redactWalletError } from "@/lib/crypto/secret-box";
-import { RWA_GATE } from "@onceupon/config/copy";
-import type { LaunchVenue, QuoteKind } from "@onceupon/config/solana";
-import { SOLANA } from "@onceupon/config/solana";
+import type { LaunchVenue } from "@onceupon/config/solana";
+import {
+  customQuoteAsset,
+  findQuote,
+  findQuoteByMint,
+  type QuoteAsset,
+} from "@onceupon/config/quotes";
 
 export const maxDuration = 60;
 
 const VENUES: LaunchVenue[] = ["spl", "nft", "pumpfun", "pons"];
-const QUOTES: QuoteKind[] = ["sol", "usdc", "meme", "stock", "custom"];
+
+async function resolveQuote(body: {
+  quoteId?: string;
+  quoteKind?: string;
+  quoteMint?: string;
+}): Promise<QuoteAsset> {
+  if (body.quoteId && body.quoteId !== "custom") {
+    const listed = findQuote(body.quoteId);
+    if (!listed) throw new Error("Unknown quote. Pick SOL, a listed mint, or paste a mint.");
+    return listed;
+  }
+  if (body.quoteKind === "sol" && !body.quoteMint) return findQuote("sol")!;
+  if (body.quoteKind === "usdc" && !body.quoteMint) return findQuote("usdc")!;
+
+  const mint = parseMint(body.quoteMint ?? null);
+  if (!mint) throw new Error("Paste a Solana mint address to pair with.");
+  const byMint = findQuoteByMint(mint.toBase58());
+  if (byMint) return byMint;
+  const meta = await inspectMint(mint);
+  return customQuoteAsset(mint.toBase58(), meta.decimals);
+}
 
 export async function POST(request: Request) {
   const { user, profile } = await getSessionUser();
@@ -26,9 +51,9 @@ export async function POST(request: Request) {
     blurb?: string;
     authorBps?: number;
     snipeTaxBps?: number;
-    quoteKind?: QuoteKind;
+    quoteId?: string;
+    quoteKind?: string;
     quoteMint?: string;
-    pairLabel?: string;
     rewardMint?: string;
     autoBuyRewards?: boolean;
     nftSupply?: number;
@@ -60,16 +85,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Attest you have the rights to the art and name." }, { status: 400 });
   }
 
-  const quoteKind: QuoteKind = QUOTES.includes(body.quoteKind ?? "sol") ? (body.quoteKind ?? "sol") : "sol";
-  const quoteMint = parseMint(body.quoteMint ?? (quoteKind === "usdc" ? SOLANA.usdcMint : null));
-  if ((quoteKind === "meme" || quoteKind === "custom") && !quoteMint) {
-    return NextResponse.json({ error: "Paste a Solana mint address to pair with." }, { status: 400 });
-  }
-  if (quoteKind === "stock" && !quoteMint) {
-    return NextResponse.json({ error: RWA_GATE }, { status: 400 });
-  }
-
   try {
+    let quote = await resolveQuote(body);
+    if (quote.mint) {
+      const live = await inspectMint(quote.mint);
+      if (live.decimals !== quote.decimals) {
+        quote = { ...quote, decimals: live.decimals };
+      }
+    }
     const result = await launchOnSolana({
       userId: user.id,
       handle: profile.handle,
@@ -80,10 +103,8 @@ export async function POST(request: Request) {
       venue: body.venue,
       authorBps: Number(body.authorBps ?? 100),
       snipeTaxBps: Number(body.snipeTaxBps ?? 0),
-      quoteKind,
-      quoteMint: quoteMint?.toBase58() ?? null,
-      pairLabel: body.pairLabel ?? (quoteKind === "sol" ? "SOL" : body.ticker),
-      rewardMint: parseMint(body.rewardMint ?? body.quoteMint ?? null)?.toBase58() ?? null,
+      quote,
+      rewardMint: parseMint(body.rewardMint ?? quote.mint ?? null)?.toBase58() ?? null,
       autoBuyRewards: Boolean(body.autoBuyRewards),
       nftSupply: Number(body.nftSupply ?? 1),
     });

@@ -16,11 +16,11 @@ const EMPTY: Record<FeedTab, { title: string; body: string }> = {
   },
   curve: {
     title: "Nobody is on the curve",
-    body: "Live launches bond until 2 SOL on Solana mainnet, then they graduate. Be the first on the curve.",
+    body: "Live launches bond until their quote target, then they graduate. Be the first on the curve.",
   },
   bonded: {
     title: "Nothing bonded yet",
-    body: "Recently bonded is the graduation tape. Empty until a Story clears 2 SOL.",
+    body: "Recently bonded is the graduation tape. Empty until a Story clears its quote target.",
   },
 };
 
