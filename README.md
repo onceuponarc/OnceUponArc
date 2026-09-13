@@ -1,4 +1,4 @@
-# OnceUpon
+# OnceUponArc
 
 A token launchpad on **Arc**. Launch a USDC bonding curve the instant create lands. Buyers pay USDC into the vault. Graduation opens the pool from those reserves.
 
@@ -6,15 +6,59 @@ Identity is **X via Supabase**. Generate separate Arc **Devnet** and **Mainnet**
 
 The pad installs as a **PWA**.
 
+> **Write-time test stamp**  
+> Written: **Sunday, September 13, 2026 — 7:01 PM EDT** (`2026-09-13T23:01:00Z`)  
+> Author: Grok via PAT (`onceuponarc`)  
+> Purpose: verify read / write / push on `onceuponarc/OnceUponArc` `main`
+
+Live: [once-upon-arc.vercel.app](https://once-upon-arc.vercel.app/)  
+Repo: [github.com/onceuponarc/OnceUponArc](https://github.com/onceuponarc/OnceUponArc)
+
+---
+
+## Contents
+
+- [What it does](#what-it-does)
+- [Launch types](#launch-types)
+- [Wallets](#wallets)
+- [What this repo is not](#what-this-repo-is-not)
+- [Isolated backend](#isolated-backend)
+- [Run locally](#run-locally)
+- [Required env](#required-env)
+- [Scripts](#scripts)
+- [Stack](#stack)
+- [Repo layout](#repo-layout)
+- [Surfaces](#surfaces)
+- [Network](#network)
+- [Apply schema](#apply-schema)
+- [Push test](#push-test)
+
+---
+
+## What it does
+
+OnceUpon is the Arc press: a Next.js pad that mints a Chapter token, a USDC bonding curve, and the vaults that hold quote until graduation.
+
+1. Author signs in with X.
+2. Author sets ticker, art, graduate target, and creator fee (0–3.00%).
+3. Create deploys token + curve + vaults with `realQuote = 0`.
+4. Buyers pay USDC. Fees come off input. Net quote stays in the vault.
+5. At the graduate target the vault seeds the AMM. 80% of supply trades on the curve; 20% is reserved for the book.
+
+Default USDC Chapter: start cap **$3,000**, graduate **$5,000**.
+
+OnceUpon does not print on Solana or Robinhood Chain. Leftover Story URLs still load. `/launch/solana` and `/launch/robinhood` redirect to `/launch/arc`.
+
+---
+
 ## Launch types
 
 - **Chapter on Arc** — Native Chapter Factory. Quote is USDC (MockUSDC on Devnet, Circle USDC on Testnet). You set the graduate target. 80% of supply trades on the curve; 20% is reserved for the book at graduation.
 - **Creator fees** — Your cut (0–3.00%) is pushed to the Arc wallet on every buy and sell. Protocol takes 0.20% on top. Curve fees cap at 4.00%.
 - **Holder claims** — Trades take only the protocol cut. The author deposits USDC into the vault. Holders claim a share proportional to circulating holdings. That is not a dividend.
 - **Chapter Curve** — Create mints the token, curve, and vaults with `realQuote = 0`. Buyers pay USDC; fees come off input; net stays in the vault. At the graduate target the vault seeds the AMM.
-- Default USDC Chapter: start cap **$3,000**, graduate **$5,000**.
 
-OnceUpon does not print on Solana or Robinhood Chain. Leftover Story URLs still load.
+---
 
 ## Wallets
 
@@ -28,9 +72,13 @@ OnceUpon does not print on Solana or Robinhood Chain. Leftover Story URLs still 
 
 The pad can still sign with the funded Anvil trader while you test. Your imported key is what you take live.
 
+---
+
 ## What this repo is not
 
 OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else. Childhood language is aesthetic. Holder claims are a share of an author-funded pool — not a dividend.
+
+---
 
 ## Isolated backend
 
@@ -51,6 +99,8 @@ Also required on that X app:
 
 Dashboard: https://supabase.com/dashboard/project/txrdfjypnuvlyseefclj
 
+---
+
 ## Run locally
 
 ```bash
@@ -70,7 +120,11 @@ pnpm arc:devnet
 
 That starts Anvil on `127.0.0.1:8546`, deploys `ChapterFactory` + MockUSDC, and mints **1,000,000 test USDC** to the pad wallet. `pnpm dev` runs the same ensure step first. Status, launch, and trade also bring Devnet up locally if Anvil died. Chain state is saved to `data/anvil-state.json` so a restart keeps the same factory and curves. Then launch / buy / sell from `/launch/arc` and any Arc Story.
 
-Required env:
+Package manager: **pnpm@10.33.3**.
+
+---
+
+## Required env
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -78,15 +132,53 @@ Required env:
 - `NEXT_PUBLIC_APP_URL`
 - `PINATA_JWT` (optional — pin coin art to IPFS)
 
+See `.env.example` for the full template.
+
 Production: https://once-upon-arc.vercel.app/
+
+---
+
+## Scripts
+
+| Command | Job |
+| --- | --- |
+| `pnpm dev` | Next on `127.0.0.1:43147` (predev ensures Arc Devnet) |
+| `pnpm build` / `pnpm start` | Production build and serve |
+| `pnpm lint` | ESLint |
+| `pnpm arc:devnet` | Anvil + Chapter Factory + MockUSDC faucet |
+| `pnpm arc:watch` | Devnet watchdog |
+| `pnpm test:forge` | Foundry tests for Chapter Curve invariants |
+| `pnpm sql:apply` | Stamp `supabase/migrations` onto OnceUpon Postgres |
+| `pnpm check:copy` | Copy / legal language checks |
+| `pnpm check:curve` | Curve math |
+| `pnpm check:tokenomics` | Tokenomics checks |
+| `pnpm check:pages` | Route surface checks |
+
+---
 
 ## Stack
 
-- Next.js App Router + Tailwind + shadcn/ui
+- Next.js App Router (`16.3.5`) + React 19 + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
 - Foundry under `contracts/` (`pnpm test:forge` — Chapter Curve invariants)
 - viem for Arc Devnet launch / buy / sell
 - PWA (`/manifest.webmanifest` + `/sw.js`)
+
+---
+
+## Repo layout
+
+| Path | Job |
+| --- | --- |
+| `src/` | Next.js app, UI, trade dock, wallet surfaces |
+| `contracts/` | Foundry Chapter Factory / curve / vaults |
+| `packages/` | Shared workspace packages |
+| `supabase/` | Isolated OnceUpon migrations |
+| `scripts/` | Devnet, SQL apply, checks |
+| `docs/` | Extra notes |
+| `public/` | PWA + static |
+
+---
 
 ## Surfaces
 
@@ -109,11 +201,13 @@ Production: https://once-upon-arc.vercel.app/
 | `/onceuponers` | Crew directory |
 | `/auth/login` | Sign in with X |
 
-`/launch/solana` and `/launch/robinhood` redirect to `/launch/arc`.
+---
 
 ## Network
 
 **Arc (the press)** — Native Chapter Factory on Devnet (`pnpm arc:devnet`, RPC `http://127.0.0.1:8546`). Public testnet RPC `https://rpc.testnet.arc.io`, explorer `https://testnet.arcscan.app`, Circle faucet `https://faucet.circle.com`. Mainnet Arc is days out.
+
+---
 
 ## Apply schema
 
@@ -126,3 +220,17 @@ That stamps `supabase/migrations` onto the isolated OnceUpon project through the
 You can also `npx supabase db push --linked` from a machine that can reach the direct DB host.
 
 Never run these against the OrbitX/Soltools project. Arc launches write `stories` + `trades` with the service role (unsigned Devnet prints keep `author_user_id` null). Local `data/arc-stories.json` is a cache; Postgres is the source of truth on Vercel.
+
+---
+
+## Push test
+
+This section exists only to prove GitHub write + push from `onceuponarc`.
+
+| Field | Value |
+| --- | --- |
+| Written at | Sunday, September 13, 2026, 7:01 PM EDT |
+| UTC | 2026-09-13T23:01:00Z |
+| File | `README.md` |
+| Branch | `main` |
+| Repo | `onceuponarc/OnceUponArc` |
