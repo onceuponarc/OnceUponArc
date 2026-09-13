@@ -49,12 +49,13 @@ export const BASE = {
   explorer: "https://basescan.org",
 } as const;
 
-export type LaunchChain = "solana" | "ethereum" | "base" | "robinhood" | "arc";
-export type PrintableChain = Exclude<LaunchChain, "arc">;
+export type LaunchChain = "arc" | "solana" | "ethereum" | "base" | "robinhood";
+export type PrintableChain = LaunchChain;
 export type LaunchVenue = "spl" | "nft" | "pumpfun" | "pons";
 export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "custom";
 
 export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = [
+  "arc",
   "solana",
   "ethereum",
   "base",
@@ -75,15 +76,27 @@ export type ChainCard = {
 
 export const CHAINS: ChainCard[] = [
   {
+    id: "arc",
+    title: "Arc",
+    live: true,
+    prints: true,
+    badge: "Home chain",
+    body: "OnceUpon lives on Arc. Launch here, pair into any Solana-deep asset — BTC, stocks, memes, stables — and bind the Arc pool when the factory is live.",
+    caip2: "eip155:5042002",
+    accent: "from-[#3ee0c6]/45 to-[#6d7cff]/25",
+    printNote:
+      "Tagged for Arc. The mint prints as SPL on Solana so it is live in Jupiter-depth pairs immediately. Bind a native Arc pool from Bindings when that liquidity exists.",
+  },
+  {
     id: "solana",
     title: "Solana",
     live: true,
     prints: true,
-    badge: "Live · mainnet",
-    body: "The working printer. SPL coins, NFTs, Pump.fun-style curves, and Pons-style pairs mint here now.",
+    badge: "Live printer",
+    body: "The working printer. SPL coins, NFTs, Pump.fun-style curves, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, or any mint — you do not seed an empty pool.",
     caip2: SOLANA.caip2,
     accent: "from-[#9945ff]/40 to-[#14f195]/25",
-    printNote: "Mints a real SPL token on Solana mainnet. Fund the pad wallet with SOL.",
+    printNote: "Mints a real SPL token on Solana mainnet. Your connected Solana wallet pays rent and pairs into existing liquidity.",
   },
   {
     id: "ethereum",
@@ -120,17 +133,6 @@ export const CHAINS: ChainCard[] = [
     accent: "from-[#00c805]/35 to-[#c9a227]/20",
     printNote:
       "Prints as an SPL token on Solana mainnet and is tagged for Robinhood Chain / Pons. Bind the native pool when it exists.",
-  },
-  {
-    id: "arc",
-    title: "Circle Arc",
-    live: false,
-    prints: false,
-    badge: "Not yet",
-    body: "Arc is not open for launches yet. Wallets and quotes can talk to Arc testnet. The token factory is not deployed.",
-    caip2: "eip155:5042002",
-    accent: "from-gold/20 to-burgundy/20",
-    printNote: "Arc launches are closed until the factory ships. Print on Solana, Ethereum, Base, or Robinhood Chain.",
   },
 ];
 

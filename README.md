@@ -1,22 +1,27 @@
 # OnceUpon
 
-A token launchpad. Solana, Ethereum, Base, and Robinhood Chain are open. Tokens print on Solana mainnet today so a Story is live immediately. Other chains tag the launch for a foreign pool binding. Circle Arc is not open for launches yet.
+A token launchpad centered on **Arc**, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print as SPL on Solana mainnet so they are live immediately against deep pairs — SOL, Bitcoin (cbBTC), Ether, stables, listed tokenized stocks, memes, or any mint. You do not fund an empty pool. Other chains tag the Story for a foreign pool binding.
 
 Authors launch original Stories. Fees either push to the Author on every swap, or stream into an ownerless vault that holders claim as The Piece.
 
-This is a working Solana printer: X identity, an encrypted pad wallet per account, and real SPL / NFT mints on Solana mainnet.
+Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Phantom, Solflare, or Backpack). That address is bound to your handle in Supabase. There is no in-app keypair.
 
 ## Launch types
 
 - **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
 - **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%). Optional auto-buy converts each vault cut into the pair you chose.
-- **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every open chain.
-- **Quotes** — SOL, USDC/USDT/PYUSD, listed tokenized stocks (xStocks), Ondo USDY/OUSG, or any mint. Buys settle in that quote. Pairing against a tokenized mint is a quote, not studio equity.
-- Solana bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, and **10** of a listed xStock.
+- **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every open chain, including Arc.
+- **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks), Ondo USDY/OUSG, or any mint. Buys settle in that quote. Pairing against a tokenized mint is a quote, not studio equity.
+- Bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, **0.1** for cbBTC, and **10** of a listed xStock.
 
-## Pad wallet
+## Wallets
 
-Sign in with X through Supabase. That login is the wallet connection: the pad creates a Solana keypair, encrypts it AES-256-GCM at rest in a table the browser cannot read, and uses it to sign Jupiter swaps and launches. Export is an explicit POST. Fund the address with real SOL — there is no faucet and no injected wallet.
+1. Sign in with X through Supabase.
+2. Connect Phantom, Solflare, or Backpack.
+3. Approve a short message (`OnceUpon:{userId}:{issuedAt}`). The pad stores that address on `user_wallets` as `kind: connected`.
+4. Launch, curve trades, and Jupiter swaps are partial-signed on the server, then signed in your wallet and sent to Solana.
+
+Curve keypairs (the bonding vault) stay encrypted in Supabase. They are not your wallet.
 
 ## What this repo is not
 
@@ -39,8 +44,6 @@ Also required on that X app:
 - Request email from users: on (Supabase always sends `users.email`)
 - If the X project is in Development, your X account must be a listed tester
 
-That X error — “You weren't able to give access to the App” — is X rejecting the callback or email permission before OnceUpon runs.
-
 Dashboard: https://supabase.com/dashboard/project/txrdfjypnuvlyseefclj
 
 ## Run locally
@@ -57,10 +60,10 @@ Required env:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY` (avatar copier only)
+- `SUPABASE_SERVICE_ROLE_KEY` (avatar copier and service writes)
 - `NEXT_PUBLIC_APP_URL`
 - `SOLANA_RPC_URL` (optional, defaults to public mainnet-beta; use a dedicated RPC in production)
-- `EMBEDDED_WALLET_SECRET` (optional extra entropy for pad-wallet encryption)
+- `EMBEDDED_WALLET_SECRET` (optional extra entropy for **curve** key encryption — not a user wallet)
 
 Production: https://once-upon-arc.vercel.app/
 
@@ -69,7 +72,7 @@ Production: https://once-upon-arc.vercel.app/
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
 - `@solana/web3.js` + `@solana/spl-token` for real mainnet mints
-- Pad wallet in Supabase (created on X login — no injected wallets)
+- Injected Solana wallets bound through Supabase
 - Jupiter Metis routing for quotes and swaps (`lite-api.jup.ag`)
 - Foundry under `contracts/`
 
@@ -77,20 +80,17 @@ Production: https://once-upon-arc.vercel.app/
 
 | Path | Job |
 | --- | --- |
-| `/` | The Desk — feed plus chain chooser |
+| `/` | Home — Arc hero, chain chooser, feed |
 | `/launch` | Choose a chain |
-| `/launch/solana` | Working Solana press (form visible without login) |
-| `/launch/[chain]` | Press for Ethereum, Base, Robinhood; Arc shows not yet |
-| `/wallet` | Supabase pad wallet plus Jupiter swap |
-| `/write` `/press` | Redirect to `/launch` |
-| `/desk` | Redirect to `/` |
-| `/trade` | Redirect to `/wallet` |
-| `/claims` | Redirect to `/ledger` |
-| `/story/[slug]` | A live launch plus The Binding |
+| `/launch/arc` | Arc press (default). Mint prints on Solana, tagged for Arc |
+| `/launch/[chain]` | Solana / Ethereum / Base / Robinhood press |
+| `/wallet` | Connected wallet plus Jupiter swap |
+| `/you` | Profile, bound wallet, shortcuts |
+| `/story/[slug]` | A live launch, curve trade, Jupiter, The Binding |
 | `/shelf` | Own profile, or the crew if signed out |
 | `/shelf/[handle]` | Public profile |
 | `/ledger` | The Piece claims |
-| `/bindings` | Author links a foreign pool |
+| `/bindings` | Author links a foreign pool (including native Arc when it exists) |
 | `/margin` | Jupiter doorway |
 | `/chapter/the-first-chapter` | First Chapter window |
 | `/onceuponers` | Crew directory |
@@ -98,11 +98,11 @@ Production: https://once-upon-arc.vercel.app/
 
 ## Network
 
+**Arc (home chain)** — Stories tagged for Arc. Native factory binds later from `/bindings`. Explorer `https://testnet.arcscan.app`.
+
 **Solana Mainnet (live printer)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`).
 
-**Ethereum, Base, Robinhood Chain (open)** — Stories tagged for those chains still mint as SPL on Solana today. Bind a foreign pool from `/bindings` after launch. Robinhood Pons factory `0x7ed598…`, router `0xe33e9e…`.
-
-**Circle Arc (not yet)** — chain ID `5042002`, RPC `https://rpc.testnet.arc.io`, explorer `https://testnet.arcscan.app`. Token factory is not deployed. Launches are closed until it ships.
+**Ethereum, Base, Robinhood Chain** — Stories tagged for those chains still mint as SPL on Solana today. Bind a foreign pool from `/bindings` after launch. Robinhood Pons factory `0x7ed598…`, router `0xe33e9e…`.
 
 ## Apply schema
 

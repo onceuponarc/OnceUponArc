@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -21,6 +21,8 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { XMark } from "@/components/x-mark";
+import { SolanaConnectButton } from "@/components/wallet/connect-button";
+import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
 import { cn } from "@/lib/utils";
 
 export function LaunchStudio({
@@ -34,6 +36,7 @@ export function LaunchStudio({
 }) {
   const router = useRouter();
   const selectedChain = findChain(chain)!;
+  const { address, signAndSend } = useWalletSigner();
   const [venue, setVenue] = useState<LaunchVenue>("spl");
   const [engine, setEngine] = useState<"author" | "onceuponers">("author");
   const [quoteGroup, setQuoteGroup] = useState<QuoteGroup>("sol");
@@ -50,40 +53,20 @@ export function LaunchStudio({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
-  const [balance, setBalance] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!signedIn) {
-      setWalletAddress(null);
-      setBalance(null);
-      return;
-    }
-    let cancelled = false;
-    fetch("/api/wallets/embedded")
-      .then((res) => res.json())
-      .then((body) => {
-        if (cancelled) return;
-        if (typeof body.address === "string") setWalletAddress(body.address);
-        if (typeof body.balance === "number") setBalance(body.balance);
-      })
-      .catch(() => {
-        if (!cancelled) setWalletAddress(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [signedIn]);
 
   const cap = engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap;
   const selectedQuote = findQuote(quoteId);
   const example = useMemo(() => feeExample(1000, Math.min(authorBps, cap)), [authorBps, cap]);
-  const canSubmit = signedIn && rights && !busy;
+  const canSubmit = signedIn && Boolean(address) && rights && !busy;
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
     if (!signedIn) {
       setError("Sign in with X first. Your handle is identity on the pad.");
+      return;
+    }
+    if (!address) {
+      setError("Connect a Solana wallet. It pays rent and signs the mint.");
       return;
     }
     setBusy(true);
@@ -108,6 +91,7 @@ export function LaunchStudio({
           rewardMint: quoteMint.trim() || undefined,
           nftSupply,
           rightsAttested: rights,
+          payer: address,
         }),
       });
       const body = await res.json();
@@ -115,8 +99,28 @@ export function LaunchStudio({
         setError(body.error ?? "Launch failed.");
         return;
       }
+      if (!body.transaction) {
+        setError("The press did not return a transaction to sign.");
+        return;
+      }
+      setStatus("Approve the mint in your wallet…");
+      const sent = await signAndSend(body.transaction);
+      setStatus("Confirming on Solana…");
+      const confirm = await fetch("/api/launch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: true, slug: body.slug, signature: sent.signature }),
+      });
+      const confirmed = await confirm.json();
+      if (!confirm.ok) {
+        setError(confirmed.error ?? "Mint landed but the pad could not mark it live. Open the Story.");
+        router.push(`/story/${body.slug}`);
+        return;
+      }
       setStatus(`Live. Mint ${body.mint}`);
       router.push(`/story/${body.slug}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Launch failed.");
     } finally {
       setBusy(false);
     }
@@ -124,17 +128,17 @@ export function LaunchStudio({
 
   return (
     <form onSubmit={launch} className="space-y-5">
-      <section className="glass flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/20 px-4 py-3">
+      <section className="glass flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-arc/20 px-4 py-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">The Press</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">The Press</p>
           <h2 className="font-heading text-xl font-bold">
             {selectedChain.title}
             <span className="ml-2 text-sm font-normal text-parchment/60">· {selectedChain.badge}</span>
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <Badge>{chain === "solana" ? "Prints here" : `Tagged for ${selectedChain.title}`}</Badge>
-          <Link href="/launch" className="text-sm text-gold hover:underline">
+          <Badge>{chain === "arc" ? "Home chain" : chain === "solana" ? "Prints here" : `Tagged for ${selectedChain.title}`}</Badge>
+          <Link href="/launch" className="text-sm text-arc hover:underline">
             Change chain
           </Link>
         </div>
@@ -144,7 +148,7 @@ export function LaunchStudio({
         <Alert>
           <AlertTitle>Compose now. Sign in to print.</AlertTitle>
           <AlertDescription className="flex flex-wrap items-center gap-3">
-            <span>The Solana press is open. Sign in with X to mint from your pad wallet.</span>
+            <span>Sign in with X, then connect Phantom, Solflare, or Backpack to mint.</span>
             <Button asChild size="sm">
               <a href="/auth/login">
                 <XMark className="size-3.5" />
@@ -153,10 +157,18 @@ export function LaunchStudio({
             </Button>
           </AlertDescription>
         </Alert>
+      ) : !address ? (
+        <Alert>
+          <AlertTitle>Connect a Solana wallet</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+            <span>Your connected wallet is the fee payer. Approve a message to bind it to @{handle}.</span>
+            <SolanaConnectButton />
+          </AlertDescription>
+        </Alert>
       ) : null}
 
-      <section className="glass rounded-2xl border border-gold/20 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">1 · Venue</p>
+      <section className="glass rounded-2xl border border-arc/20 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">1 · Venue</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {VENUES.map((item) => (
             <button
@@ -165,10 +177,10 @@ export function LaunchStudio({
               onClick={() => setVenue(item.id)}
               className={cn(
                 "rounded-xl border p-3 text-left transition",
-                venue === item.id ? "border-gold bg-gold/15" : "border-gold/15 bg-white/5",
+                venue === item.id ? "border-arc bg-arc/15" : "border-white/10 bg-white/5",
               )}
             >
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gold">{item.title}</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-arc">{item.title}</p>
               <p className="font-heading mt-0.5 text-base font-bold">{item.headline}</p>
               <p className="mt-1 text-sm text-parchment/65">{item.body}</p>
             </button>
@@ -176,8 +188,8 @@ export function LaunchStudio({
         </div>
       </section>
 
-      <section className="glass rounded-2xl border border-gold/20 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">2 · Fee engine</p>
+      <section className="glass rounded-2xl border border-arc/20 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">2 · Fee engine</p>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           {(["author", "onceuponers"] as const).map((id) => (
             <button
@@ -189,10 +201,10 @@ export function LaunchStudio({
               }}
               className={cn(
                 "rounded-xl border p-3 text-left transition",
-                engine === id ? "border-gold bg-gold/15" : "border-gold/15 bg-white/5",
+                engine === id ? "border-arc bg-arc/15" : "border-white/10 bg-white/5",
               )}
             >
-              <p className="text-[11px] uppercase tracking-[0.18em] text-gold">{MODE_COPY[id].title}</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-arc">{MODE_COPY[id].title}</p>
               <p className="font-heading mt-0.5 text-base font-bold">{MODE_COPY[id].headline}</p>
               <p className="mt-1 text-sm text-parchment/65">{MODE_COPY[id].body}</p>
             </button>
@@ -209,8 +221,8 @@ export function LaunchStudio({
         onMint={setQuoteMint}
       />
 
-      <section className="glass space-y-4 rounded-2xl border border-gold/20 p-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">4 · Print it</p>
+      <section className="glass space-y-4 rounded-2xl border border-arc/20 p-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">4 · Print it</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="title">Name</Label>
@@ -255,9 +267,9 @@ export function LaunchStudio({
             max={cap}
             value={Math.min(authorBps, cap)}
             onChange={(e) => setAuthorBps(Number(e.target.value))}
-            className="w-full accent-[#c9a227]"
+            className="w-full accent-[#3ee0c6]"
           />
-          <p className="text-sm text-gold">
+          <p className="text-sm text-arc">
             {(Math.min(authorBps, cap) / 100).toFixed(2)}% · protocol {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%
           </p>
           <p className="text-sm text-parchment/65">{example}</p>
@@ -272,9 +284,9 @@ export function LaunchStudio({
               max={500}
               value={snipeTaxBps}
               onChange={(e) => setSnipeTaxBps(Number(e.target.value))}
-              className="w-full accent-[#c9a227]"
+              className="w-full accent-[#3ee0c6]"
             />
-            <p className="text-sm text-gold">{(snipeTaxBps / 100).toFixed(2)}%</p>
+            <p className="text-sm text-arc">{(snipeTaxBps / 100).toFixed(2)}%</p>
           </div>
         ) : null}
         {engine === "onceuponers" ? (
@@ -287,28 +299,32 @@ export function LaunchStudio({
           <Switch checked={rights} onCheckedChange={setRights} />
           <span>{RIGHTS_TICK}</span>
         </label>
-        <div className="rounded-xl border border-gold/15 bg-black/20 p-3 text-sm text-parchment/70">
+        <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-parchment/70">
           <p>
-            Pad wallet {handle ? `@${handle}` : "(sign in)"}: {walletAddress ?? "provisioning after sign-in"}{" "}
-            {balance != null ? `· ${balance.toFixed(3)} SOL` : null}
+            {handle ? `@${handle}` : "Sign in with X"}
+            {address ? ` · ${address.slice(0, 4)}…${address.slice(-4)}` : " · connect a wallet"}
           </p>
           <p className="mt-1">{selectedChain.printNote}</p>
           <p className="mt-1">
             {venue === "nft"
-              ? "Mints a real token on Solana mainnet. Needs SOL in the pad wallet."
+              ? "Mints a real token on Solana mainnet. Needs SOL in the connected wallet."
               : selectedQuote
-                ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}.`
+                ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool.`
                 : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
         </div>
-        <Button type="submit" disabled={!canSubmit}>
+        <Button type="submit" disabled={!canSubmit} className="w-full rounded-full sm:w-auto">
           {busy
-            ? "Printing on Solana…"
+            ? status ?? "Printing…"
             : !signedIn
               ? "Sign in with X to launch"
-              : chain === "solana"
-                ? "Launch on Solana mainnet"
-                : `Launch · tagged for ${selectedChain.title}`}
+              : !address
+                ? "Connect a wallet to launch"
+                : chain === "arc"
+                  ? "Launch on Arc"
+                  : chain === "solana"
+                    ? "Launch on Solana mainnet"
+                    : `Launch · tagged for ${selectedChain.title}`}
         </Button>
         {error ? (
           <Alert variant="destructive">
@@ -316,9 +332,9 @@ export function LaunchStudio({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
-        {status ? (
+        {status && !error ? (
           <Alert>
-            <AlertTitle>Live</AlertTitle>
+            <AlertTitle>Press</AlertTitle>
             <AlertDescription>{status}</AlertDescription>
           </Alert>
         ) : null}

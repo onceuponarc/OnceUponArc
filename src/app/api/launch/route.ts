@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { launchOnSolana, parseMint } from "@/lib/solana/launch";
+import { confirmLaunch, launchOnSolana, parseMint } from "@/lib/solana/launch";
 import { inspectMint } from "@/lib/solana/mint";
 import { redactWalletError } from "@/lib/crypto/secret-box";
 import { isPrintableChain, type LaunchVenue } from "@onceupon/config/solana";
@@ -10,6 +10,7 @@ import {
   findQuoteByMint,
   type QuoteAsset,
 } from "@onceupon/config/quotes";
+import { assertPayer } from "@/lib/wallets/bound";
 
 export const maxDuration = 60;
 
@@ -43,6 +44,9 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as {
+    confirm?: boolean;
+    slug?: string;
+    signature?: string;
     chain?: string;
     venue?: LaunchVenue;
     engine?: "author" | "onceuponers";
@@ -58,19 +62,24 @@ export async function POST(request: Request) {
     autoBuyRewards?: boolean;
     nftSupply?: number;
     rightsAttested?: boolean;
+    payer?: string;
   };
 
-  const chain = body.chain ?? "solana";
-  if (chain === "arc") {
-    return NextResponse.json(
-      {
-        error: "Circle Arc is not open for launches yet. Pick Solana, Ethereum, Base, or Robinhood Chain.",
-      },
-      { status: 400 },
-    );
+  if (body.confirm) {
+    if (!body.slug || !body.signature) {
+      return NextResponse.json({ error: "Launch confirmation needs a slug and signature." }, { status: 400 });
+    }
+    try {
+      const result = await confirmLaunch(user.id, body.slug, body.signature);
+      return NextResponse.json(result);
+    } catch (error) {
+      return NextResponse.json({ error: redactWalletError(error) }, { status: 400 });
+    }
   }
+
+  const chain = body.chain ?? "arc";
   if (!isPrintableChain(chain)) {
-    return NextResponse.json({ error: "Unknown chain. Pick Solana, Ethereum, Base, or Robinhood Chain." }, { status: 400 });
+    return NextResponse.json({ error: "Unknown chain. Pick Arc, Solana, Ethereum, Base, or Robinhood Chain." }, { status: 400 });
   }
   if (!body.title || !body.ticker || !body.engine || !body.venue) {
     return NextResponse.json({ error: "Name, ticker, engine, and venue are required." }, { status: 400 });
@@ -83,6 +92,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const payer = await assertPayer(user.id, body.payer);
     let quote = await resolveQuote(body);
     if (quote.mint) {
       const live = await inspectMint(quote.mint);
@@ -105,6 +115,7 @@ export async function POST(request: Request) {
       rewardMint: parseMint(body.rewardMint ?? quote.mint ?? null)?.toBase58() ?? null,
       autoBuyRewards: Boolean(body.autoBuyRewards),
       nftSupply: Number(body.nftSupply ?? 1),
+      payer: payer.toBase58(),
     });
     return NextResponse.json(result);
   } catch (error) {

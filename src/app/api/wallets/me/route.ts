@@ -7,14 +7,11 @@ import { redactWalletError } from "@/lib/crypto/secret-box";
 export async function GET() {
   const { user } = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
+
   try {
     const address = await getBoundSolanaWallet(user.id);
     if (!address) {
-      return NextResponse.json({
-        address: null,
-        bound: false,
-        error: "Connect a Solana wallet. In-app wallets are gone.",
-      });
+      return NextResponse.json({ address: null, bound: false });
     }
     const balance = await solBalance(address);
     return NextResponse.json({
@@ -27,11 +24,4 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json({ error: redactWalletError(error) }, { status: 500 });
   }
-}
-
-export async function POST() {
-  return NextResponse.json(
-    { error: "In-app wallets are gone. Connect Phantom, Solflare, or Backpack." },
-    { status: 410 },
-  );
 }

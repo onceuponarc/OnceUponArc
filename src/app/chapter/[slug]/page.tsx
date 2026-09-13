@@ -45,7 +45,7 @@ export default async function ChapterPage({
         <h1 className="font-heading mt-3 text-5xl font-extrabold sm:text-6xl">{chapter.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-parchment/80">{POSITIONING}</p>
         <p className="mt-3 max-w-2xl text-parchment/65">
-          First official launch window on OnceUpon. Solana is the live printer. Arc launches are not open yet. This is not studio equity.
+          First official launch window on OnceUpon. Arc is home. Every other chain is open. Pair into SOL, Bitcoin, stocks, memes, or any mint. This is not studio equity.
         </p>
         {chapter.opens_at ? (
           <p className="mt-4 text-sm text-gold">Opens {new Date(chapter.opens_at).toUTCString()}</p>
@@ -54,7 +54,7 @@ export default async function ChapterPage({
           <JupiterStatusRow />
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild>
-              <Link href="/launch/solana">Launch on Solana</Link>
+              <Link href="/launch/arc">Launch on Arc</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/launch">Choose a chain</Link>

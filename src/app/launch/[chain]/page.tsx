@@ -1,5 +1,5 @@
 import { LaunchStudio } from "@/components/launch/launch-studio";
-import { EmbeddedWalletCard } from "@/components/wallet/embedded-wallet";
+import { ConnectedWalletCard } from "@/components/wallet/connected-wallet";
 import { getSessionUser } from "@/lib/auth";
 import { findChain, isLaunchChain, isPrintableChain } from "@onceupon/config/solana";
 import { Button } from "@/components/ui/button";
@@ -23,14 +23,14 @@ export default async function LaunchChainPage({ params }: Props) {
 
   if (!isPrintableChain(chain) || !card.live) {
     return (
-      <div className="glass mx-auto max-w-xl space-y-4 rounded-3xl border border-gold/25 p-8">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Not yet</p>
+      <div className="glass mx-auto max-w-xl space-y-4 rounded-3xl border border-arc/25 p-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">Not yet</p>
         <h1 className="font-heading text-4xl font-extrabold">{card.title} is not open</h1>
         <p className="text-parchment/75">{card.body}</p>
         <p className="text-sm text-parchment/60">{card.printNote}</p>
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link href="/launch/solana">Open the Solana press</Link>
+            <Link href="/launch/arc">Open the Arc press</Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/launch">All chains</Link>
@@ -43,16 +43,20 @@ export default async function LaunchChainPage({ params }: Props) {
   const { profile } = await getSessionUser();
 
   return (
-    <div className="space-y-8">
-      <section className="glass relative overflow-hidden rounded-3xl border border-gold/25 px-6 py-7 sm:px-10">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">The Press · {card.title}</p>
+    <div className="space-y-6">
+      <section className="glass relative overflow-hidden rounded-[28px] border border-arc/25 px-5 py-7 sm:px-10">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">The Press · {card.title}</p>
         <h1 className="font-heading mt-2 text-3xl font-extrabold sm:text-4xl">
-          {chain === "solana" ? "Print a real Solana token." : `Launch tagged for ${card.title}.`}
+          {chain === "arc"
+            ? "Launch on Arc. Pair into real liquidity."
+            : chain === "solana"
+              ? "Print a real Solana token."
+              : `Launch tagged for ${card.title}.`}
         </h1>
         <p className="mt-3 max-w-2xl text-parchment/75">{card.printNote}</p>
       </section>
 
-      {profile ? <EmbeddedWalletCard /> : null}
+      <ConnectedWalletCard signedIn={Boolean(profile)} />
 
       <LaunchStudio chain={chain} handle={profile?.handle ?? null} signedIn={Boolean(profile)} />
     </div>

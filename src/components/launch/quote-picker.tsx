@@ -9,6 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+const GROUP_DEFAULT: Partial<Record<QuoteGroup, string>> = {
+  sol: "sol",
+  btc: "cbbtc",
+  stable: "usdc",
+  meme: "bonk",
+  stock: "aaplx",
+  treasury: "usdy",
+  custom: "custom",
+};
+
 export function QuotePicker({
   group,
   quoteId,
@@ -39,8 +49,8 @@ export function QuotePicker({
   }, [group, search]);
 
   return (
-    <section className="glass rounded-2xl border border-gold/20 p-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">3 · Pair liquidity</p>
+    <section className="glass rounded-2xl border border-arc/20 p-5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">3 · Pair liquidity</p>
       <p className="mt-2 text-sm text-parchment/65">{QUOTE_DISCLAIMER}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {QUOTE_GROUPS.map((item) => (
@@ -49,13 +59,13 @@ export function QuotePicker({
             type="button"
             variant={group === item.id ? "default" : "outline"}
             size="sm"
+            className="rounded-full"
             onClick={() => {
               onGroup(item.id);
-              if (item.id === "sol") onQuoteId("sol");
-              if (item.id === "stable") onQuoteId("usdc");
-              if (item.id === "stock") onQuoteId("aaplx");
-              if (item.id === "treasury") onQuoteId("usdy");
-              if (item.id === "custom") onQuoteId("custom");
+              const next = GROUP_DEFAULT[item.id];
+              if (next) onQuoteId(next);
+              const listed = next ? findQuote(next) : undefined;
+              onMint(listed?.mint ?? "");
               setSearch("");
             }}
           >
@@ -67,23 +77,25 @@ export function QuotePicker({
 
       {group === "custom" ? (
         <div className="mt-4 space-y-2">
-          <Label htmlFor="mint">Quote mint</Label>
+          <Label htmlFor="mint">Any SPL mint</Label>
           <Input
             id="mint"
             value={mint}
             onChange={(e) => onMint(e.target.value)}
-            placeholder="Solana mint address"
+            placeholder="Paste a mint — BTC wrap, meme, stock, anything on-chain"
           />
         </div>
       ) : group === "sol" ? (
-        <p className="mt-4 text-sm text-parchment/70">Bonds until {selected?.graduationUi} SOL, then marks bonded.</p>
+        <p className="mt-4 text-sm text-parchment/70">
+          Bonds until {selected?.graduationUi} SOL, then marks bonded. You pair into SOL depth — you do not seed an empty pool.
+        </p>
       ) : (
         <div className="mt-4 space-y-3">
-          {group === "stock" ? (
+          {options.length > 6 ? (
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search AAPLx, TSLAx, SPYx…"
+              placeholder={group === "stock" ? "Search AAPLx, TSLAx, SPYx…" : "Search a listed mint"}
             />
           ) : null}
           <div className="grid max-h-72 gap-2 overflow-y-auto sm:grid-cols-2">
@@ -97,7 +109,7 @@ export function QuotePicker({
                 }}
                 className={cn(
                   "rounded-xl border p-3 text-left transition",
-                  quoteId === item.id ? "border-gold bg-gold/15" : "border-gold/15 bg-white/5",
+                  quoteId === item.id ? "border-arc bg-arc/15" : "border-white/10 bg-white/5",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -112,7 +124,7 @@ export function QuotePicker({
             ))}
           </div>
           {options.length === 0 ? (
-            <p className="text-sm text-parchment/60">No listed mint matches that search.</p>
+            <p className="text-sm text-parchment/60">No listed mint matches that search. Paste any mint under Any mint.</p>
           ) : null}
         </div>
       )}

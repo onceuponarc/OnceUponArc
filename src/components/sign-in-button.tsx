@@ -11,7 +11,7 @@ export function SignInButton({ profile }: { profile: OnceUponer | null }) {
     const initial = profile.handle.slice(0, 1).toUpperCase();
     return (
       <Link
-        href={`/shelf/${profile.handle}`}
+        href={`/you`}
         className="flex items-center gap-2 rounded-full border border-gold/30 bg-white/5 px-2 py-1 backdrop-blur-xl"
       >
         <Avatar size="sm">

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
 import { SOLANA } from "@onceupon/config/solana";
 import { ARC_TESTNET, PROTOCOL } from "@onceupon/config/arc";
-import { BONDING_COPY, PAD_TAGLINE } from "@onceupon/config/copy";
+import { BONDING_COPY, PAD_TAGLINE, QUOTE_DISCLAIMER } from "@onceupon/config/copy";
 import type { FeedLaunch } from "@/lib/feed";
 import Link from "next/link";
 import { JupiterStatusRow } from "@/components/jupiter/status-row";
@@ -76,43 +76,44 @@ export default async function HomePage() {
   const bondedCount = launches.filter((item) => item.status === "graduated").length;
 
   return (
-    <div className="space-y-12">
-      <section className="glass relative overflow-hidden rounded-3xl border border-gold/25 px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full bg-gold/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 left-10 size-64 rounded-full bg-teal/15 blur-3xl" />
+    <div className="space-y-10">
+      <section className="glass relative overflow-hidden rounded-[28px] border border-arc/25 px-5 py-8 sm:px-10 sm:py-12">
+        <div className="pointer-events-none absolute -right-16 -top-20 size-72 rounded-full bg-arc/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 left-10 size-64 rounded-full bg-secondary/25 blur-3xl" />
         <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold">
-              Solana printer · Arc not yet
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-arc">
+              Arc home · every chain open
             </p>
             <h1 className="font-heading mt-3 text-4xl font-extrabold leading-[1.05] sm:text-6xl">
-              Launch it.
-              <span className="block bg-gradient-to-r from-gold via-parchment to-teal bg-clip-text text-transparent">
-                Own the fee path.
+              Launch on Arc.
+              <span className="block bg-gradient-to-r from-arc via-parchment to-gold bg-clip-text text-transparent">
+                Pair any chain.
               </span>
             </h1>
             <p className="mt-4 max-w-xl text-base text-parchment/75 sm:text-lg">{PAD_TAGLINE}</p>
-            <p className="mt-2 max-w-xl text-sm text-parchment/55">{BONDING_COPY}</p>
+            <p className="mt-2 max-w-xl text-sm text-parchment/55">{QUOTE_DISCLAIMER}</p>
+            <p className="mt-2 max-w-xl text-sm text-parchment/45">{BONDING_COPY}</p>
             <div className="mt-6 flex flex-wrap gap-2">
-              <Button asChild>
-                <Link href="/launch/solana">Launch on Solana</Link>
+              <Button asChild className="rounded-full">
+                <Link href="/launch/arc">Launch on Arc</Link>
               </Button>
               {profile ? (
-                <Button variant="outline" asChild>
-                  <Link href="/wallet">Open trade</Link>
+                <Button variant="outline" asChild className="rounded-full">
+                  <Link href="/wallet">Trade</Link>
                 </Button>
               ) : (
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="rounded-full">
                   <a href="/auth/login">Sign in with X</a>
                 </Button>
               )}
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" asChild className="rounded-full">
                 <Link href="/launch">All chains</Link>
               </Button>
             </div>
           </div>
-          <div className="glass rounded-2xl border border-gold/20 p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">Pad stats</p>
+          <div className="glass rounded-2xl border border-arc/20 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Pad stats</p>
             <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
               <div>
                 <dt className="text-parchment/50">Live</dt>
@@ -134,15 +135,13 @@ export default async function HomePage() {
               </div>
             </dl>
             <div className="mt-5 space-y-2 text-xs text-parchment/55">
+              <p>Arc is home. Solana prints. Ethereum, Base, and Robinhood Chain tag the Story. Pair SOL, cbBTC, stocks, memes, or any mint.</p>
               <p>
-                Solana, Ethereum, Base, and Robinhood Chain are open. Arc is not yet.
-              </p>
-              <p>
-                <a className="text-gold hover:underline" href={SOLANA.explorer} target="_blank" rel="noreferrer">
+                <a className="text-arc hover:underline" href={SOLANA.explorer} target="_blank" rel="noreferrer">
                   Solana Explorer
                 </a>
                 {" · "}
-                <a className="text-gold hover:underline" href={ARC_TESTNET.explorer} target="_blank" rel="noreferrer">
+                <a className="text-arc hover:underline" href={ARC_TESTNET.explorer} target="_blank" rel="noreferrer">
                   Arc explorer
                 </a>
               </p>
@@ -150,33 +149,33 @@ export default async function HomePage() {
               {profile ? (
                 <p className="text-parchment/70">Signed in as @{profile.handle}</p>
               ) : (
-                <p>A OnceUponer is an X account. There is no email signup.</p>
+                <p>A OnceUponer is an X account. Connect a Solana wallet to sign.</p>
               )}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="glass flex flex-col gap-4 rounded-2xl border border-gold/20 p-6 sm:flex-row sm:items-center sm:justify-between">
+      <section className="glass flex flex-col gap-4 rounded-2xl border border-arc/20 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <Badge>Featured</Badge>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">First Chapter</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">First Chapter</p>
           </div>
           <h2 className="font-heading mt-2 text-2xl font-bold">{chapter?.title ?? "The First Chapter"}</h2>
           <p className="mt-1 max-w-xl text-sm text-parchment/65">
-            The first official window on the pad. Solana is the live printer. Arc launches are not open yet.
+            The first official window. Launch on Arc, pair into real liquidity, bind any chain after.
           </p>
         </div>
-        <Button variant="secondary" asChild>
+        <Button variant="secondary" asChild className="rounded-full">
           <Link href="/chapter/the-first-chapter">Open the window</Link>
         </Button>
       </section>
 
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Chains</p>
-          <h2 className="font-heading mt-1 text-2xl font-bold">Pick where to launch</h2>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">Chains</p>
+          <h2 className="font-heading mt-1 text-2xl font-bold">Launch anywhere. Pair anything.</h2>
         </div>
         <ChainChooser compact />
       </section>

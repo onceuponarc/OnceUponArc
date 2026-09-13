@@ -10,11 +10,12 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-sans);
   --font-heading: var(--font-syne);
-  --color-ink: #0b0a12;
-  --color-parchment: #f6efe2;
-  --color-gold: #c9a227;
+  --color-ink: #070b14;
+  --color-parchment: #e8f4f1;
+  --color-gold: #d4b56a;
   --color-burgundy: #6b1d2a;
-  --color-teal: #2a6b62;
+  --color-teal: #3ee0c6;
+  --color-arc: #3ee0c6;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -54,59 +55,59 @@
 }
 
 :root {
-  --background: #0b0a12;
-  --foreground: #f6efe2;
-  --card: rgb(20 19 28 / 52%);
-  --card-foreground: #f6efe2;
-  --popover: rgb(16 15 24 / 88%);
-  --popover-foreground: #f6efe2;
-  --primary: #c9a227;
-  --primary-foreground: #0b0a12;
-  --secondary: #2a6b62;
-  --secondary-foreground: #f6efe2;
-  --muted: rgb(28 27 36 / 72%);
-  --muted-foreground: #cbbfa8;
-  --accent: #6b1d2a;
-  --accent-foreground: #f6efe2;
-  --destructive: #9b2c2c;
-  --border: rgb(201 162 39 / 22%);
-  --input: rgb(246 239 226 / 12%);
-  --ring: #c9a227;
-  --chart-1: #c9a227;
-  --chart-2: #2a6b62;
-  --chart-3: #6b1d2a;
-  --chart-4: #f6efe2;
-  --chart-5: #8a7a4a;
-  --radius: 1rem;
-  --sidebar: #14131c;
-  --sidebar-foreground: #f6efe2;
-  --sidebar-primary: #c9a227;
-  --sidebar-primary-foreground: #0b0a12;
-  --sidebar-accent: #1c1b24;
-  --sidebar-accent-foreground: #f6efe2;
-  --sidebar-border: rgb(201 162 39 / 22%);
-  --sidebar-ring: #c9a227;
+  --background: #070b14;
+  --foreground: #e8f4f1;
+  --card: rgb(8 16 28 / 48%);
+  --card-foreground: #e8f4f1;
+  --popover: rgb(8 14 24 / 90%);
+  --popover-foreground: #e8f4f1;
+  --primary: #3ee0c6;
+  --primary-foreground: #04110e;
+  --secondary: #6d7cff;
+  --secondary-foreground: #e8f4f1;
+  --muted: rgb(12 22 36 / 72%);
+  --muted-foreground: #9bb8b2;
+  --accent: #d4b56a;
+  --accent-foreground: #070b14;
+  --destructive: #c45c5c;
+  --border: rgb(62 224 198 / 18%);
+  --input: rgb(232 244 241 / 10%);
+  --ring: #3ee0c6;
+  --chart-1: #3ee0c6;
+  --chart-2: #6d7cff;
+  --chart-3: #d4b56a;
+  --chart-4: #e8f4f1;
+  --chart-5: #14f195;
+  --radius: 1.15rem;
+  --sidebar: #0b1522;
+  --sidebar-foreground: #e8f4f1;
+  --sidebar-primary: #3ee0c6;
+  --sidebar-primary-foreground: #04110e;
+  --sidebar-accent: #122033;
+  --sidebar-accent-foreground: #e8f4f1;
+  --sidebar-border: rgb(62 224 198 / 18%);
+  --sidebar-ring: #3ee0c6;
 }
 
 .dark {
-  --background: #0b0a12;
-  --foreground: #f6efe2;
-  --card: rgb(20 19 28 / 52%);
-  --card-foreground: #f6efe2;
-  --popover: rgb(16 15 24 / 88%);
-  --popover-foreground: #f6efe2;
-  --primary: #c9a227;
-  --primary-foreground: #0b0a12;
-  --secondary: #2a6b62;
-  --secondary-foreground: #f6efe2;
-  --muted: rgb(28 27 36 / 72%);
-  --muted-foreground: #cbbfa8;
-  --accent: #6b1d2a;
-  --accent-foreground: #f6efe2;
+  --background: #070b14;
+  --foreground: #e8f4f1;
+  --card: rgb(8 16 28 / 48%);
+  --card-foreground: #e8f4f1;
+  --popover: rgb(8 14 24 / 90%);
+  --popover-foreground: #e8f4f1;
+  --primary: #3ee0c6;
+  --primary-foreground: #04110e;
+  --secondary: #6d7cff;
+  --secondary-foreground: #e8f4f1;
+  --muted: rgb(12 22 36 / 72%);
+  --muted-foreground: #9bb8b2;
+  --accent: #d4b56a;
+  --accent-foreground: #070b14;
   --destructive: #c45c5c;
-  --border: rgb(201 162 39 / 22%);
-  --input: rgb(246 239 226 / 12%);
-  --ring: #c9a227;
+  --border: rgb(62 224 198 / 18%);
+  --input: rgb(232 244 241 / 10%);
+  --ring: #3ee0c6;
 }
 
 @layer base {
@@ -130,31 +131,41 @@
 
 @layer components {
   .glass {
-    background: rgb(14 12 22 / 48%);
-    backdrop-filter: blur(22px) saturate(1.35);
+    background: rgb(8 16 28 / 42%);
+    backdrop-filter: blur(22px) saturate(1.4);
     box-shadow:
-      0 0 0 1px rgb(255 255 255 / 6%) inset,
+      0 0 0 1px rgb(255 255 255 / 7%) inset,
       0 18px 50px rgb(0 0 0 / 35%);
   }
 
   .glass-nav {
-    background: rgb(11 10 18 / 62%);
-    backdrop-filter: blur(28px) saturate(1.4);
-    box-shadow: 0 1px 0 rgb(201 162 39 / 18%);
+    background: rgb(5 10 18 / 55%);
+    backdrop-filter: blur(28px) saturate(1.5);
+    box-shadow: 0 1px 0 rgb(62 224 198 / 12%);
+  }
+
+  .glass-tab {
+    background: rgb(6 12 22 / 58%);
+    backdrop-filter: blur(28px) saturate(1.55);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 10%) inset,
+      0 18px 50px rgb(0 0 0 / 45%),
+      0 0 40px rgb(62 224 198 / 10%);
   }
 
   .pad-vignette {
     background:
-      radial-gradient(1200px 600px at 80% 0%, rgb(201 162 39 / 14%), transparent 55%),
-      radial-gradient(900px 500px at 8% 88%, rgb(107 29 42 / 22%), transparent 50%),
-      radial-gradient(700px 420px at 70% 80%, rgb(42 107 98 / 16%), transparent 55%);
+      radial-gradient(1100px 520px at 78% 0%, rgb(62 224 198 / 16%), transparent 58%),
+      radial-gradient(900px 480px at 8% 90%, rgb(109 124 255 / 18%), transparent 52%),
+      radial-gradient(700px 420px at 70% 82%, rgb(212 181 106 / 10%), transparent 55%),
+      linear-gradient(180deg, rgb(7 11 20 / 28%) 0%, rgb(7 11 20 / 62%) 100%);
   }
 
   [data-slot="card"] {
-    background: rgb(16 14 24 / 52%);
-    backdrop-filter: blur(20px) saturate(1.25);
+    background: rgb(8 16 28 / 48%);
+    backdrop-filter: blur(20px) saturate(1.3);
     box-shadow:
-      0 0 0 1px rgb(255 255 255 / 5%) inset,
+      0 0 0 1px rgb(255 255 255 / 6%) inset,
       0 16px 40px rgb(0 0 0 / 28%);
   }
 

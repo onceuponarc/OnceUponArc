@@ -9,14 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { XMark } from "@/components/x-mark";
+import { SolanaConnectButton } from "@/components/wallet/connect-button";
+import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
 import type { JupiterQuote } from "@/lib/jupiter";
 
 const SWAP_TOKENS = [
   { symbol: "SOL", mint: SOLANA.wsolMint, decimals: 9 },
   { symbol: "USDC", mint: SOLANA.usdcMint, decimals: 6 },
-  ...QUOTE_ASSETS.filter((item) => item.mint && ["usdt", "pyusd", "aaplx", "tslax", "nvdax"].includes(item.id)).map(
-    (item) => ({ symbol: item.symbol, mint: item.mint as string, decimals: item.decimals }),
-  ),
+  ...QUOTE_ASSETS.filter((item) =>
+    item.mint && ["cbbtc", "weth", "usdt", "pyusd", "bonk", "wif", "jup", "pengu", "aaplx", "tslax", "nvdax"].includes(item.id),
+  ).map((item) => ({ symbol: item.symbol, mint: item.mint as string, decimals: item.decimals })),
 ];
 
 function formatAmount(raw: string, decimals: number) {
@@ -40,6 +42,7 @@ export function JupiterSwapPanel({
   extraDecimals?: number;
   defaultOutput?: string;
 }) {
+  const { address, signAndSend } = useWalletSigner();
   const tokens = useMemo(() => {
     const list = [...SWAP_TOKENS];
     if (extraMint && extraSymbol && !list.some((item) => item.mint === extraMint)) {
@@ -97,8 +100,8 @@ export function JupiterSwapPanel({
   }
 
   async function swap() {
-    if (!signedIn) {
-      setError("Sign in with X. The pad wallet in Supabase signs the Jupiter swap.");
+    if (!address) {
+      setError("Connect a Solana wallet to swap.");
       return;
     }
     if (!rawQuote) {
@@ -109,14 +112,16 @@ export function JupiterSwapPanel({
     setError(null);
     setStatus(null);
     try {
-      const res = await fetch("/api/jupiter/execute", {
+      const res = await fetch("/api/jupiter/swap", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quoteResponse: rawQuote }),
+        body: JSON.stringify({ quoteResponse: rawQuote, userPublicKey: address }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "The pad wallet could not land the swap.");
-      setStatus(`Landed ${body.signature}`);
+      if (!res.ok) throw new Error(body.error ?? "Jupiter could not build the swap.");
+      setStatus("Approve the swap in your wallet…");
+      const sent = await signAndSend(body.swapTransaction, true);
+      setStatus(`Landed ${sent.signature}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Swap failed.");
     } finally {
@@ -125,12 +130,12 @@ export function JupiterSwapPanel({
   }
 
   return (
-    <section className="glass space-y-4 rounded-2xl border border-gold/20 p-5">
+    <section className="glass space-y-4 rounded-2xl border border-arc/20 p-5">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">{title}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">{title}</p>
         <h2 className="font-heading text-xl font-bold">Route through Jupiter</h2>
         <p className="mt-1 text-sm text-parchment/65">
-          Quotes come from Jupiter. Sign in with X and Supabase creates the pad wallet that signs the swap.
+          Quotes come from Jupiter. Your connected Solana wallet signs the swap. Pair SOL, cbBTC, stocks, memes, or any mint.
         </p>
       </div>
 
@@ -140,7 +145,7 @@ export function JupiterSwapPanel({
           <select
             value={inputSymbol}
             onChange={(e) => setInputSymbol(e.target.value)}
-            className="h-8 w-full rounded-lg border border-gold/25 bg-ink/60 px-2 text-sm"
+            className="h-8 w-full rounded-lg border border-arc/25 bg-ink/60 px-2 text-sm"
           >
             {tokens.map((token) => (
               <option key={token.symbol} value={token.symbol}>
@@ -154,7 +159,7 @@ export function JupiterSwapPanel({
           <select
             value={outputSymbol}
             onChange={(e) => setOutputSymbol(e.target.value)}
-            className="h-8 w-full rounded-lg border border-gold/25 bg-ink/60 px-2 text-sm"
+            className="h-8 w-full rounded-lg border border-arc/25 bg-ink/60 px-2 text-sm"
           >
             {tokens.map((token) => (
               <option key={token.symbol} value={token.symbol}>
@@ -173,18 +178,21 @@ export function JupiterSwapPanel({
         <Button type="button" onClick={() => void loadQuote()} disabled={busy}>
           {busy && !quote ? "Routing…" : "Get Jupiter route"}
         </Button>
-        {signedIn ? (
+        {address ? (
           <Button type="button" variant="secondary" onClick={() => void swap()} disabled={busy || !quote}>
-            Swap with pad wallet
+            Swap in wallet
           </Button>
         ) : (
-          <Button type="button" variant="secondary" asChild>
+          <SolanaConnectButton />
+        )}
+        {!signedIn ? (
+          <Button type="button" variant="ghost" asChild>
             <a href="/auth/login">
               <XMark className="size-3.5" />
-              Sign in with X to swap
+              Sign in with X
             </a>
           </Button>
-        )}
+        ) : null}
         <Button type="button" variant="ghost" asChild>
           <a href={JUPITER.app} target="_blank" rel="noreferrer">
             Open jup.ag
@@ -193,7 +201,7 @@ export function JupiterSwapPanel({
       </div>
 
       {quote ? (
-        <div className="rounded-xl border border-gold/15 bg-black/20 p-3 text-sm">
+        <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm">
           <p className="text-parchment">
             {formatAmount(quote.inAmount, input.decimals)} {input.symbol} →{" "}
             {formatAmount(quote.outAmount, output.decimals)} {output.symbol}
@@ -223,7 +231,7 @@ export function JupiterSwapPanel({
       ) : null}
       {status ? (
         <Alert>
-          <AlertTitle>Swap sent</AlertTitle>
+          <AlertTitle>Swap</AlertTitle>
           <AlertDescription className="break-all">{status}</AlertDescription>
         </Alert>
       ) : null}

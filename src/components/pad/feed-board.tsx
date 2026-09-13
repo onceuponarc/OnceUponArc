@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 const EMPTY: Record<FeedTab, { title: string; body: string }> = {
   new: {
     title: "No new launches yet",
-    body: "The first Story on Solana mainnet prints here. Open the press, pick Author or OnceUponers, and launch.",
+    body: "The first Story prints here. Open the Arc press, pick a pair, and launch.",
   },
   trending: {
     title: "Nothing trending yet",
@@ -62,7 +62,7 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
           <EmptyPad title={empty.title} body={empty.body} />
           <div className="flex justify-center">
             <Button asChild>
-              <Link href="/launch/solana">Open the Solana press</Link>
+              <Link href="/launch/arc">Open the Arc press</Link>
             </Button>
           </div>
         </div>

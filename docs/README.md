@@ -4,7 +4,8 @@ Master product rules live in the operator brief (12 September 2026). Phase 0 in 
 
 - Isolated Supabase project `OnceUpon` / `txrdfjypnuvlyseefclj`
 - X login via provider `x`
-- Desk, Press, Shelf, Ledger, Margin, Chapter, OnceUponers
+- Injected Solana wallets bound in Supabase (`kind: connected`)
+- Arc-centered glass pad: Home, Launch, Trade, Claims, You
 - Arc testnet config object in `packages/config/src/arc.ts`
 - Fee bps caps in `contracts/src/FeeMath.sol`
 

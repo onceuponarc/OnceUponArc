@@ -3,7 +3,6 @@ import {
   PublicKey,
   SystemProgram,
   Transaction,
-  sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import {
   AuthorityType,
@@ -19,8 +18,9 @@ import {
 import { SOLANA, type LaunchVenue, type PrintableChain } from "@onceupon/config/solana";
 import { PROTOCOL } from "@onceupon/config/arc";
 import { solanaConnection, explorerTx } from "@/lib/solana/connection";
+import { serializePartialTx } from "@/lib/solana/partial-tx";
 import { generateKeypair, protocolKeypair, sealKeypair } from "@/lib/solana/keys";
-import { loadUserKeypair, requireSolBalance } from "@/lib/wallets/embedded";
+import { parsePayer } from "@/lib/wallets/bound";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { QuoteAsset } from "@onceupon/config/quotes";
 import { graduationRaw, virtualRaw } from "@onceupon/config/quotes";
@@ -41,6 +41,7 @@ export type LaunchInput = {
   rewardMint: string | null;
   autoBuyRewards: boolean;
   nftSupply: number;
+  payer: string;
 };
 
 function slugify(input: string) {
@@ -52,9 +53,7 @@ function slugify(input: string) {
 }
 
 export async function launchOnSolana(input: LaunchInput) {
-  const user = await loadUserKeypair(input.userId);
-  await requireSolBalance(user.publicKey.toBase58(), 0.05);
-
+  const payer = parsePayer(input.payer);
   const isNft = input.venue === "nft";
   const decimals = isNft ? SOLANA.nftDecimals : SOLANA.defaultDecimals;
   const supplyUi = isNft ? Math.max(1, Math.min(input.nftSupply || 1, 10_000)) : SOLANA.defaultSupply;
@@ -66,7 +65,7 @@ export async function launchOnSolana(input: LaunchInput) {
   const lamports = await getMinimumBalanceForRentExemptMint(connection);
 
   const mintIx = SystemProgram.createAccount({
-    fromPubkey: user.publicKey,
+    fromPubkey: payer,
     newAccountPubkey: mint.publicKey,
     space: MINT_SIZE,
     lamports,
@@ -75,15 +74,15 @@ export async function launchOnSolana(input: LaunchInput) {
   const initMint = createInitializeMint2Instruction(
     mint.publicKey,
     decimals,
-    user.publicKey,
+    payer,
     null,
     TOKEN_PROGRAM_ID,
   );
 
-  const holder = isNft ? user.publicKey : curve.publicKey;
+  const holder = isNft ? payer : curve.publicKey;
   const ata = getAssociatedTokenAddressSync(mint.publicKey, holder, false, TOKEN_PROGRAM_ID);
   const ataIx = createAssociatedTokenAccountInstruction(
-    user.publicKey,
+    payer,
     ata,
     holder,
     mint.publicKey,
@@ -92,14 +91,14 @@ export async function launchOnSolana(input: LaunchInput) {
   const mintTo = createMintToInstruction(
     mint.publicKey,
     ata,
-    user.publicKey,
+    payer,
     rawSupply,
     [],
     TOKEN_PROGRAM_ID,
   );
   const revokeMint = createSetAuthorityInstruction(
     mint.publicKey,
-    user.publicKey,
+    payer,
     AuthorityType.MintTokens,
     null,
     [],
@@ -110,7 +109,7 @@ export async function launchOnSolana(input: LaunchInput) {
   if (!isNft) {
     tx.add(
       SystemProgram.transfer({
-        fromPubkey: user.publicKey,
+        fromPubkey: payer,
         toPubkey: curve.publicKey,
         lamports: 8_000_000,
       }),
@@ -119,7 +118,7 @@ export async function launchOnSolana(input: LaunchInput) {
       const quoteMint = await inspectMint(input.quote.mint);
       await pushCreateAtaIfMissing(
         tx,
-        user.publicKey,
+        payer,
         curve.publicKey,
         quoteMint.mint,
         quoteMint.programId,
@@ -127,10 +126,8 @@ export async function launchOnSolana(input: LaunchInput) {
     }
   }
 
-  const signers: Keypair[] = isNft ? [user, mint] : [user, mint, curve];
-  const signature = await sendAndConfirmTransaction(connection, tx, signers, {
-    commitment: "confirmed",
-  });
+  const extraSigners: Keypair[] = isNft ? [mint] : [mint, curve];
+  const prepared = await serializePartialTx(tx, payer, extraSigners);
 
   const protocol = protocolKeypair();
   const authorBps = Math.min(
@@ -150,12 +147,12 @@ export async function launchOnSolana(input: LaunchInput) {
       ticker: input.ticker.trim().toUpperCase().slice(0, 12),
       blurb: input.blurb.trim(),
       author_user_id: input.userId,
-      author_wallet: user.publicKey.toBase58(),
+      author_wallet: payer.toBase58(),
       engine: input.engine,
-      status: "live",
+      status: "draft",
       token_address: mint.publicKey.toBase58(),
       vault_address: isNft ? null : curve.publicKey.toBase58(),
-      fee_recipient: input.engine === "author" ? user.publicKey.toBase58() : curve.publicKey.toBase58(),
+      fee_recipient: input.engine === "author" ? payer.toBase58() : curve.publicKey.toBase58(),
       author_bps: authorBps,
       protocol_bps: PROTOCOL.protocolBpsDefault,
       quote_address: input.quote.mint,
@@ -165,7 +162,7 @@ export async function launchOnSolana(input: LaunchInput) {
       supply: rawSupply.toString(),
       decimals,
       rights_attested: true,
-      created_tx: signature,
+      created_tx: null,
       chain: input.chain,
       venue: input.venue,
       quote_mint: input.quote.mint,
@@ -184,7 +181,7 @@ export async function launchOnSolana(input: LaunchInput) {
     .single();
 
   if (error || !story) {
-    throw new Error(error?.message ?? "Launch recorded on-chain but the pad could not save the Story.");
+    throw new Error(error?.message ?? "The pad could not save the Story.");
   }
 
   if (!isNft) {
@@ -203,18 +200,36 @@ export async function launchOnSolana(input: LaunchInput) {
       dest_token_mint: mint.publicKey.toBase58(),
       mechanism: input.venue,
       fee_routing: "solana_curve",
-      created_tx: signature,
-      verified_at: new Date().toISOString(),
+      created_tx: null,
+      verified_at: null,
     });
   }
 
   return {
     slug: story.slug as string,
     mint: mint.publicKey.toBase58(),
-    signature,
-    explorer: explorerTx(signature),
+    transaction: prepared.transaction,
     protocol: protocol.publicKey.toBase58(),
   };
+}
+
+export async function confirmLaunch(userId: string, slug: string, signature: string) {
+  const service = createServiceClient();
+  const { data: story } = await service
+    .from("stories")
+    .select("id, slug, author_user_id, status")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!story || story.author_user_id !== userId) throw new Error("Launch not found.");
+  await service
+    .from("stories")
+    .update({ status: "live", created_tx: signature })
+    .eq("id", story.id);
+  await service
+    .from("bindings")
+    .update({ created_tx: signature, verified_at: new Date().toISOString() })
+    .eq("story_id", story.id);
+  return { slug: story.slug as string, signature, explorer: explorerTx(signature) };
 }
 
 export function parseMint(value: string | null): PublicKey | null {

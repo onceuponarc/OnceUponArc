@@ -40,7 +40,7 @@ export default function GlobalError({
             <p style={{ margin: 0, fontSize: 11, letterSpacing: "0.28em", color: "#c9a227" }}>ONCEUPON</p>
             <h1 style={{ margin: "12px 0 0", fontSize: 28 }}>The pad could not load</h1>
             <p style={{ margin: "12px 0 0", color: "#cbbfa8", lineHeight: 1.5 }}>
-              {error.message || "Sign in with X, then the Supabase pad wallet routes swaps through Jupiter."}
+              {error.message || "Sign in with X, then connect a Solana wallet. Swaps route through Jupiter."}
             </p>
             <button
               type="button"

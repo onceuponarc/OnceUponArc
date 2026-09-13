@@ -179,8 +179,8 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>Trade</CardTitle>
           <CardDescription>
-            Bonding buys use the pad curve. After a route exists, Jupiter quotes the mint and the Supabase pad
-            wallet signs the swap.
+            Bonding buys use the pad curve. After a route exists, Jupiter quotes the mint and your connected
+            Solana wallet signs the swap.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

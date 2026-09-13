@@ -1,6 +1,6 @@
 import { SOLANA } from "./solana";
 
-export type QuoteGroup = "sol" | "stable" | "stock" | "treasury" | "custom";
+export type QuoteGroup = "sol" | "btc" | "stable" | "meme" | "stock" | "treasury" | "custom";
 export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "custom";
 export type PairClass = "sol" | "usdc" | "rwa_equity" | "rwa_other" | "other";
 
@@ -141,6 +141,90 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
     maxBuyUi: 100_000,
   },
   {
+    id: "cbbtc",
+    symbol: "cbBTC",
+    name: "Bitcoin (cbBTC)",
+    mint: "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+    decimals: 8,
+    group: "btc",
+    kind: "custom",
+    pairClass: "other",
+    graduationUi: 0.1,
+    virtualUi: 1.5,
+    issuer: "Coinbase",
+    maxBuyUi: 5,
+  },
+  {
+    id: "weth",
+    symbol: "wETH",
+    name: "Ether (Portal)",
+    mint: "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
+    decimals: 8,
+    group: "btc",
+    kind: "custom",
+    pairClass: "other",
+    graduationUi: 2,
+    virtualUi: 30,
+    issuer: "Portal",
+    maxBuyUi: 50,
+  },
+  {
+    id: "bonk",
+    symbol: "BONK",
+    name: "Bonk",
+    mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    decimals: 5,
+    group: "meme",
+    kind: "meme",
+    pairClass: "other",
+    graduationUi: 50_000_000,
+    virtualUi: 750_000_000,
+    issuer: null,
+    maxBuyUi: 500_000_000,
+  },
+  {
+    id: "wif",
+    symbol: "WIF",
+    name: "dogwifhat",
+    mint: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopJLuG5ZuYxCjs",
+    decimals: 6,
+    group: "meme",
+    kind: "meme",
+    pairClass: "other",
+    graduationUi: 20_000,
+    virtualUi: 300_000,
+    issuer: null,
+    maxBuyUi: 200_000,
+  },
+  {
+    id: "jup",
+    symbol: "JUP",
+    name: "Jupiter",
+    mint: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+    decimals: 6,
+    group: "meme",
+    kind: "meme",
+    pairClass: "other",
+    graduationUi: 25_000,
+    virtualUi: 375_000,
+    issuer: null,
+    maxBuyUi: 250_000,
+  },
+  {
+    id: "pengu",
+    symbol: "PENGU",
+    name: "Pudgy Penguins",
+    mint: "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
+    decimals: 6,
+    group: "meme",
+    kind: "meme",
+    pairClass: "other",
+    graduationUi: 200_000,
+    virtualUi: 3_000_000,
+    issuer: null,
+    maxBuyUi: 2_000_000,
+  },
+  {
     id: "usdy",
     symbol: "USDY",
     name: "Ondo US Dollar Yield",
@@ -185,11 +269,13 @@ export const QUOTE_ASSETS: QuoteAsset[] = [
 ];
 
 export const QUOTE_GROUPS: { id: QuoteGroup; label: string; hint: string }[] = [
-  { id: "sol", label: "SOL", hint: "Native Solana quote." },
+  { id: "sol", label: "SOL", hint: "Native Solana. Deepest default pair." },
+  { id: "btc", label: "BTC / ETH", hint: "Pair into Bitcoin and Ether liquidity already on Solana. No new pool to fund." },
   { id: "stable", label: "Stables", hint: "USDC, USDT, PYUSD." },
-  { id: "stock", label: "Tokenized stocks", hint: "Listed xStocks. Quote pair, not studio equity." },
-  { id: "treasury", label: "Treasuries / RWA", hint: "Ondo USDY and OUSG." },
-  { id: "custom", label: "Any mint", hint: "Paste any SPL or Token-2022 mint." },
+  { id: "meme", label: "Memes", hint: "Pair into BONK, WIF, JUP, PENGU and other live mints." },
+  { id: "stock", label: "Stocks", hint: "Listed xStocks. Quote pair, not studio equity." },
+  { id: "treasury", label: "Treasuries", hint: "Ondo USDY and OUSG." },
+  { id: "custom", label: "Any mint", hint: "Paste any SPL mint — another chain’s wrap, a meme, anything on-chain." },
 ];
 
 export function findQuote(id: string): QuoteAsset | undefined {

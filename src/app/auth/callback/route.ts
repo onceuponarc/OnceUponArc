@@ -52,12 +52,6 @@ export async function GET(request: Request) {
     const meta = user.user_metadata ?? {};
     const avatar = (meta.avatar_url as string | undefined) ?? (meta.picture as string | undefined) ?? null;
     await copyPortrait(user.id, avatar);
-    try {
-      const { ensureSolanaWallet } = await import("@/lib/wallets/embedded");
-      await ensureSolanaWallet(user.id);
-    } catch {
-      // Login still succeeds if the pad wallet cannot mint yet.
-    }
   }
 
   return NextResponse.redirect(`${origin}${next}`);

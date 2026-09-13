@@ -1,11 +1,11 @@
 /** Canonical OnceUpon copy. Keep this file free of forbidden offering language. */
 
 export const POSITIONING =
-  "OnceUpon is a token launchpad. Solana, Ethereum, Base, and Robinhood Chain are open for launch. Tokens print on Solana mainnet today so they are live immediately; other chains tag the Story for a foreign pool binding. Circle Arc is not open for launches yet. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
+  "OnceUpon is a token launchpad centered on Arc, with every other chain open. Launch on Arc, Solana, Ethereum, Base, or Robinhood Chain. Tokens print on Solana mainnet so they are live immediately against deep pairs — SOL, Bitcoin (cbBTC), Ether, stables, listed tokenized stocks, memes, or any mint. You do not fund an empty pool. Other chains tag the Story for a foreign pool binding. Authors launch original Stories. Fees either stream to the Author each trade, or stream into an ownerless vault that holders can claim as The Piece. Pairing against a tokenized name is a quote, not studio equity. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
 
 export const TAGLINE = "OnceUponers write the stories. The chain keeps the receipts.";
 
-export const PAD_TAGLINE = "Pick a chain. Print on Solana mainnet. Arc is not open yet.";
+export const PAD_TAGLINE = "Launch on Arc. Pair any chain. Print into real liquidity.";
 
 export const MODE_COPY = {
   author: {
@@ -29,9 +29,9 @@ export const LAUNCH_TYPES = [
     summary: "Fees land in your wallet on every trade.",
     how: [
       "Pick an author fee from 0% to 3.00%. The choice is locked when you launch.",
-      "Every swap pushes that cut to your pad wallet in the same transaction. No claim button.",
+      "Every swap pushes that cut to your connected Solana wallet in the same transaction. No claim button.",
       "Protocol takes about 0.20% on top. That cut is not yours to set.",
-      "Same engine on every open chain. The mint lands on Solana mainnet today. Arc launches are not open yet.",
+      "Same engine on every open chain including Arc. The mint lands on Solana mainnet today against the pair you pick.",
     ],
   },
   {
@@ -67,30 +67,30 @@ export const PAIR_TYPES = [
     id: "sol" as const,
     label: "SOL",
     listed: true,
-    body: "The live Solana quote. Bonding, Pump-style, and Pons-style launches all clear in SOL on mainnet.",
+    body: "Native Solana depth. Bonding, Pump-style, and Pons-style launches all clear in SOL on mainnet.",
   },
   {
-    id: "usdc" as const,
-    label: "USDC",
+    id: "btc" as const,
+    label: "BTC / ETH",
     listed: true,
-    body: "Solana mainnet USDC, USDT, and PYUSD. Buys settle in the stable you pick.",
+    body: "Pair into cbBTC and Portal wETH already on Solana. No empty pool to fund.",
   },
   {
     id: "meme" as const,
-    label: "Any meme / SPL mint",
+    label: "Memes + any mint",
     listed: true,
-    body: "Paste any mint. The vault can auto-buy that bag with OnceUponers fees.",
+    body: "BONK, WIF, JUP, PENGU, or paste any SPL mint — another chain’s wrap, a meme, anything on-chain.",
   },
   {
     id: "rwa" as const,
-    label: "Tokenized RWA / single-name",
+    label: "Stocks / treasuries",
     listed: true,
     body: "Listed xStocks, Ondo USDY/OUSG, or paste any mint. Quote pair only — not studio equity and not a claim on the issuer.",
   },
 ] as const;
 
 export const BONDING_COPY =
-  "Solana launches open on a bonding curve. SOL pairs bond at 2 SOL. Stables bond at 5,000 units. Listed xStocks bond at 10 of the quote mint. Pump.fun-style and Pons-style use the same curve with extra snipe tax.";
+  "Launches open on a bonding curve against the pair you pick. SOL pairs bond at 2 SOL. Stables bond at 5,000 units. cbBTC bonds at 0.1. Listed xStocks bond at 10 of the quote mint. You pair into liquidity that already exists — you do not fund an empty pool.";
 
 export const PIECE_EXPLAINER =
   "The Piece is a protocol fee split among current holders of a Story. It is not a dividend, not profit-sharing, and not a return on investment.";
@@ -105,7 +105,7 @@ export const MARGIN_DISCLAIMER =
   "The Margin is a doorway to Jupiter. OnceUpon does not custody margin, does not run a matching engine, and does not set your leverage. Longs and shorts live on Jupiter’s accounts.";
 
 export const QUOTE_DISCLAIMER =
-  "Pairing against a tokenized mint is a quote. It is not studio equity and it is not a claim on the issuer.";
+  "You pair into liquidity that already exists — SOL, Bitcoin (cbBTC), Ether, stables, listed stocks, memes, or any mint. You do not fund an empty pool. Pairing against a tokenized mint is a quote, not studio equity.";
 
 export const RWA_GATE =
   "Pick a listed quote mint, or paste any Solana mint. A gated name is not a waitlist for shares.";

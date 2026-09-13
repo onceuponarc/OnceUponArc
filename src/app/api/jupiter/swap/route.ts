@@ -1,27 +1,25 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { ensureSolanaWallet } from "@/lib/wallets/embedded";
 import { fetchJupiterSwap } from "@/lib/jupiter";
+import { parsePayer } from "@/lib/wallets/bound";
 import { redactWalletError } from "@/lib/crypto/secret-box";
 
 export async function POST(request: Request) {
-  const { user } = await getSessionUser();
-  if (!user) {
-    return NextResponse.json({ error: "Sign in with X first. The pad wallet is created in Supabase." }, { status: 401 });
-  }
-
-  const body = (await request.json()) as { quoteResponse?: Record<string, unknown> };
+  const body = (await request.json()) as {
+    quoteResponse?: Record<string, unknown>;
+    userPublicKey?: string;
+  };
   if (!body.quoteResponse) {
     return NextResponse.json({ error: "Get a Jupiter route first." }, { status: 400 });
   }
 
   try {
-    const wallet = await ensureSolanaWallet(user.id);
+    const payer = parsePayer(body.userPublicKey);
     const result = await fetchJupiterSwap({
-      userPublicKey: wallet.address,
+      userPublicKey: payer.toBase58(),
       quoteResponse: body.quoteResponse,
     });
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, versioned: true });
   } catch (error) {
     return NextResponse.json({ error: redactWalletError(error) }, { status: 502 });
   }
