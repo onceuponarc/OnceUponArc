@@ -3,6 +3,16 @@ import type { NextConfig } from "next";
 const bigintBufferStub = "./src/lib/solana/bigint-buffer-stub.cjs";
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL:
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      process.env.SUPABASE_URL ||
+      "https://txrdfjypnuvlyseefclj.supabase.co",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY:
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      "",
+  },
   // Do not externalize @solana/web3.js — Vercel cannot load its native bigint-buffer addon.
   serverExternalPackages: ["pino-pretty", "lokijs", "encoding"],
   turbopack: {
