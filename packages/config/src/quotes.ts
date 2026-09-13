@@ -311,6 +311,16 @@ export function virtualRaw(asset: Pick<QuoteAsset, "virtualUi" | "decimals">): b
   return uiToRaw(asset.virtualUi, asset.decimals);
 }
 
+/** Default curve buy size. Do not treat xStocks (NVDAx) as stables just because the ticker contains "USD". */
+export function defaultCurveBuyUi(symbol: string): string {
+  const upper = symbol.trim().toUpperCase();
+  if (upper === "SOL") return "0.1";
+  if (upper === "USDC" || upper === "USDT" || upper === "PYUSD") return "10";
+  if (upper === "CBBTC") return "0.001";
+  if (upper === "WETH") return "0.01";
+  return "0.05";
+}
+
 export function customQuoteAsset(mint: string, decimals: number, symbol = "TOKEN"): QuoteAsset {
   const graduationUi = decimals === 9 ? 2 : decimals === 6 ? CHAPTER.graduateQuoteUi : decimals === 8 ? 10 : 1_000;
   const virtualUi = decimals === 6 ? CHAPTER.startCapQuoteUi : graduationUi;

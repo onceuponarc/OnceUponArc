@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
 import { readApiJson } from "@/lib/http/read-json";
+import { defaultCurveBuyUi } from "@onceupon/config/quotes";
 
 export function CurveTrade({
   slug,
@@ -30,8 +31,8 @@ export function CurveTrade({
 }) {
   const { address, signAndSend, ensureBound } = useWalletSigner();
   const [side, setSide] = useState<"buy" | "sell">("buy");
-  const [amount, setAmount] = useState(pairLabel === "SOL" ? "0.1" : pairLabel.includes("USD") ? "10" : "0.25");
-  const [fundAmount, setFundAmount] = useState(pairLabel === "SOL" ? "0.25" : "25");
+  const [amount, setAmount] = useState(defaultCurveBuyUi(pairLabel));
+  const [fundAmount, setFundAmount] = useState(pairLabel === "SOL" ? "0.25" : pairLabel.toUpperCase() === "USDC" ? "25" : "1");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -98,8 +99,8 @@ export function CurveTrade({
   return (
     <div className="space-y-4">
       <p className="text-sm text-parchment/70">
-        Quote is {pairLabel}. Curve fills settle from your connected Solana wallet. Your {pairLabel} stays in the
-        book until graduation. After this Story bonds, spot routes through Jupiter.
+        Quote is {pairLabel}. Pay {pairLabel} from your connected Solana wallet — not SOL, unless that is the quote.
+        Jupiter has no pool for this mint until the Chapter graduates and the vault opens the book.
       </p>
       {!address ? (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-arc/20 bg-arc/5 px-3 py-2">

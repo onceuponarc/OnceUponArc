@@ -113,6 +113,15 @@ export const RWA_GATE =
 
 export const CHAPTER_BUYER_NOTE = "Your USDC stays in the book until graduation.";
 
+export function humanizeJupiterQuoteError(raw: { error?: unknown; errorCode?: unknown }): string {
+  const code = String(raw.errorCode ?? "");
+  const message = typeof raw.error === "string" ? raw.error : "";
+  if (code === "TOKEN_NOT_TRADABLE" || /not tradable/i.test(message)) {
+    return "Jupiter has no pool for this mint yet. Buy and sell on the Chapter Curve until graduation. A tagged quote book is hop-1 routing, not this Story’s market.";
+  }
+  return message || "Jupiter returned no route.";
+}
+
 export const FORBIDDEN_PHRASES = [
   "Disney shares",
   "official NVIDIA stock",

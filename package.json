@@ -12,6 +12,7 @@
     "check:quotes": "node scripts/verify-quotes.mjs",
     "check:curve": "node scripts/curve-math.mjs",
     "check:jupiter": "node scripts/check-jupiter.mjs",
+    "check:trade-ui": "node --experimental-strip-types --no-warnings scripts/check-trade-ui.ts",
     "check:pages": "node scripts/check-pages.mjs",
     "check:pools": "node scripts/check-pools.mjs",
     "check:wallet-pubkey": "node --experimental-strip-types --no-warnings scripts/check-wallet-pubkey.ts",

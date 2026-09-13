@@ -1,4 +1,5 @@
 import { JUPITER, SOLANA } from "@onceupon/config/solana";
+import { humanizeJupiterQuoteError } from "@onceupon/config/copy";
 
 export type JupiterHop = {
   label: string;
@@ -90,7 +91,7 @@ export async function fetchJupiterQuote(params: {
   const res = await fetch(`${quoteUrl}?${search.toString()}`, { cache: "no-store" });
   const raw = (await res.json()) as Record<string, unknown>;
   if (!res.ok) {
-    throw new Error(typeof raw.error === "string" ? raw.error : `Jupiter quote failed (${res.status}).`);
+    throw new Error(humanizeJupiterQuoteError(raw));
   }
   return { quote: parseJupiterQuote(raw), raw };
 }

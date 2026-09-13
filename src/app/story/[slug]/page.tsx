@@ -399,12 +399,12 @@ export default async function StoryPage({
         <CardHeader>
           <CardTitle>Jupiter</CardTitle>
           <CardDescription>
-            Bonding buys use the Chapter Curve. Your quote stays in the vault until graduation. After a route exists,
-            Jupiter quotes the mint and your connected Solana wallet signs the swap.
+            Jupiter indexes this mint after the Chapter graduates and the vault opens the book. Until then the Story
+            market is the curve above. A tagged {story.pair_label} book is hop-1 routing, not this mint’s pool.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {chain !== "arc" && story.token_address ? (
+          {chain !== "arc" && story.status === "graduated" && story.token_address ? (
             <JupiterSwapPanel
               signedIn={Boolean(profile)}
               title={`Jupiter · $${story.ticker}`}
@@ -418,7 +418,11 @@ export default async function StoryPage({
               Arc Chapters trade on the curve above. Jupiter is for Solana SPL mints.
             </p>
           ) : (
-            <p className="text-sm text-parchment/60">Jupiter can quote this mint once the printer lands it.</p>
+            <p className="text-sm text-parchment/70">
+              Jupiter has no route for <span className="font-mono text-xs">{story.token_address ?? "this mint"}</span>{" "}
+              yet. Buy and sell ${story.ticker} on the Chapter Curve with {story.pair_label}. Pairing against{" "}
+              {story.pair_label} is a quote, not studio equity.
+            </p>
           )}
         </CardContent>
       </Card>
