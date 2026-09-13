@@ -34,9 +34,8 @@ export function NetworkChip() {
       .catch(() => setStatus({ ready: false }));
   }, []);
   const live = Boolean(status?.ready);
-  return (
-    <Linkish live={live} label={live ? "DEVNET" : "OFFLINE"} />
-  );
+  const label = status == null ? "…" : live ? "DEVNET" : "OFFLINE";
+  return <Linkish live={live} label={label} />;
 }
 
 function Linkish({ live, label }: { live: boolean; label: string }) {
