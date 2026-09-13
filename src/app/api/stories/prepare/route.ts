@@ -37,9 +37,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unknown draft." }, { status: 404 });
   }
 
+  if (!ARC_TESTNET.factory) {
+    return NextResponse.json({
+      ready: false,
+      reason: "StoryFactory is not deployed on 5042002 yet (Phase 1).",
+      intendedCall: {
+        chainId: ARC_TESTNET.chainId,
+        factory: ARC_TESTNET.factory,
+        engine: story.engine === "author" ? 0 : 1,
+        authorBps: story.author_bps,
+        protocolBps: story.protocol_bps ?? PROTOCOL.protocolBpsDefault,
+        quote: ARC_TESTNET.usdcErc20,
+        feeRecipient: wallet.address,
+        ticker: story.ticker,
+      },
+    });
+  }
+
   return NextResponse.json({
-    ready: false,
-    reason: "StoryFactory is not deployed on 5042002 yet (Phase 1).",
+    ready: true,
+    reason: "ChapterFactory is live on Arc Testnet.",
     intendedCall: {
       chainId: ARC_TESTNET.chainId,
       factory: ARC_TESTNET.factory,

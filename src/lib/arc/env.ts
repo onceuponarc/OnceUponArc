@@ -29,6 +29,9 @@ export type ArcNetworkFile = {
 
 const FILE = process.env.ARC_DEVNET_FILE || join(process.cwd(), "data", "arc-devnet.json");
 
+const TESTNET_FACTORY = (ARC_TESTNET.factory ||
+  "0x3FD6f451803CD0eC616da6Ef8228E6EC56C24086") as `0x${string}`;
+
 export function loadArcNetwork(): ArcNetworkFile | null {
   if (process.env.ARC_FACTORY && process.env.ARC_USDC) {
     const chainId = Number(process.env.ARC_CHAIN_ID || 31337);
@@ -42,6 +45,19 @@ export function loadArcNetwork(): ArcNetworkFile | null {
       deployer: (process.env.ARC_DEPLOYER as `0x${string}`) || ANVIL_DEPLOYER.address,
       explorer: process.env.ARC_EXPLORER || ARC_TESTNET.explorer,
       nativeGas: chainId === ARC_TESTNET.chainId ? "usdc" : "eth",
+    };
+  }
+  if (process.env.VERCEL || process.env.ARC_CHAIN_ID === String(ARC_TESTNET.chainId)) {
+    return {
+      label: "Arc Testnet",
+      rpcUrl: process.env.ARC_RPC_URL || ARC_TESTNET.rpcUrls[0],
+      chainId: ARC_TESTNET.chainId,
+      factory: (process.env.ARC_FACTORY as `0x${string}` | undefined) || TESTNET_FACTORY,
+      usdc: (process.env.ARC_USDC as `0x${string}` | undefined) || ARC_TESTNET.usdcErc20,
+      trader: (process.env.ARC_TRADER as `0x${string}`) || ANVIL_TRADER.address,
+      deployer: (process.env.ARC_DEPLOYER as `0x${string}`) || "0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7",
+      explorer: process.env.ARC_EXPLORER || ARC_TESTNET.explorer,
+      nativeGas: "usdc",
     };
   }
   if (!existsSync(FILE)) return null;
