@@ -1,7 +1,7 @@
 "use client";
 
-import { OnceUponConnectButton } from "@/components/crypto/connect";
+import { SolanaConnectButton } from "@/components/wallet/connect-button";
 
 export function WalletBar() {
-  return <OnceUponConnectButton />;
+  return <SolanaConnectButton />;
 }

@@ -13,6 +13,17 @@ export const SOLANA = {
   protocolBpsDefault: 20,
   /** Circle USDC on Solana mainnet. */
   usdcMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  /** Wrapped SOL mint used by Jupiter routes. */
+  wsolMint: "So11111111111111111111111111111111111111112",
+} as const;
+
+export const JUPITER = {
+  name: "Jupiter",
+  quoteUrl: "https://lite-api.jup.ag/swap/v1/quote",
+  swapUrl: "https://lite-api.jup.ag/swap/v1/swap",
+  app: "https://jup.ag",
+  perps: "https://jup.ag/perps",
+  docs: "https://dev.jup.ag/docs/swap",
 } as const;
 
 export const ROBINHOOD_CHAIN = {

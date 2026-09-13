@@ -1,18 +1,17 @@
 import { MARGIN_DISCLAIMER } from "@onceupon/config/copy";
+import { JUPITER } from "@onceupon/config/solana";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSessionUser } from "@/lib/auth";
 import { MarginIntentForm } from "@/components/margin-intent-form";
-import { OnceUponConnectButton } from "@/components/crypto/connect";
-import { ArcQuoteRow } from "@/components/crypto/headless";
-import { OnceUponBuyUsdc } from "@/components/crypto/widgets";
+import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
 
 export const metadata = { title: "Margin" };
 
 const MARKETS = [
-  { id: "BTC-PERP", label: "BTC", href: "https://jup.ag" },
-  { id: "SOL-PERP", label: "SOL", href: "https://jup.ag" },
-  { id: "ETH-PERP", label: "ETH", href: "https://jup.ag" },
+  { id: "BTC-PERP", label: "BTC", href: `${JUPITER.perps}/BTC` },
+  { id: "SOL-PERP", label: "SOL", href: `${JUPITER.perps}/SOL` },
+  { id: "ETH-PERP", label: "ETH", href: `${JUPITER.perps}/ETH` },
 ];
 
 export default async function MarginPage() {
@@ -44,19 +43,7 @@ export default async function MarginPage() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Fund on Arc first</CardTitle>
-          <CardDescription>
-            Jupiter still holds the perp. Buy pool USDC here, then record the intent.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ArcQuoteRow />
-          <OnceUponConnectButton />
-          <OnceUponBuyUsdc />
-        </CardContent>
-      </Card>
+      <JupiterSwapPanel title="Spot first" />
 
       {profile ? <MarginIntentForm /> : null}
     </div>

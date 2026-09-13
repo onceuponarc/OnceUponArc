@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { POSITIONING } from "@onceupon/config/copy";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArcQuoteRow } from "@/components/crypto/headless";
+import { JupiterStatusRow } from "@/components/jupiter/status-row";
 
 export async function generateMetadata({
   params,
@@ -43,7 +43,7 @@ export default async function ChapterPage({
           <p className="mt-4 text-sm text-gold">Opens {new Date(chapter.opens_at).toUTCString()}</p>
         ) : null}
         <div className="mt-6 space-y-4">
-          <ArcQuoteRow />
+          <JupiterStatusRow />
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild>
               <Link href="/launch/solana">Launch on Solana</Link>

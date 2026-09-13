@@ -10,7 +10,7 @@ import { ARC_TESTNET, PROTOCOL } from "@onceupon/config/arc";
 import { BONDING_COPY, PAD_TAGLINE } from "@onceupon/config/copy";
 import type { FeedLaunch } from "@/lib/feed";
 import Link from "next/link";
-import { ArcQuoteRow } from "@/components/crypto/headless";
+import { JupiterStatusRow } from "@/components/jupiter/status-row";
 
 function mapStory(row: {
   slug: string;
@@ -139,7 +139,7 @@ export default async function HomePage() {
                   Arc explorer
                 </a>
               </p>
-              <ArcQuoteRow />
+              <JupiterStatusRow />
               {profile ? (
                 <p className="text-parchment/70">Signed in as @{profile.handle}</p>
               ) : (

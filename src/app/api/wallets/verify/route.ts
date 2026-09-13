@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { verifyMessage, isAddress, getAddress } from "viem";
+import nacl from "tweetnacl";
+import { PublicKey } from "@solana/web3.js";
 import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { ARC_TESTNET } from "@onceupon/config/arc";
+import { SOLANA } from "@onceupon/config/solana";
 
 export async function POST(request: Request) {
   const { user, profile } = await getSessionUser();
@@ -17,8 +18,15 @@ export async function POST(request: Request) {
     chainCaip2?: string;
   };
 
-  if (!body.address || !body.issuedAt || !body.signature || !isAddress(body.address)) {
+  if (!body.address || !body.issuedAt || !body.signature) {
     return NextResponse.json({ error: "Malformed wallet proof." }, { status: 400 });
+  }
+
+  let publicKey: PublicKey;
+  try {
+    publicKey = new PublicKey(body.address);
+  } catch {
+    return NextResponse.json({ error: "That is not a Solana address." }, { status: 400 });
   }
 
   const issued = Date.parse(body.issuedAt);
@@ -27,17 +35,21 @@ export async function POST(request: Request) {
   }
 
   const expected = `OnceUpon:${profile.id}:${body.issuedAt}`;
-  const ok = await verifyMessage({
-    address: getAddress(body.address),
-    message: expected,
-    signature: body.signature as `0x${string}`,
-  });
+  const message = new TextEncoder().encode(expected);
+  let signature: Uint8Array;
+  try {
+    signature = Buffer.from(body.signature, "base64");
+  } catch {
+    return NextResponse.json({ error: "Signature encoding is invalid." }, { status: 400 });
+  }
+
+  const ok = signature.length === 64 && nacl.sign.detached.verify(message, signature, publicKey.toBytes());
   if (!ok) {
     return NextResponse.json({ error: "Signature does not match OnceUpon:{user}:{time}." }, { status: 400 });
   }
 
-  const address = getAddress(body.address);
-  const chain = body.chainCaip2 ?? ARC_TESTNET.caip2;
+  const address = publicKey.toBase58();
+  const chain = body.chainCaip2 ?? SOLANA.caip2;
   const supabase = await createClient();
 
   const { data: existing } = await supabase

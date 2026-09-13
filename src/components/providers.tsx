@@ -1,8 +1,8 @@
 "use client";
 
-import { ThirdwebProvider } from "thirdweb/react";
+import { SolanaWalletProvider } from "@/components/wallet/solana-wallet-provider";
 import type { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
-  return <ThirdwebProvider>{children}</ThirdwebProvider>;
+  return <SolanaWalletProvider>{children}</SolanaWalletProvider>;
 }

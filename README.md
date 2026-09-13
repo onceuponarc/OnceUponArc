@@ -18,7 +18,7 @@ This is a working Solana printer: X identity, an encrypted pad wallet per accoun
 
 Sign-in with X creates a fresh Solana keypair. The secret is AES-256-GCM encrypted at rest in a table the browser cannot read. Export is an explicit POST. The pad never logs the key.
 
-You can still connect an external wallet. Launches sign with the pad wallet so mainnet mints actually land. Fund the wallet with real SOL — there is no faucet.
+You can still connect Phantom, Solflare, or Backpack. Swaps route through Jupiter. Launches sign with the pad wallet so mainnet mints actually land. Fund the wallet with real SOL — there is no faucet.
 
 ## What this repo is not
 
@@ -61,7 +61,6 @@ Required env:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (avatar copier only)
 - `NEXT_PUBLIC_APP_URL`
-- `NEXT_PUBLIC_THIRDWEB_CLIENT_ID` (optional, Arc widgets)
 - `SOLANA_RPC_URL` (optional, defaults to public mainnet-beta; use a dedicated RPC in production)
 - `EMBEDDED_WALLET_SECRET` (optional extra entropy for pad-wallet encryption)
 
@@ -72,7 +71,8 @@ Production: https://once-upon-arc.vercel.app/
 - Next.js App Router + Tailwind + shadcn/ui
 - Supabase Auth (provider `x`, PKCE) + Postgres + Storage
 - `@solana/web3.js` + `@solana/spl-token` for real mainnet mints
-- thirdweb v5 crypto UI themed ink/gold against Arc testnet `5042002`
+- Custom Solana wallet connect (Phantom / Solflare / Backpack)
+- Jupiter Metis routing for quotes and swaps (`lite-api.jup.ag`)
 - Foundry under `contracts/`
 
 ## Surfaces
@@ -83,7 +83,7 @@ Production: https://once-upon-arc.vercel.app/
 | `/launch` | Choose a chain |
 | `/launch/solana` | Working Solana press (form visible without login) |
 | `/launch/[chain]` | Press for Ethereum, Base, Robinhood; Arc shows not yet |
-| `/wallet` | Pad wallet, export, optional external connect |
+| `/wallet` | Pad wallet, Jupiter swap, optional Phantom bind |
 | `/write` `/press` | Redirect to `/launch` |
 | `/desk` | Redirect to `/` |
 | `/trade` | Redirect to `/wallet` |
