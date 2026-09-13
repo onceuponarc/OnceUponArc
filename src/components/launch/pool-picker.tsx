@@ -22,12 +22,14 @@ export function PoolPicker({
   chain,
   quoteId,
   mint,
+  venue,
   selected,
   onSelect,
 }: {
   chain: LaunchChain;
   quoteId: string;
   mint: string;
+  venue?: string;
   selected: LinkedPoolPick | null;
   onSelect: (pool: LinkedPoolPick | null) => void;
 }) {
@@ -42,6 +44,7 @@ export function PoolPicker({
     setError(null);
     const params = new URLSearchParams({ chain, quoteId });
     if (mint) params.set("mint", mint);
+    if (venue) params.set("venue", venue);
     fetch(`/api/pools/resolve?${params.toString()}`)
       .then((res) => res.json())
       .then((body) => {
@@ -51,9 +54,13 @@ export function PoolPicker({
           return;
         }
         setData(body as PoolResolveResult);
+        const prefer = venue === "pumpfun" ? "pumpswap" : venue === "pons" ? "pons" : null;
+        const linked = (body.linked as ResolvedPool[] | undefined) ?? [];
+        const dest = (body.destination as ResolvedPool[] | undefined) ?? [];
         const first =
-          (body.destination as ResolvedPool[] | undefined)?.[0] ??
-          (body.linked as ResolvedPool[] | undefined)?.[0];
+          (prefer ? linked.find((pool) => pool.dex === prefer) : undefined) ??
+          dest[0] ??
+          linked[0];
         if (first) {
           onSelect({
             address: first.address,
@@ -75,21 +82,29 @@ export function PoolPicker({
     return () => {
       cancelled = true;
     };
-    // Auto-pick the deepest pool whenever the quote or chain changes.
+    // Auto-pick the deepest (or PumpSwap) pool whenever the quote, chain, or venue changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chain, quoteId, mint]);
+  }, [chain, quoteId, mint, venue]);
 
+  const prefer = venue === "pumpfun" ? "pumpswap" : venue === "pons" ? "pons" : null;
   const pools = [
     ...(data?.linked ?? []).map((pool) => ({ ...pool, lane: "Solana depth" })),
     ...(data?.destination ?? []).map((pool) => ({ ...pool, lane: `${data?.chain} destination` })),
-  ];
+  ].sort((a, b) => {
+    if (!prefer) return 0;
+    const ap = a.dex === prefer ? 1 : 0;
+    const bp = b.dex === prefer ? 1 : 0;
+    return bp - ap;
+  });
 
   return (
     <section className="glass rounded-2xl border border-arc/20 p-5">
       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">3b · Link a live pool</p>
       <p className="mt-2 text-sm text-parchment/65">
         {data?.launchPool.note ??
-          "Your token opens on an OnceUpon launch pool against this quote. Pick the deep pool to attach — Raydium, Orca, Uniswap, Aerodrome, Pons, or paste any pool."}
+          (venue === "pumpfun"
+            ? "Pump.fun venue pairs a PumpSwap pool as the linked AMM. The mint still opens on the OnceUpon curve."
+            : "Your token opens on an OnceUpon launch pool against this quote. Pick the deep pool to attach — Raydium, Orca, PumpSwap, Uniswap, Aerodrome, Pons, or paste any pool.")}
       </p>
       {data ? (
         <p className="mt-2 text-xs text-parchment/45">

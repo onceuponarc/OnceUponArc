@@ -17,6 +17,13 @@ import {
 } from "@solana/spl-token";
 import { SOLANA, type LaunchVenue, type PrintableChain } from "@onceupon/config/solana";
 import { PROTOCOL } from "@onceupon/config/arc";
+import {
+  PAD_NAME,
+  PAD_URL,
+  feesForVenue,
+  preferDexForVenue,
+  tokenMetadataUri,
+} from "@onceupon/config/launchpad";
 import { solanaConnection, explorerTx } from "@/lib/solana/connection";
 import { serializePartialTx } from "@/lib/solana/partial-tx";
 import { generateKeypair, protocolKeypair, sealKeypair } from "@/lib/solana/keys";
@@ -24,9 +31,9 @@ import { parsePayer } from "@/lib/wallets/bound";
 import { createServiceClient } from "@/lib/supabase/service";
 import type { QuoteAsset } from "@onceupon/config/quotes";
 import { graduationRaw, virtualRaw } from "@onceupon/config/quotes";
-import { inspectMint, pushCreateAtaIfMissing } from "@/lib/solana/mint";
 import { CHAIN_POOLS, bindingKindForDex, type DexId } from "@onceupon/config/pools";
 import { type ResolvedPool } from "@/lib/pools/resolve";
+import { createMetadataV3Instruction } from "@/lib/solana/token-metadata";
 
 export type LaunchInput = {
   userId: string;
@@ -45,6 +52,11 @@ export type LaunchInput = {
   nftSupply: number;
   payer: string;
   linkedPool?: ResolvedPool | null;
+  coverUrl?: string | null;
+  imageUri?: string | null;
+  twitterUrl?: string | null;
+  telegramUrl?: string | null;
+  websiteUrl?: string | null;
 };
 
 function slugify(input: string) {
@@ -99,6 +111,16 @@ export async function launchOnSolana(input: LaunchInput) {
     [],
     TOKEN_PROGRAM_ID,
   );
+  const metadataUri = tokenMetadataUri(mint.publicKey.toBase58());
+  const metadataIx = createMetadataV3Instruction({
+    mint: mint.publicKey,
+    mintAuthority: payer,
+    payer,
+    updateAuthority: payer,
+    name: input.title.trim().slice(0, 32),
+    symbol: input.ticker.trim().toUpperCase().slice(0, 10),
+    uri: metadataUri,
+  });
   const revokeMint = createSetAuthorityInstruction(
     mint.publicKey,
     payer,
@@ -108,7 +130,7 @@ export async function launchOnSolana(input: LaunchInput) {
     TOKEN_PROGRAM_ID,
   );
 
-  const tx = new Transaction().add(mintIx, initMint, ataIx, mintTo, revokeMint);
+  const tx = new Transaction().add(mintIx, initMint, ataIx, mintTo, metadataIx, revokeMint);
   if (!isNft) {
     tx.add(
       SystemProgram.transfer({
@@ -117,71 +139,71 @@ export async function launchOnSolana(input: LaunchInput) {
         lamports: 8_000_000,
       }),
     );
-    if (input.quote.mint) {
-      const quoteMint = await inspectMint(input.quote.mint);
-      await pushCreateAtaIfMissing(
-        tx,
-        payer,
-        curve.publicKey,
-        quoteMint.mint,
-        quoteMint.programId,
-      );
-    }
   }
 
   const extraSigners: Keypair[] = isNft ? [mint] : [mint, curve];
   const prepared = await serializePartialTx(tx, payer, extraSigners);
 
   const protocol = protocolKeypair();
+  const venueFees = feesForVenue(input.venue, input.engine);
   const authorBps = Math.min(
-    Math.max(0, input.authorBps),
+    Math.max(0, input.authorBps ?? venueFees.authorBps),
     input.engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap,
   );
+  const protocolBps = venueFees.protocolBps;
 
   const slug = `${slugify(input.title) || slugify(input.ticker) || "launch"}-${Math.random().toString(36).slice(2, 6)}`;
   const pairClass = input.quote.pairClass;
+  const coverUrl = input.coverUrl?.trim() || `${PAD_URL}/onceupon-cover.svg`;
+  const imageUri = input.imageUri?.trim() || coverUrl;
 
   const service = createServiceClient();
-  const { data: story, error } = await service
-    .from("stories")
-    .insert({
-      slug,
-      title: input.title.trim(),
-      ticker: input.ticker.trim().toUpperCase().slice(0, 12),
-      blurb: input.blurb.trim(),
-      author_user_id: input.userId,
-      author_wallet: payer.toBase58(),
-      engine: input.engine,
-      status: "draft",
-      token_address: mint.publicKey.toBase58(),
-      vault_address: isNft ? null : curve.publicKey.toBase58(),
-      fee_recipient: input.engine === "author" ? payer.toBase58() : curve.publicKey.toBase58(),
-      author_bps: authorBps,
-      protocol_bps: PROTOCOL.protocolBpsDefault,
-      quote_address: input.quote.mint,
-      pair_class: pairClass,
-      pair_label: input.quote.symbol,
-      rwa_issuer: input.quote.issuer,
-      supply: rawSupply.toString(),
-      decimals,
-      rights_attested: true,
-      created_tx: null,
-      chain: input.chain,
-      venue: input.venue,
-      quote_mint: input.quote.mint,
-      reward_mint: input.autoBuyRewards ? (input.rewardMint ?? input.quote.mint) : null,
-      auto_buy_rewards: input.autoBuyRewards,
-      curve_quote_lamports: 0,
-      curve_token_raw: isNft ? 0 : rawSupply.toString(),
-      mint_decimals: decimals,
-      snipe_tax_bps: Math.min(Math.max(0, input.snipeTaxBps), 500),
-      reward_vault_lamports: 0,
-      quote_decimals: input.quote.decimals,
-      virtual_quote_raw: virtualRaw(input.quote).toString(),
-      graduation_quote_raw: graduationRaw(input.quote).toString(),
-    })
-    .select("id, slug, token_address")
-    .single();
+  const storyRow: Record<string, unknown> = {
+    slug,
+    title: input.title.trim(),
+    ticker: input.ticker.trim().toUpperCase().slice(0, 12),
+    blurb: input.blurb.trim(),
+    cover_url: coverUrl,
+    image_uri: imageUri,
+    metadata_uri: metadataUri,
+    twitter_url: input.twitterUrl,
+    telegram_url: input.telegramUrl,
+    website_url: input.websiteUrl,
+    author_user_id: input.userId,
+    author_wallet: payer.toBase58(),
+    engine: input.engine,
+    status: "draft",
+    token_address: mint.publicKey.toBase58(),
+    vault_address: isNft ? null : curve.publicKey.toBase58(),
+    fee_recipient: input.engine === "author" ? payer.toBase58() : curve.publicKey.toBase58(),
+    author_bps: authorBps,
+    protocol_bps: protocolBps,
+    quote_address: input.quote.mint,
+    pair_class: pairClass,
+    pair_label: input.quote.symbol,
+    rwa_issuer: input.quote.issuer,
+    supply: rawSupply.toString(),
+    decimals,
+    rights_attested: true,
+    created_tx: null,
+    chain: input.chain,
+    venue: input.venue,
+    quote_mint: input.quote.mint,
+    reward_mint: input.autoBuyRewards ? (input.rewardMint ?? input.quote.mint) : null,
+    auto_buy_rewards: input.autoBuyRewards,
+    curve_quote_lamports: 0,
+    curve_token_raw: isNft ? 0 : rawSupply.toString(),
+    mint_decimals: decimals,
+    snipe_tax_bps: Math.min(Math.max(0, input.snipeTaxBps ?? venueFees.snipeTaxBps), 500),
+    reward_vault_lamports: 0,
+    quote_decimals: input.quote.decimals,
+    virtual_quote_raw: virtualRaw(input.quote).toString(),
+    graduation_quote_raw: graduationRaw(input.quote).toString(),
+  };
+
+  const inserted = await insertStory(service, storyRow);
+  const story = inserted.data;
+  const error = inserted.error;
 
   if (error || !story) {
     throw new Error(error?.message ?? "The pad could not save the Story.");
@@ -244,15 +266,34 @@ export async function launchOnSolana(input: LaunchInput) {
       url: pool.url,
       chain: pool.chain,
     })),
+    pad: PAD_NAME,
+    metadataUri,
   };
 }
 
+const EXTRA_STORY_COLUMNS = ["twitter_url", "telegram_url", "website_url", "image_uri", "metadata_uri"];
+
+async function insertStory(
+  service: ReturnType<typeof createServiceClient>,
+  row: Record<string, unknown>,
+) {
+  const first = await service.from("stories").insert(row).select("id, slug, token_address").single();
+  if (!first.error) return first;
+  const missing = EXTRA_STORY_COLUMNS.some((col) => (first.error.message ?? "").includes(col));
+  if (!missing) return first;
+  const slim = { ...row };
+  for (const col of EXTRA_STORY_COLUMNS) delete slim[col];
+  return service.from("stories").insert(slim).select("id, slug, token_address").single();
+}
+
 async function collectLinkedPools(input: LaunchInput): Promise<ResolvedPool[]> {
+  const prefer = preferDexForVenue(input.venue);
   const picked = input.linkedPool ?? null;
   const fallback: ResolvedPool[] = [];
-  const solana = CHAIN_POOLS.solana.canonicalPools.filter(
-    (pool) => pool.quoteId === input.quote.id || pool.quoteId === "sol" || pool.quoteId === "usdc",
-  );
+  const solana = CHAIN_POOLS.solana.canonicalPools.filter((pool) => {
+    if (prefer && pool.dex === prefer) return true;
+    return pool.quoteId === input.quote.id || pool.quoteId === "sol" || pool.quoteId === "usdc";
+  });
   for (const pool of solana) {
     fallback.push({
       id: `solana:${pool.address}`,
@@ -270,7 +311,9 @@ async function collectLinkedPools(input: LaunchInput): Promise<ResolvedPool[]> {
   if (input.chain !== "solana") {
     const catalog = CHAIN_POOLS[input.chain];
     const dest =
-      catalog.canonicalPools.find((pool) => pool.quoteId === input.quote.id) ?? catalog.canonicalPools[0];
+      catalog.canonicalPools.find((pool) => (prefer ? pool.dex === prefer : false)) ??
+      catalog.canonicalPools.find((pool) => pool.quoteId === input.quote.id) ??
+      catalog.canonicalPools[0];
     if (dest) {
       fallback.push({
         id: `${catalog.id}:${dest.address}`,
@@ -296,15 +339,19 @@ async function collectLinkedPools(input: LaunchInput): Promise<ResolvedPool[]> {
     seen.add(key);
     out.push(pool);
   };
-  push(picked);
+
+  const preferredPick = prefer && picked?.dex === prefer ? picked : null;
+  const preferredFallback = prefer ? fallback.find((pool) => pool.dex === prefer) : null;
+  push(preferredPick);
+  push(preferredFallback);
+  if (!preferredPick) push(picked);
   if (input.chain !== "solana") {
     push(fallback.find((pool) => pool.chain === input.chain));
   }
-  if (!picked) {
+  if (!out.length) {
     for (const pool of fallback) push(pool);
-    return out.slice(0, 4);
   }
-  return out.slice(0, 2);
+  return out.slice(0, prefer ? 3 : picked ? 2 : 4);
 }
 
 export async function confirmLaunch(userId: string, slug: string, signature: string) {

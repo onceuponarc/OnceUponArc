@@ -97,11 +97,11 @@ export const CHAINS: ChainCard[] = [
     live: true,
     prints: true,
     badge: "Live printer",
-    body: "The working printer. SPL coins, NFTs, Pump.fun-style curves, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, memes, stocks, or any mint, and link a live Raydium, Orca, or Meteora pool.",
+    body: "The working printer. SPL coins, NFTs, Pump.fun-style curves, and Pons-style pairs mint here now. Pair against SOL, cbBTC, USDC, memes, stocks, or any mint, and link a live Raydium, Orca, Meteora, or PumpSwap pool.",
     caip2: SOLANA.caip2,
     accent: "from-[#9945ff]/40 to-[#14f195]/25",
     printNote:
-      "Mints a real SPL token on Solana mainnet. Your connected wallet pays rent. The curve is the launch pool; the Raydium/Orca/Meteora pool you pick is bound on the Story from T0.",
+      "Mints a real SPL token on Solana mainnet. Your connected wallet pays rent. The curve is the launch pool; the Raydium, Orca, Meteora, or PumpSwap pool you pick is bound on the Story from T0.",
   },
   {
     id: "ethereum",
@@ -162,8 +162,8 @@ export const VENUES: {
   {
     id: "pumpfun",
     title: "Pump.fun",
-    headline: "Pump-style curve on Solana",
-    body: "Same buy/sell shape as Pump.fun. Prints on Solana mainnet today. PumpPortal stays opt-in.",
+    headline: "Pump-style curve · PumpSwap pair",
+    body: "Same buy/sell shape as Pump.fun. Prints on OnceUpon, links a PumpSwap pool (pAMMBay6…) as the paired AMM, ships image + Metaplex metadata, and stamps Created on OnceUpon.",
   },
   {
     id: "pons",

@@ -10,6 +10,7 @@ const FACTORIES = {
   aerodrome: "0x420DD381b31aEf6683db6B902084cB0FFECe40Da",
   pons: "0x7ed598bcef8bd9edd8c97a195c6d13f40801ec7e",
   arcV2: "0x89e5db8b5aa49aa85ac63f691524311aeb649eba",
+  pumpswap: "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA",
 };
 
 const MINTS = {
@@ -23,6 +24,7 @@ const MINTS = {
 
 const CANONICAL = {
   solUsdcRaydium: "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
+  solUsdcPumpswap: "Gf7sXMoP8iRw4iiXmJ1nq4vxcRycbGXy5RL8a8LnTd3v",
   ethWethUsdc: "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
 };
 
@@ -70,6 +72,7 @@ async function main() {
 
   const solAddrs = new Set(sol.map((p) => p.pairAddress));
   assert(solAddrs.has(CANONICAL.solUsdcRaydium), "canonical SOL/USDC Raydium pool missing from DexScreener");
+  assert(src.includes(CANONICAL.solUsdcPumpswap), "catalog missing PumpSwap SOL/USDC pool");
 
   const ethAddrs = new Set(eth.map((p) => (p.pairAddress ?? "").toLowerCase()));
   assert(ethAddrs.has(CANONICAL.ethWethUsdc.toLowerCase()), "canonical WETH/USDC Uniswap pool missing");

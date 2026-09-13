@@ -6,19 +6,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CurveTrade } from "@/components/pad/curve-trade";
 import { JupiterSwapPanel } from "@/components/jupiter/swap-panel";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
-import { findChain, SOLANA } from "@onceupon/config/solana";
+import { findChain, SOLANA, type LaunchVenue } from "@onceupon/config/solana";
+import { PAD_NAME, PUMPFUN_CURVE_REFERENCE, feesForVenue, venueLabel } from "@onceupon/config/launchpad";
 import { catalogByCaip2, explorerUrlForPool } from "@onceupon/config/pools";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { tickerHue } from "@/lib/feed";
 import { explorerAddress, explorerTx } from "@/lib/solana/explorer";
+import { LaunchLinks } from "@/components/story/launch-links";
 
 const STORY_SELECT =
-  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, users:author_user_id(handle, display_name, portrait_url)";
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, users:author_user_id(handle, display_name, portrait_url)";
+const STORY_SELECT_MIN =
+  "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, users:author_user_id(handle, display_name, portrait_url)";
 
 async function loadStory(slug: string) {
   const supabase = await createClient();
-  const { data: story } = await supabase.from("stories").select(STORY_SELECT).eq("slug", slug).maybeSingle();
+  const full = await supabase.from("stories").select(STORY_SELECT).eq("slug", slug).maybeSingle();
+  const story =
+    full.data ??
+    (full.error
+      ? (await supabase.from("stories").select(STORY_SELECT_MIN).eq("slug", slug).maybeSingle()).data
+      : null);
   if (!story) return { story: null, bindings: [] as BindingRow[] };
   const { data: bindings } = await supabase
     .from("bindings")
@@ -46,7 +55,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return { title: slug };
+  return { title: `${slug} · ${PAD_NAME}` };
 }
 
 export default async function StoryPage({
@@ -81,6 +90,13 @@ export default async function StoryPage({
   const chain = story.chain ?? "solana";
   const chainCard = findChain(chain);
   const isAuthor = Boolean(profile && story.author_user_id === profile.id);
+  const coverUrl = (story as { cover_url?: string | null }).cover_url;
+  const twitterUrl = (story as { twitter_url?: string | null }).twitter_url ?? null;
+  const telegramUrl = (story as { telegram_url?: string | null }).telegram_url ?? null;
+  const websiteUrl = (story as { website_url?: string | null }).website_url ?? null;
+  const metadataUri = (story as { metadata_uri?: string | null }).metadata_uri ?? null;
+  const snipeTax = Number((story as { snipe_tax_bps?: number | null }).snipe_tax_bps ?? 0);
+  const venueFees = feesForVenue((story.venue as LaunchVenue) ?? "spl", story.engine);
 
   return (
     <div className="space-y-8">
@@ -90,16 +106,40 @@ export default async function StoryPage({
           background: `linear-gradient(135deg, hsl(${hue} 40% 12% / 0.9), rgb(11 10 18 / 0.7))`,
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgb(201_162_39_/_25%),transparent_40%)]" />
+        {coverUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coverUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-35"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgb(201_162_39_/_25%),transparent_40%)]" />
+        )}
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">${story.ticker}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
+              {PAD_NAME} · ${story.ticker}
+            </p>
             <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">{story.title}</h1>
             <p className="mt-3 max-w-2xl text-parchment/75">{story.blurb}</p>
+            {story.token_address ? (
+              <div className="mt-4">
+                <LaunchLinks
+                  mint={story.token_address}
+                  venue={story.venue}
+                  twitterUrl={twitterUrl}
+                  telegramUrl={telegramUrl}
+                  websiteUrl={websiteUrl}
+                  metadataUri={metadataUri}
+                />
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-2">
+            <Badge>{PAD_NAME}</Badge>
+            <Badge variant="outline">{venueLabel(story.venue)}</Badge>
             <Badge>{engineLabel}</Badge>
-            <Badge variant="outline">{story.venue ?? "spl"}</Badge>
             <Badge variant="outline">{story.pair_label}</Badge>
             <Badge variant="secondary">{statusLabel}</Badge>
             <Badge variant="outline">{chainCard?.title ?? chain}</Badge>
@@ -119,7 +159,16 @@ export default async function StoryPage({
             <p>
               Author {(story.author_bps / 100).toFixed(2)}% · protocol{" "}
               {(story.protocol_bps / 100).toFixed(2)}%
+              {snipeTax > 0 ? ` · snipe +${(snipeTax / 100).toFixed(2)}% first 15 min` : ""}
             </p>
+            <p className="text-parchment/60">{venueFees.note}</p>
+            {story.venue === "pumpfun" ? (
+              <p className="text-parchment/55">
+                Pump.fun curve reference: {(PUMPFUN_CURVE_REFERENCE.creatorBps / 100).toFixed(2)}% creator +{" "}
+                {(PUMPFUN_CURVE_REFERENCE.protocolBps / 100).toFixed(2)}% protocol. This mint pays OnceUpon’s
+                protocol cut, not Pump.fun’s.
+              </p>
+            ) : null}
             <p>Quote {story.pair_label}</p>
             {story.auto_buy_rewards ? <p>Vault auto-buys the pair on each OnceUponers cut.</p> : null}
             {story.engine === "onceuponers" ? (
@@ -219,7 +268,8 @@ export default async function StoryPage({
           <CardTitle>The Binding</CardTitle>
           <CardDescription>
             Primary liquidity is the Solana OnceUpon curve from T0. Linked pools are the live DEX venues you
-            attached at launch — Raydium, Orca, Meteora, Uniswap, Aerodrome, Pons, or any pair you pasted.
+            attached at launch — PumpSwap for Pump.fun venue, plus Raydium, Orca, Meteora, Uniswap, Aerodrome,
+            Pons, or any pair you pasted.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">

@@ -10,10 +10,13 @@ Identity is **X via Supabase**. Signing is your **connected Solana wallet** (Pha
 
 - **Author** — Keep the pen. Fees land in the author’s wallet on every trade (0–3.00%).
 - **OnceUponers** — Share the book. Fees land in an ownerless vault. Holders claim The Piece (author cap 1.00%). Optional auto-buy converts each vault cut into the pair you chose.
-- **Venues** — SPL coin, NFT, Pump.fun-style curve, Pons-style pair launch. Same menu on every open chain, including Arc.
+- **Venues** — SPL coin, NFT, Pump.fun-style curve (pairs a live **PumpSwap** pool `pAMMBay6…`), Pons-style pair launch. Same menu on every open chain, including Arc.
+- **Coin art** — Pump.fun-style launches require an image. Upload a PNG/JPEG/WebP or paste an IPFS CID. Set `PINATA_JWT` (or `NFT_STORAGE_TOKEN`) to pin to IPFS; otherwise the cover is stored in the public Supabase `covers` bucket.
+- **Metadata** — Each mint writes Metaplex Token Metadata on-chain. The URI is `https://once-upon-arc.vercel.app/api/token/<mint>/metadata` and the JSON includes `createdOn` OnceUpon, `showName`, image, and socials (X, Telegram, website).
 - **Quotes** — SOL, cbBTC, wETH, USDC/USDT/PYUSD, BONK/WIF/JUP/PENGU, listed tokenized stocks (xStocks), Ondo USDY/OUSG, or any mint. Buys settle in that quote. Pairing against a tokenized mint is a quote, not studio equity.
 - **Linked pools** — Every launch binds the live DEX pool you pick. Solana uses Raydium / Orca / Meteora / PumpSwap. Ethereum uses Uniswap V2/V3. Base uses Uniswap V3 and Aerodrome. Arc uses Uniswap V2/V3/V4 on chain 5042. Robinhood Chain uses the Pons V2 factory. Paste any pool on any chain.
 - Bonding graduates at **2 SOL** for SOL pairs, **5,000** for stables, **0.1** for cbBTC, and **10** of a listed xStock.
+- **Fees** — OnceUpon curve: author cut (Pump.fun venue defaults to 0.30% creator) plus 0.20% protocol. Pump.fun’s own curve is 0.30% creator + 0.95% protocol — this pad does not take that 0.95%. First 15 minutes can add a snipe tax on Pump.fun / Pons venues.
 
 ## Wallets
 
@@ -65,6 +68,7 @@ Required env:
 - `NEXT_PUBLIC_APP_URL`
 - `SOLANA_RPC_URL` (optional, defaults to public mainnet-beta; use a dedicated RPC in production)
 - `EMBEDDED_WALLET_SECRET` (optional extra entropy for **curve** key encryption — not a user wallet)
+- `PINATA_JWT` (optional — pin coin art to IPFS)
 
 Production: https://once-upon-arc.vercel.app/
 
@@ -101,7 +105,7 @@ Production: https://once-upon-arc.vercel.app/
 
 **Arc (home chain)** — Stories tagged for Arc. Uniswap V2 factory `0x89e5db8b…`, V3 `0xf0db7b58…`, V4 PoolManager `0x8366a39c…` on chain 5042. Link an Arc pool at launch. Testnet explorer `https://testnet.arcscan.app`.
 
-**Solana Mainnet (live printer)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. Factories: Raydium AMM `675kPX9…`, CPMM `CPMMoo8L3…`, CLMM `CAMMCzo5…`, Orca `whirLbMi…`, Meteora DLMM `LBUZKhRx…`, PumpSwap `pAMMBay6…`. Canonical SOL/USDC Raydium `58oQChx4…`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`). Prove pool catalogs with `pnpm check:pools`.
+**Solana Mainnet (live printer)** — RPC `https://api.mainnet-beta.solana.com`, explorer `https://explorer.solana.com`, USDC mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`. CAIP-2 `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`. Factories: Raydium AMM `675kPX9…`, CPMM `CPMMoo8L3…`, CLMM `CAMMCzo5…`, Orca `whirLbMi…`, Meteora DLMM `LBUZKhRx…`, PumpSwap `pAMMBay6…`. Canonical SOL/USDC Raydium `58oQChx4…`. Canonical PumpSwap SOL/USDC `Gf7sXMoP…`. No faucet. Do not smoke-mint; RPC ping only (`pnpm smoke:solana`). Prove pool catalogs with `pnpm check:pools`.
 
 **Ethereum, Base, Robinhood Chain** — Stories tagged for those chains still mint as SPL on Solana today. Pick a destination pool at launch (Uniswap WETH/USDC `0x88e6A0c2…` on Ethereum, Uniswap WETH/USDC `0x6c561b44…` or Aerodrome cbBTC/WETH `0x70aCDF2A…` on Base, Pons factory `0x7ed598…` on Robinhood Chain). RPC for Robinhood Chain: `https://rpc.mainnet.chain.robinhood.com`.
 

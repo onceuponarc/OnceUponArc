@@ -12,6 +12,9 @@ import {
 } from "@onceupon/config/quotes";
 import { assertPayer } from "@/lib/wallets/bound";
 import { parseLinkedPool } from "@/lib/pools/resolve";
+import { cleanTelegram, cleanTwitter, cleanWebsite } from "@/lib/media/socials";
+import { coverFromPaste } from "@/lib/media/cover";
+import { feesForVenue } from "@onceupon/config/launchpad";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,6 +49,11 @@ type LaunchBody = {
   poolChain?: string;
   poolDepthUsd?: number;
   poolQuoteAddress?: string;
+  coverUrl?: string;
+  imageUri?: string;
+  twitterUrl?: string;
+  telegramUrl?: string;
+  websiteUrl?: string;
 };
 
 async function resolveQuote(body: LaunchBody): Promise<QuoteAsset> {
@@ -106,6 +114,14 @@ export async function POST(request: Request) {
 
     const payer = await assertPayer(user.id, body.payer);
     const quote = await resolveQuote(body);
+    const venueFees = feesForVenue(body.venue, body.engine);
+    const coverPasted = body.coverUrl ? coverFromPaste(body.coverUrl) : null;
+    if (body.venue === "pumpfun" && !(body.coverUrl ?? "").trim()) {
+      return NextResponse.json(
+        { error: "Pump.fun-style launches need coin art. Upload an image or paste an IPFS CID." },
+        { status: 400 },
+      );
+    }
     const result = await launchOnSolana({
       userId: user.id,
       handle: profile.handle,
@@ -115,8 +131,8 @@ export async function POST(request: Request) {
       blurb: body.blurb ?? "",
       engine: body.engine,
       venue: body.venue,
-      authorBps: Number(body.authorBps ?? 100),
-      snipeTaxBps: Number(body.snipeTaxBps ?? 0),
+      authorBps: Number(body.authorBps ?? venueFees.authorBps),
+      snipeTaxBps: Number(body.snipeTaxBps ?? venueFees.snipeTaxBps),
       quote,
       rewardMint: parseMint(body.rewardMint ?? quote.mint ?? null)?.toBase58() ?? null,
       autoBuyRewards: Boolean(body.autoBuyRewards),
@@ -131,6 +147,11 @@ export async function POST(request: Request) {
         poolDepthUsd: body.poolDepthUsd,
         quoteAddress: body.poolQuoteAddress ?? quote.mint ?? null,
       }),
+      coverUrl: coverPasted?.url ?? body.coverUrl ?? null,
+      imageUri: body.imageUri ?? coverPasted?.imageUri ?? body.coverUrl ?? null,
+      twitterUrl: body.twitterUrl ? cleanTwitter(body.twitterUrl) : null,
+      telegramUrl: body.telegramUrl ? cleanTelegram(body.telegramUrl) : null,
+      websiteUrl: body.websiteUrl ? cleanWebsite(body.websiteUrl) : null,
     });
     return NextResponse.json(result);
   } catch (error) {

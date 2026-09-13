@@ -83,6 +83,14 @@ export const CHAIN_POOLS: Record<LaunchChain, ChainPoolCatalog> = {
     ],
     canonicalPools: [
       {
+        dex: "pumpswap",
+        address: "Gf7sXMoP8iRw4iiXmJ1nq4vxcRycbGXy5RL8a8LnTd3v",
+        label: "SOL/USDC · PumpSwap",
+        quoteId: "sol",
+        liquidityUsd: 2_900_000,
+        url: "https://dexscreener.com/solana/gf7sxmop8irw4iixmj1nq4vxcrcycbgxy5rl8a8lntd3v",
+      },
+      {
         dex: "raydium",
         address: "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
         label: "SOL/USDC",

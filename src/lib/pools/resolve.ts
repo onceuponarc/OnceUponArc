@@ -233,6 +233,7 @@ export async function resolvePools(input: {
   chain: LaunchChain;
   quoteId?: string;
   quoteMint?: string | null;
+  preferDex?: DexId | null;
 }): Promise<PoolResolveResult> {
   const chain = input.chain;
   const listed = input.quoteId ? findQuote(input.quoteId) : undefined;
@@ -254,10 +255,26 @@ export async function resolvePools(input: {
     ...linked,
     ...canonical.map((pool) => canonicalAsResolved("solana", pool, solanaMint)),
   ]);
+  if (input.preferDex === "pumpswap") {
+    const pumpCanonical = CHAIN_POOLS.solana.canonicalPools.filter((pool) => pool.dex === "pumpswap");
+    linked = mergePools([
+      ...pumpCanonical.map((pool) => canonicalAsResolved("solana", pool, solanaMint)),
+      ...linked,
+    ]);
+  }
   if (!linked.length) {
     linked = CHAIN_POOLS.solana.canonicalPools
       .filter((pool) => pool.quoteId === "sol" || pool.quoteId === "usdc")
       .map((pool) => canonicalAsResolved("solana", pool, SOLANA.wsolMint));
+  }
+  if (input.preferDex) {
+    const prefer = input.preferDex;
+    linked = [...linked].sort((a, b) => {
+      const ap = a.dex === prefer ? 1 : 0;
+      const bp = b.dex === prefer ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+      return b.liquidityUsd - a.liquidityUsd;
+    });
   }
 
   let destination: ResolvedPool[] = [];
@@ -287,7 +304,10 @@ export async function resolvePools(input: {
     launchPool: {
       dex: "onceupon",
       label: `OnceUpon launch pool · ${quoteSymbol}`,
-      note: "The mint prints on Solana. The curve is the live pool against this quote from block one. You do not seed an empty AMM.",
+      note:
+        input.preferDex === "pumpswap"
+          ? "The mint prints on OnceUpon. The curve is live from block one. Pump.fun venue pairs a PumpSwap pool (pAMMBay6…) as the linked AMM — that is the pool this launch is paired with."
+          : "The mint prints on Solana. The curve is the live pool against this quote from block one. You do not seed an empty AMM.",
     },
     linked: linked.slice(0, 8),
     destination: destination.slice(0, 8),

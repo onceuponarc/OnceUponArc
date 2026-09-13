@@ -11,9 +11,16 @@ import {
 } from "@onceupon/config/solana";
 import { MODE_COPY, RIGHTS_TICK, feeExample } from "@onceupon/config/copy";
 import { PROTOCOL } from "@onceupon/config/arc";
+import {
+  PAD_NAME,
+  PUMPFUN_CURVE_REFERENCE,
+  feesForVenue,
+  venueLabel,
+} from "@onceupon/config/launchpad";
 import { findQuote, type QuoteGroup } from "@onceupon/config/quotes";
 import { QuotePicker } from "@/components/launch/quote-picker";
 import { PoolPicker, type LinkedPoolPick } from "@/components/launch/pool-picker";
+import { CoverField, type CoverPick } from "@/components/launch/cover-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +55,10 @@ export function LaunchStudio({
   const [title, setTitle] = useState("");
   const [ticker, setTicker] = useState("");
   const [blurb, setBlurb] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [website, setWebsite] = useState("");
+  const [cover, setCover] = useState<CoverPick | null>(null);
   const [authorBps, setAuthorBps] = useState<number>(PROTOCOL.authorModeSuggestedBps);
   const [snipeTaxBps, setSnipeTaxBps] = useState(0);
   const [nftSupply, setNftSupply] = useState(1);
@@ -59,8 +70,10 @@ export function LaunchStudio({
 
   const cap = engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap;
   const selectedQuote = findQuote(quoteId);
+  const venueFees = feesForVenue(venue, engine);
   const example = useMemo(() => feeExample(1000, Math.min(authorBps, cap)), [authorBps, cap]);
-  const canSubmit = signedIn && Boolean(address) && rights && !busy;
+  const needsArt = venue === "pumpfun";
+  const canSubmit = signedIn && Boolean(address) && rights && !busy && (!needsArt || Boolean(cover?.url));
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
@@ -103,6 +116,11 @@ export function LaunchStudio({
           poolChain: linkedPool?.chain,
           poolDepthUsd: linkedPool?.depthUsd,
           poolQuoteAddress: linkedPool?.quoteAddress ?? undefined,
+          coverUrl: cover?.url,
+          imageUri: cover?.imageUri,
+          twitterUrl: twitter.trim() || undefined,
+          telegramUrl: telegram.trim() || undefined,
+          websiteUrl: website.trim() || undefined,
         }),
       });
       const body = await readApiJson<{
@@ -190,7 +208,12 @@ export function LaunchStudio({
             <button
               key={item.id}
               type="button"
-              onClick={() => setVenue(item.id)}
+              onClick={() => {
+                setVenue(item.id);
+                const next = feesForVenue(item.id, engine);
+                setAuthorBps(Math.min(next.authorBps, engine === "author" ? 300 : 100));
+                setSnipeTaxBps(next.snipeTaxBps);
+              }}
               className={cn(
                 "rounded-xl border p-3 text-left transition",
                 venue === item.id ? "border-arc bg-arc/15" : "border-white/10 bg-white/5",
@@ -213,7 +236,8 @@ export function LaunchStudio({
               type="button"
               onClick={() => {
                 setEngine(id);
-                setAuthorBps((bps) => Math.min(bps, id === "author" ? 300 : 100));
+                const next = feesForVenue(venue, id);
+                setAuthorBps(Math.min(next.authorBps, id === "author" ? 300 : 100));
               }}
               className={cn(
                 "rounded-xl border p-3 text-left transition",
@@ -241,6 +265,7 @@ export function LaunchStudio({
         chain={chain}
         quoteId={quoteId}
         mint={quoteMint || selectedQuote?.mint || ""}
+        venue={venue}
         selected={linkedPool}
         onSelect={setLinkedPool}
       />
@@ -266,6 +291,36 @@ export function LaunchStudio({
         <div className="space-y-2">
           <Label htmlFor="blurb">Pitch</Label>
           <Textarea id="blurb" value={blurb} onChange={(e) => setBlurb(e.target.value)} rows={3} />
+        </div>
+        <CoverField value={cover} required={needsArt} onChange={setCover} />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label htmlFor="twitter">X / Twitter</Label>
+            <Input
+              id="twitter"
+              value={twitter}
+              onChange={(e) => setTwitter(e.target.value)}
+              placeholder="@handle or x.com/…"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="telegram">Telegram</Label>
+            <Input
+              id="telegram"
+              value={telegram}
+              onChange={(e) => setTelegram(e.target.value)}
+              placeholder="@group or t.me/…"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="website">Website</Label>
+            <Input
+              id="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://"
+            />
+          </div>
         </div>
         {venue === "nft" ? (
           <div className="space-y-2">
@@ -297,6 +352,23 @@ export function LaunchStudio({
             {(Math.min(authorBps, cap) / 100).toFixed(2)}% · protocol {(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%
           </p>
           <p className="text-sm text-parchment/65">{example}</p>
+          <div className="rounded-xl border border-white/10 bg-black/20 p-3 text-sm text-parchment/70">
+            <p className="font-medium text-parchment">{venueFees.headline}</p>
+            <p className="mt-1">
+              Creator {(Math.min(authorBps, cap) / 100).toFixed(2)}% · protocol{" "}
+              {(venueFees.protocolBps / 100).toFixed(2)}% · LP {(venueFees.lpBps / 100).toFixed(2)}%
+              {snipeTaxBps > 0 ? ` · snipe +${(snipeTaxBps / 100).toFixed(2)}% (15 min)` : ""}
+            </p>
+            <p className="mt-1">{venueFees.note}</p>
+            {venue === "pumpfun" ? (
+              <p className="mt-1 text-parchment/55">
+                Pump.fun’s own curve (reference): creator{" "}
+                {(PUMPFUN_CURVE_REFERENCE.creatorBps / 100).toFixed(2)}% · protocol{" "}
+                {(PUMPFUN_CURVE_REFERENCE.protocolBps / 100).toFixed(2)}% · total{" "}
+                {(PUMPFUN_CURVE_REFERENCE.totalBps / 100).toFixed(2)}%. This mint does not pay that protocol cut.
+              </p>
+            ) : null}
+          </div>
         </div>
         {venue === "pons" || venue === "pumpfun" ? (
           <div className="space-y-2">
@@ -327,22 +399,30 @@ export function LaunchStudio({
           <p>
             {handle ? `@${handle}` : "Sign in with X"}
             {address ? ` · ${address.slice(0, 4)}…${address.slice(-4)}` : " · connect a wallet"}
+            {` · ${PAD_NAME} · ${venueLabel(venue)}`}
           </p>
           <p className="mt-1">{selectedChain.printNote}</p>
           <p className="mt-1">
             {venue === "nft"
-              ? "Mints a real token on Solana mainnet. Needs SOL in the connected wallet."
+              ? "Mints a real token on Solana mainnet with Metaplex metadata. Needs SOL in the connected wallet."
               : selectedQuote
-                ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool.`
+                ? `Bonds until ${selectedQuote.graduationUi.toLocaleString("en-US")} ${selectedQuote.symbol}. Buys settle in ${selectedQuote.symbol}. You pair into that depth — you do not fund an empty pool. Metadata JSON is stamped Created on ${PAD_NAME}.`
                 : "Paste a mint. The pad inspects it on Solana mainnet and uses it as quote liquidity."}
           </p>
           {linkedPool ? (
             <p className="mt-1">
               Linked pool: {linkedPool.label} · {linkedPool.dex} · {linkedPool.address.slice(0, 6)}…
               {linkedPool.address.slice(-4)}
+              {venue === "pumpfun" && linkedPool.dex !== "pumpswap"
+                ? " · Pump.fun venue also binds the canonical PumpSwap SOL/USDC pool."
+                : ""}
             </p>
           ) : (
-            <p className="mt-1">Pick or paste a live pool above. The mint still goes live on the OnceUpon curve.</p>
+            <p className="mt-1">
+              {venue === "pumpfun"
+                ? "Pump.fun venue auto-pairs PumpSwap. Pick or paste a PumpSwap pool above."
+                : "Pick or paste a live pool above. The mint still goes live on the OnceUpon curve."}
+            </p>
           )}
         </div>
         <Button type="submit" disabled={!canSubmit} className="w-full rounded-full sm:w-auto">
@@ -353,10 +433,10 @@ export function LaunchStudio({
               : !address
                 ? "Connect a wallet to launch"
                 : chain === "arc"
-                  ? "Launch on Arc"
+                  ? `Launch on ${PAD_NAME} · Arc`
                   : chain === "solana"
-                    ? "Launch on Solana mainnet"
-                    : `Launch · tagged for ${selectedChain.title}`}
+                    ? `Launch on ${PAD_NAME}`
+                    : `Launch on ${PAD_NAME} · tagged for ${selectedChain.title}`}
         </Button>
         {error ? (
           <Alert variant="destructive">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { tickerHue, type FeedLaunch } from "@/lib/feed";
+import { PAD_NAME, venueLabel } from "@onceupon/config/launchpad";
 import { cn } from "@/lib/utils";
 
 function statusLabel(status: FeedLaunch["status"]) {
@@ -23,7 +24,13 @@ export function LaunchCard({ launch }: { launch: FeedLaunch }) {
             background: `linear-gradient(135deg, hsl(${hue} 48% 16%), hsl(${(hue + 48) % 360} 55% 28%), hsl(${(hue + 170) % 360} 32% 12%))`,
           }}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgb(246_239_226_/_18%),transparent_45%)]" />
+          {launch.coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={launch.coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgb(246_239_226_/_18%),transparent_45%)]" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent" />
           <div className="absolute inset-x-4 bottom-3 flex items-end justify-between">
             <p className="font-heading text-3xl font-bold tracking-tight text-white drop-shadow">
               ${launch.ticker}
@@ -37,12 +44,13 @@ export function LaunchCard({ launch }: { launch: FeedLaunch }) {
               {launch.title}
             </h3>
             <p className="mt-1 line-clamp-2 text-sm text-parchment/65">
-              {launch.blurb || "A launch on Solana."}
+              {launch.blurb || "A launch on OnceUpon."}
             </p>
           </div>
           <div className="mt-auto flex flex-wrap items-center gap-1.5">
+            <Badge>{PAD_NAME}</Badge>
+            <Badge variant="outline">{venueLabel(launch.venue)}</Badge>
             <Badge variant="outline">{engineLabel}</Badge>
-            {launch.venue ? <Badge variant="outline">{launch.venue}</Badge> : null}
             <Badge variant="secondary">{launch.pairLabel}</Badge>
             {launch.chain ? <Badge variant="outline">{launch.chain}</Badge> : null}
             <span className="text-xs text-gold/90">{(launch.authorBps / 100).toFixed(2)}% author</span>

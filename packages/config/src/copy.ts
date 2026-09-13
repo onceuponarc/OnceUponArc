@@ -90,7 +90,7 @@ export const PAIR_TYPES = [
 ] as const;
 
 export const BONDING_COPY =
-  "Launches open on a bonding curve against the pair you pick. SOL pairs bond at 2 SOL. Stables bond at 5,000 units. cbBTC bonds at 0.1. Listed xStocks bond at 10 of the quote mint. You pair into liquidity that already exists — you do not fund an empty pool. The Raydium, Orca, Uniswap, or Pons pool you pick is bound on the Story from the first block.";
+  "Launches open on a bonding curve against the pair you pick. SOL pairs bond at 2 SOL. Stables bond at 5,000 units. cbBTC bonds at 0.1. Listed xStocks bond at 10 of the quote mint. You pair into liquidity that already exists — you do not fund an empty pool. The Raydium, Orca, PumpSwap, Uniswap, or Pons pool you pick is bound on the Story from the first block.";
 
 export const PIECE_EXPLAINER =
   "The Piece is a protocol fee split among current holders of a Story. It is not a dividend, not profit-sharing, and not a return on investment.";
