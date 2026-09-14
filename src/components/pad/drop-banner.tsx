@@ -9,7 +9,7 @@ export function DropBanner() {
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/45">Launch day</p>
           <h2 className="mt-2 max-w-2xl text-3xl font-semibold tracking-tight sm:text-5xl">
-            Print a Chapter. Print a jacket. Let MC move both.
+            Launch day. Print a Chapter. Print a jacket.
           </h2>
           <p className="mt-3 max-w-xl text-sm text-white/55 sm:text-base">
             Coin trades on the USDC curve. Card value is start price × live MC / start MC. Two markets. One story.
