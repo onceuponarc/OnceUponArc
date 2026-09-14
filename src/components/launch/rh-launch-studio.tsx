@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
 import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { readApiJson } from "@/lib/http/read-json";
+import { LaunchLiveCard, type LiveLaunch } from "@/components/launch/launch-live-card";
 
 export function RhLaunchStudio({ handle }: { handle: string | null }) {
   const [name, setName] = useState("");
@@ -14,7 +15,7 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ hash: string; token: string; explorer: string } | null>(null);
+  const [result, setResult] = useState<LiveLaunch | null>(null);
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
@@ -36,12 +37,23 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
       if (!res.ok || !body.token || !body.hash) {
         throw new Error(body.error ?? "Fund your in-app Robinhood wallet with ETH, then launch.");
       }
-      setResult({ hash: body.hash, token: body.token, explorer: body.explorer ?? "" });
+      setResult({
+        venue: "pons",
+        name,
+        symbol: symbol.toUpperCase(),
+        image: cover?.url ?? null,
+        mint: body.token,
+        signature: body.hash,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Robinhood launch failed.");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (result) {
+    return <LaunchLiveCard live={result} onAgain={() => setResult(null)} />;
   }
 
   return (
@@ -70,14 +82,6 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
         {busy ? "Signing with your desk…" : "Launch on Robinhood Chain"}
       </Button>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      {result ? (
-        <p className="break-all text-sm text-white/70">
-          Token{" "}
-          <a className="underline" href={result.explorer} target="_blank" rel="noreferrer">
-            {result.token}
-          </a>
-        </p>
-      ) : null}
     </form>
   );
 }

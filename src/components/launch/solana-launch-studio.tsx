@@ -8,6 +8,7 @@ import { CoverField, type CoverPick } from "@/components/launch/cover-field";
 import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { readApiJson } from "@/lib/http/read-json";
 import { VANITY_SUFFIX } from "@/lib/solana/vanity";
+import { LaunchLiveCard, type LiveLaunch } from "@/components/launch/launch-live-card";
 
 export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
   const [name, setName] = useState("");
@@ -18,7 +19,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
   const [vanity, setVanity] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ mint: string; signature?: string; explorer?: string } | null>(null);
+  const [result, setResult] = useState<LiveLaunch | null>(null);
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
@@ -47,17 +48,30 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         error?: string;
         mint?: string;
         signature?: string;
-        explorer?: string;
+        creator?: string;
       }>(built);
       if (!built.ok || !body.mint) {
         throw new Error(body.error ?? "Fund your in-app Solana wallet with SOL, then retry.");
       }
-      setResult({ mint: body.mint, signature: body.signature, explorer: body.explorer });
+      setResult({
+        venue: "pumpfun",
+        name,
+        symbol: symbol.toUpperCase(),
+        blurb,
+        image: cover?.url ?? cover?.imageUri ?? null,
+        mint: body.mint,
+        signature: body.signature,
+        creator: body.creator,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Launch failed.");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (result) {
+    return <LaunchLiveCard live={result} onAgain={() => setResult(null)} />;
   }
 
   return (
@@ -101,15 +115,6 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         {busy ? "Signing with your desk…" : "Launch on pump.fun"}
       </Button>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      {result ? (
-        <p className="break-all text-sm text-white/70">
-          Mint {result.mint}
-          {result.signature ? ` · ${result.signature}` : ""} ·{" "}
-          <a className="underline" href={result.explorer ?? `https://solscan.io/token/${result.mint}`} target="_blank" rel="noreferrer">
-            explorer
-          </a>
-        </p>
-      ) : null}
       <ClaimFees />
     </form>
   );
