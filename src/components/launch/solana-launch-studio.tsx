@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Keypair, VersionedTransaction } from "@solana/web3.js";
+import { Keypair, Transaction, VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
   const [blurb, setBlurb] = useState("");
   const [devBuy, setDevBuy] = useState("0.01");
   const [cover, setCover] = useState<CoverPick | null>(null);
+  const [mode, setMode] = useState<"pump" | "tax">("tax");
+  const [taxBps, setTaxBps] = useState("100");
   const [vanity, setVanity] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,8 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
     try {
       const publicKey = wallet.address || (await wallet.connect());
       if (!publicKey) throw new Error("Connect Phantom, Solflare, or Backpack.");
-      const built = await fetch("/api/solana/launch", {
+      const path = mode === "tax" ? "/api/solana/tax-launch" : "/api/solana/launch";
+      const built = await fetch(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,6 +50,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           coverUrl: cover?.url,
           devBuySol: Number(devBuy),
           vanity,
+          taxBps: Number(taxBps),
         }),
       });
       const body = await readApiJson<{
@@ -57,13 +61,24 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         vanity?: boolean;
       }>(built);
       if (!built.ok || !body.transaction || !body.mintSecret || !body.mint) {
-        throw new Error(body.error ?? "Could not build the pump.fun tx.");
+        throw new Error(body.error ?? "Could not build the launch tx.");
       }
-      const tx = VersionedTransaction.deserialize(Buffer.from(body.transaction, "base64"));
-      const mint = Keypair.fromSecretKey(bs58.decode(body.mintSecret));
-      tx.sign([mint]);
-      const signed = (await wallet.signTransaction(tx)) as VersionedTransaction;
-      const raw = signed.serialize();
+      const rawMint = body.mintSecret.match(/^[1-9A-HJ-NP-Za-km-z]+$/)
+        ? bs58.decode(body.mintSecret)
+        : Buffer.from(body.mintSecret, "base64");
+      const mint = Keypair.fromSecretKey(Uint8Array.from(rawMint));
+      let raw: Uint8Array;
+      if (mode === "tax") {
+        const tx = Transaction.from(Buffer.from(body.transaction, "base64"));
+        tx.partialSign(mint);
+        const signed = (await wallet.signTransaction(tx)) as Transaction;
+        raw = signed.serialize();
+      } else {
+        const tx = VersionedTransaction.deserialize(Buffer.from(body.transaction, "base64"));
+        tx.sign([mint]);
+        const signed = (await wallet.signTransaction(tx)) as VersionedTransaction;
+        raw = signed.serialize();
+      }
       const send = await fetch("https://api.mainnet-beta.solana.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -87,11 +102,19 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
   return (
     <form onSubmit={(event) => void launch(event)} className="space-y-5 rounded-3xl border border-white/10 p-5">
       <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Solana · pump.fun</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Solana</p>
         <h2 className="mt-1 text-2xl font-semibold">Print on Solana</h2>
         <p className="mt-2 text-sm text-white/55">
-          Image goes to IPFS. Metadata says OrbitX. Vanity suffix …{VANITY_SUFFIX}. You pay gas from Phantom.
+          Tax mint: Token-2022 cut on every transfer, including off-platform. Pump.fun: curve + Pump fees only.
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button type="button" variant={mode === "tax" ? "default" : "outline"} onClick={() => setMode("tax")}>
+            Tax mint
+          </Button>
+          <Button type="button" variant={mode === "pump" ? "default" : "outline"} onClick={() => setMode("pump")}>
+            Pump.fun
+          </Button>
+        </div>
       </div>
       <CoverField value={cover} required onChange={setCover} />
       <div className="grid gap-3 sm:grid-cols-2">
@@ -108,10 +131,18 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         <Label>Blurb</Label>
         <Input className="mt-2" value={blurb} onChange={(e) => setBlurb(e.target.value)} />
       </div>
-      <div>
-        <Label>Dev buy (SOL)</Label>
-        <Input className="mt-2" value={devBuy} onChange={(e) => setDevBuy(e.target.value)} />
-      </div>
+      {mode === "pump" ? (
+        <div>
+          <Label>Dev buy (SOL)</Label>
+          <Input className="mt-2" value={devBuy} onChange={(e) => setDevBuy(e.target.value)} />
+        </div>
+      ) : (
+        <div>
+          <Label>Platform tax (bps)</Label>
+          <Input className="mt-2" value={taxBps} onChange={(e) => setTaxBps(e.target.value)} />
+          <p className="mt-1 text-xs text-white/40">100 = 1%. Locked on the mint. Max 200.</p>
+        </div>
+      )}
       <label className="flex items-center gap-2 text-sm text-white/70">
         <input type="checkbox" checked={vanity} onChange={(e) => setVanity(e.target.checked)} />
         Mine a …{VANITY_SUFFIX} mint
@@ -121,7 +152,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           {wallet.address ? `${wallet.address.slice(0, 4)}…${wallet.address.slice(-4)}` : "Connect Phantom"}
         </Button>
         <Button type="submit" disabled={busy}>
-          {busy ? "Building…" : "Launch on pump.fun"}
+          {busy ? "Building…" : mode === "tax" ? "Launch taxed mint" : "Launch on pump.fun"}
         </Button>
       </div>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
@@ -129,8 +160,8 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         <p className="break-all text-sm text-white/70">
           {result.vanity ? "Vanity mint" : "Mint"} {result.mint}
           {result.sig ? ` · ${result.sig}` : ""} ·{" "}
-          <a className="underline" href={`https://pump.fun/${result.mint}`} target="_blank" rel="noreferrer">
-            pump.fun
+          <a className="underline" href={`https://solscan.io/token/${result.mint}`} target="_blank" rel="noreferrer">
+            solscan
           </a>
         </p>
       ) : null}
