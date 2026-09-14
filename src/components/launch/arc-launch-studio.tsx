@@ -13,7 +13,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
-import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { readApiJson } from "@/lib/http/read-json";
 import { cn } from "@/lib/utils";
 
@@ -98,7 +97,6 @@ export function ArcLaunchStudio({
 
   return (
     <form onSubmit={launch} className="space-y-5">
-      <ArcDevnetWallet />
       <ol className="grid grid-cols-3 gap-2">
         {STEPS.map((label, index) => (
           <li key={label}>

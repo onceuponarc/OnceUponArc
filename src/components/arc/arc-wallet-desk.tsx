@@ -12,7 +12,6 @@ import {
   writeArcKeys,
   type ArcKeypair,
 } from "@/lib/arc/keys";
-import { readApiJson } from "@/lib/http/read-json";
 import { shortenAddress } from "@/lib/format";
 
 type Store = { devnet: ArcKeypair | null; mainnet: ArcKeypair | null };
@@ -111,11 +110,8 @@ function KeyCard({
 
 export function ArcWalletDesk() {
   const [keys, setKeys] = useState<Store>({ devnet: null, mainnet: null });
-  const [devImport, setDevImport] = useState("");
   const [mainImport, setMainImport] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [note, setNote] = useState<string | null>(null);
-  const [funding, setFunding] = useState(false);
 
   useEffect(() => {
     setKeys(readArcKeys());
@@ -126,53 +122,14 @@ export function ArcWalletDesk() {
     setKeys(next);
   }
 
-  async function fundDevnet() {
-    if (!keys.devnet) return;
-    setFunding(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/arc/faucet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: keys.devnet.address }),
-      });
-      const body = await readApiJson<{ error?: string; usdcUi?: number }>(res);
-      if (!res.ok) throw new Error(body.error ?? "Faucet failed.");
-      setNote("Devnet wallet funded with ETH + USDC.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Faucet failed.");
-    } finally {
-      setFunding(false);
-    }
-  }
-
   return (
     <div className="space-y-4">
-      <KeyCard
-        title="Arc Devnet key"
-        pair={keys.devnet}
-        importValue={devImport}
-        onImportValue={setDevImport}
-        hint="Local Anvil (chain 31337). Import this key into MetaMask, then add Arc Devnet. Fund it here to trade."
-        onGenerate={() => persist({ ...keys, devnet: makeKey("devnet") })}
-        onImport={() => {
-          try {
-            persist({ ...keys, devnet: importKey("devnet", devImport) });
-            setDevImport("");
-            setError(null);
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "Import failed.");
-          }
-        }}
-        onFund={() => void fundDevnet()}
-        funding={funding}
-      />
       <KeyCard
         title="Arc Mainnet key"
         pair={keys.mainnet}
         importValue={mainImport}
         onImportValue={setMainImport}
-        hint="Separate key for live Arc. Mainnet RPC is not public yet — keep this key offline until cutover. Never reuse the Devnet key."
+        hint="Arc mainnet key. Chain 5042. USDC gas. Import into MetaMask or Rabby."
         onGenerate={() => persist({ ...keys, mainnet: makeKey("mainnet") })}
         onImport={() => {
           try {
@@ -191,11 +148,8 @@ export function ArcWalletDesk() {
           → Private key). Then add the network.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={() => void addNetwork("devnet").catch((err) => setError(err.message))}>
-            Add Devnet to wallet
-          </Button>
-          <Button type="button" variant="outline" onClick={() => void addNetwork("testnet").catch((err) => setError(err.message))}>
-            Add Arc Testnet
+          <Button type="button" variant="outline" onClick={() => void addNetwork("mainnet").catch((err) => setError(err.message))}>
+            Add Arc
           </Button>
           <Button asChild variant="outline">
             <a href="https://metamask.io/download" target="_blank" rel="noreferrer">
@@ -209,12 +163,6 @@ export function ArcWalletDesk() {
           </Button>
         </div>
       </section>
-      {note ? (
-        <Alert>
-          <AlertTitle>Funded</AlertTitle>
-          <AlertDescription>{note}</AlertDescription>
-        </Alert>
-      ) : null}
       {error ? (
         <Alert variant="destructive">
           <AlertTitle>Wallet</AlertTitle>

@@ -11,7 +11,7 @@ export default function LoginPage() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">OrbitX</p>
         <h1 className="font-heading mt-3 text-4xl font-bold">Sign in with X</h1>
         <p className="mt-3 text-parchment/75">
-          Identity is X through Supabase. OrbitX is an Arc launchpad. Generate Devnet and Mainnet keys on the wallet
+          Identity is X through Supabase. OrbitX is a multi-chain launchpad. Keys live on the wallet
           desk, then import them into MetaMask or Rabby.
         </p>
         <div className="mt-8 flex flex-col gap-3">

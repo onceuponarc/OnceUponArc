@@ -14,7 +14,6 @@ import { explorerAddress, explorerTx } from "@/lib/solana/explorer";
 import { LaunchLinks } from "@/components/story/launch-links";
 import { LinkLp } from "@/components/story/link-lp";
 import { ArcTrade } from "@/components/arc/arc-trade";
-import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { HoldersTable, PriceChart, StoryTape, type ChartTrade } from "@/components/story/market-panel";
 import { getLocalArcStory } from "@/lib/arc/store";
 import { LiveRefresh } from "@/components/pad/live-refresh";
@@ -272,7 +271,6 @@ export default async function StoryPage({
           ticker={story.ticker}
         />
         <div className="space-y-4">
-          {chain === "arc" ? <ArcDevnetWallet compact /> : null}
           <Card>
             <CardHeader>
               <CardTitle>Trade</CardTitle>
