@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CARD_FLYWHEELS, type CardFlywheel } from "@/lib/cards/types";
+import { CoverField, type CoverPick } from "@/components/launch/cover-field";
 import { readApiJson } from "@/lib/http/read-json";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,7 @@ export function SpawnDesk({
   const [payAddress, setPayAddress] = useState("");
   const [payNetwork, setPayNetwork] = useState<"arc" | "solana">("arc");
   const [storySlug, setStorySlug] = useState(initialStory ?? "");
+  const [cover, setCover] = useState<CoverPick | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +62,9 @@ export function SpawnDesk({
       setPreview(body.tweet);
       setTitle(body.tweet.name);
       setTicker(body.tweet.handle.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toUpperCase());
+      if (body.tweet.coverUrl) {
+        setCover({ url: body.tweet.coverUrl, imageUri: body.tweet.coverUrl, cid: null, storage: "supabase" });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Preview failed.");
     } finally {
@@ -89,6 +94,8 @@ export function SpawnDesk({
           creatorPayAddress: payAddress,
           payNetwork,
           storySlug: storySlug || null,
+          coverUrl: cover?.url ?? preview?.coverUrl ?? null,
+          blurb: preview?.text,
         }),
       });
       const body = await readApiJson<{ error?: string; slug?: string }>(res);
@@ -143,6 +150,7 @@ export function SpawnDesk({
             </div>
           </div>
         ) : null}
+        <CoverField value={cover} onChange={setCover} />
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <Label>Name</Label>

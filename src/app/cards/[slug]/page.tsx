@@ -48,6 +48,10 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
             <dd className="text-xl font-semibold">{card.multiple.toFixed(2)}x</dd>
           </div>
           <div className="rounded-2xl border border-white/10 p-3">
+            <dt className="text-white/40">Start price</dt>
+            <dd>{formatUsd(card.startPriceUi)}</dd>
+          </div>
+          <div className="rounded-2xl border border-white/10 p-3">
             <dt className="text-white/40">Start MC</dt>
             <dd>{formatUsd(card.startMcapUi)}</dd>
           </div>
@@ -55,7 +59,30 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
             <dt className="text-white/40">Live MC</dt>
             <dd>{formatUsd(card.currentMcapUi)}</dd>
           </div>
+          <div className="rounded-2xl border border-white/10 p-3">
+            <dt className="text-white/40">Status</dt>
+            <dd className="capitalize">{card.listed ? "Listed" : "Held"} · {card.flywheel}</dd>
+          </div>
+          <div className="rounded-2xl border border-white/10 p-3">
+            <dt className="text-white/40">Creator</dt>
+            <dd>
+              <Link href={`/u/${card.creatorHandle}`} className="underline">
+                @{card.creatorHandle}
+              </Link>
+            </dd>
+          </div>
+          <div className="rounded-2xl border border-white/10 p-3">
+            <dt className="text-white/40">Holder</dt>
+            <dd>
+              <Link href={`/u/${card.ownerHandle}`} className="underline">
+                @{card.ownerHandle}
+              </Link>
+            </dd>
+          </div>
         </dl>
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/35">
+          Pay {card.payNetwork} · {card.lastPayTx ? `last tx ${card.lastPayTx.slice(0, 10)}…` : "no transfer yet"}
+        </p>
         {card.storySlug ? (
           <Link href={`/story/${card.storySlug}`} className="block text-sm text-white underline">
             Paired Chapter /{card.storySlug}

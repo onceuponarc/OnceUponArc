@@ -22,6 +22,8 @@ export async function POST(request: Request) {
     creatorPayAddress?: string;
     payNetwork?: "arc" | "solana";
     storySlug?: string | null;
+    coverUrl?: string | null;
+    blurb?: string;
   };
 
   const startPriceUi = Number(body.startPriceUi ?? 5);
@@ -47,11 +49,11 @@ export async function POST(request: Request) {
     slug: slugifyCard(ticker),
     title,
     ticker,
-    blurb: tweet?.text?.slice(0, 280) || `${title} press card.`,
+    blurb: (body.blurb || tweet?.text || `${title} press card.`).slice(0, 280),
     tweetUrl: tweet?.tweetUrl ?? body.url ?? null,
     tweetId: tweet?.tweetId ?? null,
     tweetHandle: tweet?.handle ?? null,
-    coverUrl: tweet?.coverUrl ?? null,
+    coverUrl: body.coverUrl || tweet?.coverUrl || null,
     startPriceUi,
     startMcapUi,
     flywheel,
