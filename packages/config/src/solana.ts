@@ -78,9 +78,9 @@ export const CHAINS: ChainCard[] = [
     title: "Arc",
     live: true,
     prints: true,
-    badge: "Home · native",
-    body: "OrbitX is an Arc launchpad. Open a Chapter Curve in USDC the instant create lands. Buyers write the book. Graduation seeds the AMM from the vault. Mainnet Arc is days out — Devnet and Testnet are wired for launch, buy, and sell now.",
-    caip2: "eip155:5042002",
+    badge: "Mainnet · 5042",
+    body: "OrbitX is an Arc launchpad. Open a Chapter Curve in USDC the instant create lands. Buyers write the book. Graduation seeds the AMM from the vault. Early public mainnet, chain 5042.",
+    caip2: "eip155:5042",
     accent: "from-[#00e5c3]/45 to-[#3d7cff]/30",
     printNote:
       "Native Chapter Curve on Arc. MockUSDC (Devnet) or Circle USDC (Testnet) is the quote. Buy and sell anytime. You do not seed an AMM at print. Graduation seeds the deeper pool from the book.",

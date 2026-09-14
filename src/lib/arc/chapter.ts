@@ -2,6 +2,7 @@ import "server-only";
 
 import { formatUnits, parseEther, parseUnits, zeroHash } from "viem";
 import { CHAPTER } from "@onceupon/config/chapter";
+import { isPublicArc } from "@onceupon/config/arc";
 import { curveAbi, erc20Abi, factoryAbi } from "@/lib/arc/abi";
 import { publicArc, requireArcNetwork, traderWallet } from "@/lib/arc/client";
 import { loadArcNetwork } from "@/lib/arc/env";
@@ -23,10 +24,10 @@ function isAnvilChapter(story: { quoteAddress?: string | null; curveAddress?: st
 
 async function requireLiveCurve(story: { quoteAddress: `0x${string}`; curveAddress: `0x${string}`; tokenAddress: `0x${string}` }) {
   const net = requireArcNetwork();
-  if (net.chainId !== 5042002 && !isAnvilChapter(story)) return;
-  if (net.chainId === 5042002 && isAnvilChapter(story)) {
+  if (!isPublicArc(net.chainId) && !isAnvilChapter(story)) return;
+  if (isPublicArc(net.chainId) && isAnvilChapter(story)) {
     throw new Error(
-      "This Chapter was printed on local Anvil, not Arc Testnet. Launch a new Chapter on the live factory.",
+      "This Chapter was printed on local Anvil, not Arc. Launch a new Chapter on the live factory.",
     );
   }
   const pub = publicArc(net);
@@ -140,7 +141,7 @@ export async function dripFaucet(to?: `0x${string}`) {
   const { deployerWallet } = await import("@/lib/arc/client");
   const pub = publicArc(net);
   const deployer = deployerWallet(net);
-  const testnet = net.chainId === 5042002;
+  const testnet = isPublicArc(net.chainId);
   const fallback = testnet
     ? ("0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7" as `0x${string}`)
     : traderWallet(net).account.address;
@@ -391,7 +392,7 @@ export async function arcSnapshot(slug: string) {
   }
   const net = loadArcNetwork();
   if (!net) return { story, onchain: null };
-  if (net.chainId === 5042002 && isAnvilChapter(story)) {
+  if (isPublicArc(net.chainId) && isAnvilChapter(story)) {
     return { story, onchain: null, offline: "anvil-only" as const };
   }
   const pub = publicArc(net);
@@ -434,6 +435,6 @@ export async function arcSnapshot(slug: string) {
 export async function allArcStories() {
   const stories = await listPersistedArcStories();
   const net = loadArcNetwork();
-  if (net?.chainId !== 5042002) return stories;
+  if (!net || !isPublicArc(net.chainId)) return stories;
   return stories.filter((story) => !isAnvilChapter(story));
 }

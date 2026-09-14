@@ -2,8 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const LANES = [
-  { href: "/launch/arc", label: "Arc Devnet" },
-  { href: "/launch/arc-mainnet", label: "Arc Friday" },
+  { href: "/launch/arc", label: "Arc" },
   { href: "/launch/solana", label: "Solana" },
 ];
 

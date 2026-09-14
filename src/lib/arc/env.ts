@@ -2,7 +2,7 @@ import "server-only";
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { ARC_TESTNET } from "@onceupon/config/arc";
+import { ARC_MAINNET, ARC_TESTNET, isPublicArc } from "@onceupon/config/arc";
 
 /** Well-known Anvil account #1. Test funds only — never send mainnet value here. */
 export const ANVIL_DEPLOYER = {
@@ -36,27 +36,38 @@ export function loadArcNetwork(): ArcNetworkFile | null {
   if (process.env.ARC_FACTORY && process.env.ARC_USDC) {
     const chainId = Number(process.env.ARC_CHAIN_ID || 31337);
     return {
-      label: chainId === ARC_TESTNET.chainId ? "Arc Testnet" : "Arc Devnet",
-      rpcUrl: process.env.ARC_RPC_URL || "http://127.0.0.1:8546",
+      label:
+        chainId === ARC_MAINNET.chainId ? "Arc" : chainId === ARC_TESTNET.chainId ? "Arc Testnet" : "Arc Devnet",
+      rpcUrl:
+        process.env.ARC_RPC_URL ||
+        (chainId === ARC_MAINNET.chainId
+          ? ARC_MAINNET.rpcUrls[0]
+          : chainId === ARC_TESTNET.chainId
+            ? ARC_TESTNET.rpcUrls[0]
+            : "http://127.0.0.1:8546"),
       chainId,
       factory: process.env.ARC_FACTORY as `0x${string}`,
       usdc: process.env.ARC_USDC as `0x${string}`,
       trader: (process.env.ARC_TRADER as `0x${string}`) || ANVIL_TRADER.address,
       deployer: (process.env.ARC_DEPLOYER as `0x${string}`) || ANVIL_DEPLOYER.address,
-      explorer: process.env.ARC_EXPLORER || ARC_TESTNET.explorer,
-      nativeGas: chainId === ARC_TESTNET.chainId ? "usdc" : "eth",
+      explorer:
+        process.env.ARC_EXPLORER ||
+        (chainId === ARC_MAINNET.chainId ? ARC_MAINNET.explorer : ARC_TESTNET.explorer),
+      nativeGas: isPublicArc(chainId) ? "usdc" : "eth",
     };
   }
-  if (process.env.VERCEL || process.env.ARC_CHAIN_ID === String(ARC_TESTNET.chainId)) {
+  if (process.env.VERCEL || process.env.ARC_CHAIN_ID === String(ARC_MAINNET.chainId) || process.env.ARC_CHAIN_ID === String(ARC_TESTNET.chainId)) {
+    const main = process.env.ARC_CHAIN_ID !== String(ARC_TESTNET.chainId);
+    const net = main ? ARC_MAINNET : ARC_TESTNET;
     return {
-      label: "Arc Testnet",
-      rpcUrl: process.env.ARC_RPC_URL || ARC_TESTNET.rpcUrls[0],
-      chainId: ARC_TESTNET.chainId,
+      label: net.name,
+      rpcUrl: process.env.ARC_RPC_URL || net.rpcUrls[0],
+      chainId: net.chainId,
       factory: (process.env.ARC_FACTORY as `0x${string}` | undefined) || TESTNET_FACTORY,
-      usdc: (process.env.ARC_USDC as `0x${string}` | undefined) || ARC_TESTNET.usdcErc20,
+      usdc: (process.env.ARC_USDC as `0x${string}` | undefined) || net.usdcErc20,
       trader: (process.env.ARC_TRADER as `0x${string}`) || "0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7",
       deployer: (process.env.ARC_DEPLOYER as `0x${string}`) || "0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7",
-      explorer: process.env.ARC_EXPLORER || ARC_TESTNET.explorer,
+      explorer: process.env.ARC_EXPLORER || net.explorer,
       nativeGas: "usdc",
     };
   }
@@ -82,7 +93,11 @@ function readKey(...names: string[]): `0x${string}` | null {
 }
 
 function onPublicArc() {
-  return Boolean(process.env.VERCEL) || process.env.ARC_CHAIN_ID === String(ARC_TESTNET.chainId);
+  return (
+    Boolean(process.env.VERCEL) ||
+    process.env.ARC_CHAIN_ID === String(ARC_MAINNET.chainId) ||
+    process.env.ARC_CHAIN_ID === String(ARC_TESTNET.chainId)
+  );
 }
 
 /** Funded Arc Testnet pad signer. Override with ARC_DEV_PRIVATE_KEY. */

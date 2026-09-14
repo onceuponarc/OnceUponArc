@@ -82,7 +82,9 @@ async function ensureOnce(): Promise<ArcNetworkFile> {
   }
   const rpcUrl = net?.rpcUrl || DEFAULT_RPC;
   if (!isLocalRpc(rpcUrl) || process.env.VERCEL) {
-    throw new Error("Arc Devnet is not wired. Start Anvil and deploy the Chapter Factory.");
+    throw new Error(
+      "Arc mainnet RPC is live (chain 5042) but StoryFactory has no code there yet. Deploy it and set ARC_FACTORY.",
+    );
   }
   await runArcDevnet();
   const again = loadArcNetwork();

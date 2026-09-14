@@ -56,13 +56,33 @@ export const ARC_DEVNET = {
   note: "ETH for gas, MockUSDC as Chapter quote. Same factory and curve as Arc Testnet. Public Arc uses USDC for gas.",
 } as const;
 
-export const ARC_MAINNET_PENDING = {
+export const ARC_MAINNET = {
   name: "Arc",
-  chainId: 1243,
-  hexChainId: "0x4DB",
-  caip2: "eip155:1243",
-  note: "Confirm against docs.arc.io at cutover. Do not send real USDC until official RPC and addresses are published.",
+  chainId: 5042,
+  hexChainId: "0x13B2",
+  caip2: "eip155:5042",
+  nativeCurrency: {
+    name: "USDC",
+    symbol: "USDC",
+    decimals: 18,
+  },
+  usdcNativeDecimals: 18,
+  usdcErc20: "0x3600000000000000000000000000000000000000" as const,
+  usdcErc20Decimals: 6,
+  rpcUrls: [
+    "https://rpc.arc-scan.org",
+    "https://arc-mainnet.infura.io/v3/b6bf7d3508c941499b10025c0776eaf8",
+  ],
+  explorer: "https://arcscan.app",
+  factory: "0x3FD6f451803CD0eC616da6Ef8228E6EC56C24086" as `0x${string}`,
+  note: "Early public mainnet. Chain 5042. Same USDC precompile as testnet.",
 } as const;
+
+export const ARC_MAINNET_PENDING = ARC_MAINNET;
+
+export function isPublicArc(chainId: number) {
+  return chainId === ARC_MAINNET.chainId || chainId === ARC_TESTNET.chainId;
+}
 
 export const PROTOCOL = {
   protocolBpsDefault: 20,

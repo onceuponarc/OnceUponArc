@@ -31,11 +31,11 @@ export default async function LaunchChainPage({ params }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo.jpg" alt="" className="size-12 rounded-xl border border-white/15 object-cover" />
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
-            Launch · {solana ? "Solana" : "Arc Devnet"}
+            Launch · {solana ? "Solana" : "Arc"}
           </p>
         </div>
         <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          {solana ? "Launch on Solana" : "Launch on Arc Devnet"}
+          {solana ? "Launch on Solana" : "Launch on Arc"}
         </h1>
         <p className="relative mt-3 max-w-2xl text-white/60">
           {solana
