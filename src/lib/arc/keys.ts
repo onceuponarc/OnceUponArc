@@ -57,7 +57,7 @@ export function isEthAddress(value: string) {
 export const ARC_NETWORKS = {
   devnet: {
     chainId: "0x7A69",
-    chainName: "Arc Devnet (OnceUpon)",
+    chainName: "Arc Devnet (OrbitX)",
     nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
     rpcUrls: ["http://127.0.0.1:8546"],
     blockExplorerUrls: ["http://127.0.0.1:8546"],

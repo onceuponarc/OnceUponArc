@@ -44,7 +44,7 @@ export default async function ChapterPage({
         <h1 className="font-heading mt-3 text-5xl font-extrabold sm:text-6xl">{chapter.title}</h1>
         <p className="mt-4 max-w-2xl text-lg text-parchment/80">{POSITIONING}</p>
         <p className="mt-3 max-w-2xl text-parchment/65">
-          First official launch window on OnceUpon. The press is Arc. Quote is USDC. This is not studio equity.
+          First official launch window on OrbitX. The press is Arc. Quote is USDC. This is not studio equity.
         </p>
         {chapter.opens_at ? (
           <p className="mt-4 text-sm text-gold">Opens {new Date(chapter.opens_at).toUTCString()}</p>

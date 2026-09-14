@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export const metadata = { title: "Crew" };
 
-export default async function OnceUponersPage() {
+export default async function OrbitXersPage() {
   let people: {
     handle: string;
     display_name: string;
@@ -32,7 +32,7 @@ export default async function OnceUponersPage() {
     <div className="space-y-6">
       <section className="glass rounded-3xl border border-gold/25 p-6 sm:p-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">Crew</p>
-        <h1 className="font-heading mt-2 text-4xl font-extrabold">OnceUponers</h1>
+        <h1 className="font-heading mt-2 text-4xl font-extrabold">OrbitXers</h1>
         <p className="mt-2 text-parchment/70">Handles on the pad — not a PnL leaderboard.</p>
       </section>
       {error ? (

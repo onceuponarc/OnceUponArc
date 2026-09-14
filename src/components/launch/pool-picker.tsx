@@ -108,7 +108,7 @@ export function PoolPicker({
       </p>
       {data ? (
         <p className="mt-2 text-xs text-parchment/45">
-          Factories: {data.factories.map((item) => item.name).join(" · ") || "OnceUpon curve"}
+          Factories: {data.factories.map((item) => item.name).join(" · ") || "OrbitX curve"}
         </p>
       ) : null}
 

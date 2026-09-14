@@ -16,9 +16,9 @@ import { OFFICIAL_TOKEN } from "@/lib/official-token";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Drop — launch day",
-  description: "OnceUpon is live on Arc Devnet. Launch a Chapter. Print a jacket. Official token CA only from official channels.",
+  description: "OrbitX is live on Arc Devnet. Launch a Chapter. Print a jacket. Official token CA only from official channels.",
   openGraph: {
-    title: "OnceUpon drop",
+    title: "OrbitX drop",
     description: "Print a Chapter. Print a jacket. Let MC move both.",
     url: "/drop",
   },
@@ -50,7 +50,7 @@ export default async function DropPage() {
         <div className="links-sheen pointer-events-none absolute inset-0" />
         <div className="relative flex min-h-[72dvh] flex-col justify-end px-5 py-10 sm:px-12 sm:py-16">
           <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-white/55">
-            OnceUpon · Arc · <DropClock />
+            OrbitX · Arc · <DropClock />
           </p>
           <h1 className="mt-4 max-w-4xl text-5xl font-semibold tracking-tight sm:text-7xl lg:text-8xl">
             The desk is open.
@@ -92,7 +92,7 @@ export default async function DropPage() {
       </section>
 
       <section className="rounded-3xl border border-amber-300/25 bg-amber-300/[0.05] px-5 py-6">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/80">Official token · not live</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/80">Official token · $ORBITX live</p>
         <p className="mt-2 max-w-3xl text-lg text-white/80">{OFFICIAL_TOKEN.liveRule}</p>
         <Link href="/params" className="mt-3 inline-block text-sm text-amber-100 underline">
           Read the fee waterfall

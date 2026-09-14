@@ -24,7 +24,7 @@ if (!chapter.includes("ensureArcDevnet")) {
 
 const story = readFileSync(new URL("../src/app/story/[slug]/page.tsx", import.meta.url), "utf8");
 if (story.includes("JupiterSwapPanel")) {
-  throw new Error("Story page should not mount Jupiter. OnceUpon trades on Arc.");
+  throw new Error("Story page should not mount Jupiter. OrbitX trades on Arc.");
 }
 if (!story.includes("ArcTrade") || !story.includes('chain === "arc"')) {
   throw new Error("Story page should trade Arc Chapters on the curve.");

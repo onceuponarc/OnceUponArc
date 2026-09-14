@@ -15,15 +15,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "OnceUpon — Arc launchpad",
-    template: "%s · OnceUpon",
+    default: "OrbitX — multi-chain launchpad",
+    template: "%s · OrbitX",
   },
-  description: "Token launchpad on Arc. Launch a USDC curve, trade live, graduate the pool. Sign in with X.",
-  applicationName: "OnceUpon",
+  description: "OrbitX multi-chain launchpad. Solana token live. Arc mainnet Friday. Launch, trade, graduate.",
+  applicationName: "OrbitX",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "OnceUpon",
+    title: "OrbitX",
     statusBarStyle: "black-translucent",
   },
   icons: {

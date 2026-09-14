@@ -7,7 +7,7 @@ export const LAUNCH_KINDS = [
     id: "chapter",
     label: "Chapter",
     title: "Token on the curve",
-    body: "Classic OnceUpon launch. USDC bonding curve, tradable at create, graduate at target.",
+    body: "Classic OrbitX launch. USDC bonding curve, tradable at create, graduate at target.",
   },
   {
     id: "tweet",

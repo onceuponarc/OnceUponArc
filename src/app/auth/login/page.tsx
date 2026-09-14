@@ -8,10 +8,10 @@ export default function LoginPage() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-8">
       <div className="glass rounded-3xl border border-arc/25 p-8 sm:p-10">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">OnceUpon</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">OrbitX</p>
         <h1 className="font-heading mt-3 text-4xl font-bold">Sign in with X</h1>
         <p className="mt-3 text-parchment/75">
-          Identity is X through Supabase. OnceUpon is an Arc launchpad. Generate Devnet and Mainnet keys on the wallet
+          Identity is X through Supabase. OrbitX is an Arc launchpad. Generate Devnet and Mainnet keys on the wallet
           desk, then import them into MetaMask or Rabby.
         </p>
         <div className="mt-8 flex flex-col gap-3">

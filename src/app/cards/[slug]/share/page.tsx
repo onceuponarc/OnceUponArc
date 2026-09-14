@@ -13,7 +13,7 @@ export default async function CardSharePage({ params }: { params: Promise<{ slug
       <div className="w-full max-w-lg">
         <CardJacket card={card} />
         <p className="mt-6 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-white/35">
-          OnceUpon · Arc · /cards/{card.slug}
+          OrbitX · Arc · /cards/{card.slug}
         </p>
       </div>
     </div>

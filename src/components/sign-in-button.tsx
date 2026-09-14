@@ -2,11 +2,11 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import type { OnceUponer } from "@/lib/auth";
+import type { OrbitXer } from "@/lib/auth";
 import { XMark } from "@/components/x-mark";
 import Link from "next/link";
 
-export function SignInButton({ profile }: { profile: OnceUponer | null }) {
+export function SignInButton({ profile }: { profile: OrbitXer | null }) {
   if (profile) {
     const initial = profile.handle.slice(0, 1).toUpperCase();
     return (

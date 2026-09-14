@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `$${card.ticker} jacket`,
     description: `${card.title} · ${card.multiple.toFixed(2)}x · start $${card.startPriceUi}`,
     openGraph: {
-      title: `$${card.ticker} · OnceUpon jacket`,
+      title: `$${card.ticker} · OrbitX jacket`,
       description: card.blurb,
       images: card.coverUrl ? [card.coverUrl] : ["/brand/banner.jpg"],
     },

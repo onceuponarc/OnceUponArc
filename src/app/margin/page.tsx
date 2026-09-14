@@ -16,7 +16,7 @@ export default function MarginPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>OnceUpon prints on Arc</CardTitle>
+          <CardTitle>OrbitX prints on Arc</CardTitle>
           <CardDescription>
             Chapters trade on the curve in USDC. There is no perps book here.
           </CardDescription>

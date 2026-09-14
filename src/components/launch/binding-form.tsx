@@ -170,13 +170,13 @@ export function BindingForm({
           >
             {BIND_CHAINS.map((id) => (
               <option key={id} value={id}>
-                {CHAIN_POOLS[id].title} · {CHAIN_POOLS[id].factories.map((item) => item.name).join(", ") || "OnceUpon"}
+                {CHAIN_POOLS[id].title} · {CHAIN_POOLS[id].factories.map((item) => item.name).join(", ") || "OrbitX"}
               </option>
             ))}
           </select>
           <p className="text-xs text-parchment/50">
             {catalog.factories.map((item) => `${item.name} ${item.address.slice(0, 6)}…`).join(" · ") ||
-              "OnceUpon curve"}
+              "OrbitX curve"}
           </p>
         </div>
       </div>

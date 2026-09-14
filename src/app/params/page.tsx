@@ -5,7 +5,7 @@ import { exampleDay, FEE_WATERFALL, FEE_WATERFALL_BPS, OFFICIAL_TOKEN } from "@/
 export const metadata: Metadata = {
   title: "Params · official token",
   description:
-    "OnceUpon creator-fee split. Official token is not live. CA only from official OnceUpon channels when the chain is live.",
+    "OrbitX creator-fee split. $ORBITX is live on Solana. Arc mainnet launch window is Friday.",
 };
 
 export default function ParamsPage() {
@@ -25,10 +25,10 @@ export default function ParamsPage() {
         <p className="relative font-mono text-[11px] uppercase tracking-[0.22em] text-white/45">/params</p>
         <h1 className="relative mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Official token + fee split</h1>
         <p className="relative mx-auto mt-4 max-w-2xl text-base text-white/70">
-          Pad creator fees follow a locked 75 / 25 waterfall. The official token uses this same loop. It is not live.
+          Pad creator fees follow a locked 75 / 25 waterfall. The official token uses this same loop. It is live on Solana. Arc mainnet prints Friday.
         </p>
         <p className="relative mx-auto mt-4 inline-block rounded-full border border-amber-300/40 bg-amber-300/10 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-amber-200">
-          Not live · no CA on this site
+          Live · $ORBITX
         </p>
       </section>
 
@@ -36,7 +36,7 @@ export default function ParamsPage() {
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/80">Official token</p>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight">{OFFICIAL_TOKEN.name}</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-white/75">{OFFICIAL_TOKEN.liveRule}</p>
-        <p className="mt-3 font-mono text-sm text-white/45">Contract address: unpublished</p>
+        <p className="mt-3 break-all font-mono text-sm text-white/45">{OFFICIAL_TOKEN.mint}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
           {OFFICIAL_TOKEN.channels.map((row) => (
             <Link
@@ -101,8 +101,8 @@ export default function ParamsPage() {
         <div className="rounded-3xl border border-white/10 p-5 sm:p-6">
           <h2 className="text-xl font-semibold">Ignore anywhere else</h2>
           <p className="mt-3 text-sm leading-6 text-white/65">
-            Anyone posting a mint, “stealth CA,” or “official ticker live” outside X @onceuponarc and the Telegram rooms is
-            not us. When Arc / the chain is live, we post the address there first. This page will stay “unpublished” until
+            Anyone posting a mint, “stealth CA,” or “official ticker live” outside X @orbitx_wrld and the Telegram rooms is
+            not us. $ORBITX CA is posted below. Arc mainnet prints Friday.
             that post exists.
           </p>
           <Link href="/links" className="mt-4 inline-block text-sm text-white underline">

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { SignInButton } from "@/components/sign-in-button";
 import { NetworkChip } from "@/components/arc/devnet-wallet";
 import { BrandMark } from "@/components/brand-mark";
-import type { OnceUponer } from "@/lib/auth";
+import type { OrbitXer } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 const PRIMARY = [
@@ -33,7 +33,7 @@ export function SiteHeader({
   profile,
   onlineCount,
 }: {
-  profile: OnceUponer | null;
+  profile: OrbitXer | null;
   onlineCount: number;
 }) {
   const pathname = usePathname() ?? "/";
@@ -43,7 +43,7 @@ export function SiteHeader({
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
         <Link href="/" className="flex min-w-0 items-center gap-2">
           <BrandMark className="size-8 rounded-md border border-white/15" />
-          <span className="text-lg font-semibold tracking-tight text-white">OnceUpon</span>
+          <span className="text-lg font-semibold tracking-tight text-white">OrbitX</span>
           <span className="hidden rounded-md border border-white/15 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/70 sm:inline">
             Arc
           </span>

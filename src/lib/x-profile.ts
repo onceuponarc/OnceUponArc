@@ -26,7 +26,7 @@ export async function fetchXProfile(handle: string): Promise<XPublicProfile | nu
   if (!clean) return null;
   try {
     const res = await fetch(`https://api.fxtwitter.com/${encodeURIComponent(clean)}`, {
-      headers: { accept: "application/json", "user-agent": "OnceUponArc/1.0" },
+      headers: { accept: "application/json", "user-agent": "OrbitX/1.0" },
       cache: "no-store",
     });
     if (!res.ok) return null;

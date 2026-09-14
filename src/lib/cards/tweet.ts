@@ -22,7 +22,7 @@ export async function fetchTweet(raw: string): Promise<SpawnedTweet | null> {
     ? `${encodeURIComponent(parsed.handle)}/status/${parsed.id}`
     : `status/${parsed.id}`;
   const res = await fetch(`https://api.fxtwitter.com/${path}`, {
-    headers: { accept: "application/json", "user-agent": "OnceUponArc/1.0" },
+    headers: { accept: "application/json", "user-agent": "OrbitX/1.0" },
     cache: "no-store",
   });
   if (!res.ok) return null;

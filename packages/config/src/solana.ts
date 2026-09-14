@@ -32,7 +32,7 @@ export const ROBINHOOD_CHAIN = {
   caip2: "eip155:4663",
   explorer: "https://robinhoodchain.blockscout.com",
   rpcUrl: "https://rpc.mainnet.chain.robinhood.com",
-  note: "Pons v2 factory lives here. OnceUpon does not print on Robinhood Chain.",
+  note: "Pons v2 factory lives here. OrbitX does not print on Robinhood Chain.",
   ponsFactory: "0x7ed598bcef8bd9edd8c97a195c6d13f40801ec7e",
   ponsRouter: "0xe33e9e479df8802cb0866d5d05258bec4cf62948",
 } as const;
@@ -79,7 +79,7 @@ export const CHAINS: ChainCard[] = [
     live: true,
     prints: true,
     badge: "Home · native",
-    body: "OnceUpon is an Arc launchpad. Open a Chapter Curve in USDC the instant create lands. Buyers write the book. Graduation seeds the AMM from the vault. Mainnet Arc is days out — Devnet and Testnet are wired for launch, buy, and sell now.",
+    body: "OrbitX is an Arc launchpad. Open a Chapter Curve in USDC the instant create lands. Buyers write the book. Graduation seeds the AMM from the vault. Mainnet Arc is days out — Devnet and Testnet are wired for launch, buy, and sell now.",
     caip2: "eip155:5042002",
     accent: "from-[#00e5c3]/45 to-[#3d7cff]/30",
     printNote:
@@ -97,25 +97,25 @@ export const VENUES: {
     id: "spl",
     title: "SPL coin",
     headline: "Leftover SPL label",
-    body: "OnceUpon prints on Arc only. This venue label remains for leftover Stories.",
+    body: "OrbitX prints on Arc only. This venue label remains for leftover Stories.",
   },
   {
     id: "nft",
     title: "NFT",
     headline: "1/1 or editions",
-    body: "Leftover NFT Stories. OnceUpon prints on Arc only.",
+    body: "Leftover NFT Stories. OrbitX prints on Arc only.",
   },
   {
     id: "pumpfun",
     title: "PumpSwap pair",
     headline: "Leftover PumpSwap label",
-    body: "OnceUpon prints on Arc only. This venue label remains for leftover Stories.",
+    body: "OrbitX prints on Arc only. This venue label remains for leftover Stories.",
   },
   {
     id: "pons",
     title: "Pons pair",
     headline: "Leftover Pons label",
-    body: "OnceUpon prints on Arc only. This venue label remains for leftover Stories.",
+    body: "OrbitX prints on Arc only. This venue label remains for leftover Stories.",
   },
 ];
 

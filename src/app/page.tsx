@@ -57,8 +57,8 @@ export default async function HomePage() {
         href="/params"
         className="block rounded-2xl border border-amber-300/20 bg-amber-300/[0.04] px-5 py-4"
       >
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/80">Official token · not live</p>
-        <p className="mt-1 text-base text-white/75">75 / 25 fee split. CA only from official channels.</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/80">Official token · $ORBITX live</p>
+        <p className="mt-1 text-base text-white/75">CA 13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9 · Friday Arc mainnet.</p>
       </Link>
     </div>
   );

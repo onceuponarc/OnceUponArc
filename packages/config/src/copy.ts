@@ -1,7 +1,7 @@
-/** Canonical OnceUpon copy. Keep this file free of forbidden offering language. */
+/** Canonical OrbitX copy. Keep this file free of forbidden offering language. */
 
 export const POSITIONING =
-  "OnceUpon is a token launchpad on Arc. Launch a curve in USDC the moment create lands. Buyers pay USDC into the vault. You do not seed an AMM at launch. Graduation opens the pool from those reserves. Fees stream to the creator on each trade, or into a holder-claim vault. OnceUpon does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
+  "OrbitX is a token launchpad on Arc. Launch a curve in USDC the moment create lands. Buyers pay USDC into the vault. You do not seed an AMM at launch. Graduation opens the pool from those reserves. Fees stream to the creator on each trade, or into a holder-claim vault. OrbitX does not issue studio equity and does not sell shares in NVIDIA, Disney, or anyone else.";
 
 export const TAGLINE = "Launch on Arc. Trade the curve. Graduate the pool.";
 
@@ -67,7 +67,7 @@ export const LAUNCH_TYPES = [
     badge: "Auto jacket",
     summary: "Read the post. Print a 3D card from the tweet. Optionally pair a Chapter so the jacket tracks MC.",
     how: [
-      "Paste an x.com/status link. OnceUpon pulls the photo, handle, and text.",
+      "Paste an x.com/status link. OrbitX pulls the photo, handle, and text.",
       "Pick a start card price and a start MC. Value = start price × live MC / start MC.",
       "Buyer pays USDC to your wallet. The jacket moves to their profile after they paste the tx.",
     ],
@@ -121,7 +121,7 @@ export const PAIR_TYPES = [
     id: "arc" as const,
     label: "Arc",
     listed: true,
-    body: "OnceUpon launches on Arc only. Devnet is live. Mainnet Arc is next.",
+    body: "OrbitX launches on Arc only. Devnet is live. Mainnet Arc is next.",
   },
 ] as const;
 
@@ -138,7 +138,7 @@ export const RIGHTS_TICK =
   "I have the rights to this art and name. This token is original work. It is not licensed studio merchandise and it is not a claim on any issuer.";
 
 export const MARGIN_DISCLAIMER =
-  "Margin is not the OnceUpon book. OnceUpon does not custody margin, does not run a matching engine, and does not set your leverage.";
+  "Margin is not the OrbitX book. OrbitX does not custody margin, does not run a matching engine, and does not set your leverage.";
 
 export const QUOTE_DISCLAIMER =
   "Launches quote USDC on Arc. Trade the curve anytime. Graduation seeds a deeper pool from the book. A familiar ticker is a name, not studio equity.";
@@ -151,7 +151,7 @@ export function humanizeJupiterQuoteError(raw: { error?: unknown; errorCode?: un
   const code = String(raw.errorCode ?? "");
   const message = typeof raw.error === "string" ? raw.error : "";
   if (code === "TOKEN_NOT_TRADABLE" || /not tradable/i.test(message)) {
-    return "This mint is not on Arc. OnceUpon tokens trade on the Arc curve in USDC.";
+    return "This mint is not on Arc. OrbitX tokens trade on the Arc curve in USDC.";
   }
   return message || "No route.";
 }

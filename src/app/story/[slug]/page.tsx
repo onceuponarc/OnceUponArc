@@ -261,7 +261,7 @@ export default async function StoryPage({
 
       {chain !== "arc" ? (
         <div className="glass rounded-2xl border border-arc/25 px-4 py-3 text-sm text-parchment/75">
-          This Story printed before OnceUpon became Arc-only. New Chapters launch on Arc in USDC.
+          This Story printed before OrbitX became Arc-only. New Chapters launch on Arc in USDC.
         </div>
       ) : null}
 
@@ -332,7 +332,7 @@ export default async function StoryPage({
             {story.venue === "pumpfun" ? (
               <p className="text-parchment/55">
                 Pump.fun curve reference: {(PUMPFUN_CURVE_REFERENCE.creatorBps / 100).toFixed(2)}% creator +{" "}
-                {(PUMPFUN_CURVE_REFERENCE.protocolBps / 100).toFixed(2)}% protocol. This mint pays OnceUpon’s
+                {(PUMPFUN_CURVE_REFERENCE.protocolBps / 100).toFixed(2)}% protocol. This mint pays OrbitX’s
                 protocol cut, not Pump.fun’s.
               </p>
             ) : null}
@@ -342,7 +342,7 @@ export default async function StoryPage({
                 ? ` · ${(story as { quote_mint?: string | null }).quote_mint}`
                 : ""}
             </p>
-            {story.auto_buy_rewards ? <p>Vault auto-buys the pair on each OnceUponers cut.</p> : null}
+            {story.auto_buy_rewards ? <p>Vault auto-buys the pair on each OrbitXers cut.</p> : null}
             {story.engine === "onceuponers" ? (
               <p>
                 Holder pool{" "}
@@ -417,7 +417,7 @@ export default async function StoryPage({
                 @{String(author.handle)}
               </Link>
             ) : (
-              <p>Unknown OnceUponer</p>
+              <p>Unknown OrbitXer</p>
             )}
           </CardContent>
         </Card>
@@ -435,7 +435,7 @@ export default async function StoryPage({
           {chain === "arc" ? (
             <p>Trade on the curve above. Quote is USDC on Arc.</p>
           ) : (
-            <p>OnceUpon no longer prints on this chain. Open a new Chapter on Arc.</p>
+            <p>OrbitX no longer prints on this chain. Open a new Chapter on Arc.</p>
           )}
         </CardContent>
       </Card>

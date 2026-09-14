@@ -104,7 +104,7 @@ async function fetchDexPairs(slug: string, token: string): Promise<DexPair[]> {
       const res = await fetch(url, {
         signal: timeoutSignal(5000),
         cache: "no-store",
-        headers: { accept: "application/json", "user-agent": "OnceUpon/1.0" },
+        headers: { accept: "application/json", "user-agent": "OrbitX/1.0" },
       });
       if (!res.ok) continue;
       const body = (await res.json()) as DexPair[] | { pairs?: DexPair[] };
@@ -305,7 +305,7 @@ export async function resolvePools(input: {
     quoteSymbol,
     launchPool: {
       dex: "onceupon",
-      label: `OnceUpon launch pool · ${quoteSymbol}`,
+      label: `OrbitX launch pool · ${quoteSymbol}`,
       note:
         chain === "arc"
           ? `The Chapter opens on Arc in USDC. Buyers write the book. Graduation seeds the AMM from the vault. ${quoteSymbol} hop-1 is optional routing, not the Story pool.`
@@ -313,7 +313,7 @@ export async function resolvePools(input: {
           ? `This is a leftover Story. Pairing against ${quoteSymbol} is a quote, not studio equity.`
           : input.preferDex === "pumpswap" && (quoteId === "sol" || quoteId === "usdc")
             ? "This is a leftover Story. The curve was live from block one."
-            : "This is a leftover Story. OnceUpon prints on Arc only.",
+            : "This is a leftover Story. OrbitX prints on Arc only.",
     },
     linked: linked.slice(0, 8),
     destination: destination.slice(0, 8),

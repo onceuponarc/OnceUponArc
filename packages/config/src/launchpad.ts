@@ -3,7 +3,7 @@ import { PUBLIC_SITE_URL } from "./urls";
 import type { LaunchVenue } from "./solana";
 import type { DexId } from "./pools";
 
-export const PAD_NAME = "OnceUpon";
+export const PAD_NAME = "OrbitX";
 export const PAD_URL = PUBLIC_SITE_URL;
 export const PAD_CREATED_ON = PUBLIC_SITE_URL;
 export const PAD_TAG = `Launched on ${PAD_NAME}.`;
@@ -17,7 +17,7 @@ export const PUMPSWAP = {
   docsFees: "https://pump.fun/docs/fees",
 } as const;
 
-/** Pump.fun’s own bonding-curve schedule (reference only — OnceUpon does not take these cuts). */
+/** Pump.fun’s own bonding-curve schedule (reference only — OrbitX does not take these cuts). */
 export const PUMPFUN_CURVE_REFERENCE = {
   creatorBps: 30,
   protocolBps: 95,
@@ -42,7 +42,7 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
       snipeTaxBps: 200,
       lpBps: 0,
       headline: "Chapter Curve fees",
-      note: "This Chapter used a PumpSwap-tagged venue. OnceUpon prints on Arc now. Pump.fun’s own curve (0.30% + 0.95%) is reference only.",
+      note: "This Chapter used a PumpSwap-tagged venue. OrbitX prints on Arc now. Pump.fun’s own curve (0.30% + 0.95%) is reference only.",
     };
   }
   if (venue === "pons") {
@@ -52,7 +52,7 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
       snipeTaxBps: 200,
       lpBps: 0,
       headline: "Pons-style pair fees",
-      note: "Author cut plus 0.20% protocol on the OnceUpon curve. OnceUpon prints on Arc only — Pons is not a launch destination.",
+      note: "Author cut plus 0.20% protocol on the OrbitX curve. OrbitX prints on Arc only — Pons is not a launch destination.",
     };
   }
   return {
@@ -60,7 +60,7 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
     authorBps: engine === "onceuponers" ? 100 : PROTOCOL.authorModeSuggestedBps,
     snipeTaxBps: 0,
     lpBps: 0,
-    headline: "OnceUpon Chapter fees",
+    headline: "OrbitX Chapter fees",
     note: "Author mode pushes your cut to your Arc wallet on every buy and sell. Holder-claim mode takes only the 0.20% protocol cut on trades — you fund the holder pool yourself. Buy and sell anytime; the book seeds the graduated pool.",
   };
 }

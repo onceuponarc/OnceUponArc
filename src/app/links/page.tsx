@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Links",
-  description: "OnceUpon on Arc — X, Telegram updates, community. Website coming soon.",
+  description: "OrbitX on Arc — X, Telegram updates, community. Website coming soon.",
   openGraph: {
-    title: "OnceUpon · links",
+    title: "OrbitX · links",
     description: "X, Telegram updates, community. Website on the press.",
     url: "/links",
   },

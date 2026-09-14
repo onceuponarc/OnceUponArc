@@ -51,7 +51,7 @@ export default async function LedgerPage() {
             <CardTitle>No vaults yet</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-parchment/70">
-            OnceUponers-mode launches appear here with one claim per Story. The vault has no owner.
+            OrbitXers-mode launches appear here with one claim per Story. The vault has no owner.
             Staff cannot skim it.
           </CardContent>
         </Card>

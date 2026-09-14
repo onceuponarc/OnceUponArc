@@ -200,7 +200,7 @@ export async function launchOnArc(input: {
       {
         name: title.slice(0, 32),
         symbol: ticker.slice(0, 10),
-        uri: input.coverUrl || "https://once-upon-arc.vercel.app/onceupon-cover.svg",
+        uri: input.coverUrl || "https://www.orbitx.world/onceupon-cover.svg",
         quote: net.usdc,
         engine: input.engine === "onceuponers" ? 1 : 0,
         authorBps,

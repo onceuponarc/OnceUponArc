@@ -19,9 +19,9 @@ const CARDS: Card[] = [
     id: "x",
     kicker: "01 — Press",
     title: "X",
-    handle: "@onceuponarc",
+    handle: "@orbitx_wrld",
     body: "Launches, tape, and the Chapter desk. Follow the press.",
-    href: "https://x.com/onceuponarc",
+    href: "https://x.com/orbitx_wrld",
     cta: "Open X",
     accent: "#ffffff",
   },
@@ -31,7 +31,7 @@ const CARDS: Card[] = [
     title: "Updates",
     handle: "t.me/onceuponupdates",
     body: "The update room. Prints, deploys, and desk notes only.",
-    href: "https://t.me/onceuponupdates",
+    href: "https://www.orbitx.world/",
     cta: "Join updates",
     accent: "#2AABEE",
   },
@@ -41,7 +41,7 @@ const CARDS: Card[] = [
     title: "Community",
     handle: "t.me/onceuponarc",
     body: "Telegram floor. Chapters, fills, and the people writing them.",
-    href: "https://t.me/onceuponarc",
+    href: "https://x.com/orbitx_wrld",
     cta: "Enter Telegram",
     accent: "#2AABEE",
   },
@@ -59,7 +59,7 @@ const CARDS: Card[] = [
     id: "token",
     kicker: "05 — Official token",
     title: "Token",
-    handle: "Official token · not live",
+    handle: "$ORBITX live",
     body: "75/25 fee waterfall. No CA on this site. Address only from official channels when the chain is live.",
     href: "/params",
     cta: "Read /params",
@@ -116,7 +116,7 @@ export function ShareDeck() {
     const url = typeof window !== "undefined" ? `${window.location.origin}/links` : "/links";
     try {
       if (navigator.share) {
-        await navigator.share({ title: "OnceUpon on Arc", url });
+        await navigator.share({ title: "OrbitX on Arc", url });
         return;
       }
       await navigator.clipboard.writeText(url);
@@ -142,7 +142,7 @@ export function ShareDeck() {
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/logo.jpg" alt="" className="size-12 rounded-xl border border-white/15 object-cover" />
-            <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-white/40">OnceUpon · Arc</p>
+            <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-white/40">OrbitX · Arc</p>
           </div>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-6xl">The desk.</h1>
           <p className="mt-2 max-w-md text-sm text-white/55">

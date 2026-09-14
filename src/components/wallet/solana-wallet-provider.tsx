@@ -93,7 +93,7 @@ async function bindToSupabase(address: string, signMessage: (msg: Uint8Array) =>
   const issuedAt = new Date().toISOString();
   const me = await fetch("/api/me").then((res) => res.json().catch(() => ({})));
   if (!me?.id) throw new Error("Sign in with X first. Your handle is identity on the pad.");
-  const message = new TextEncoder().encode(`OnceUpon:${me.id}:${issuedAt}`);
+  const message = new TextEncoder().encode(`OrbitX:${me.id}:${issuedAt}`);
   const signature = await signMessage(message);
   const bytes = signature instanceof Uint8Array ? signature : new Uint8Array(signature as ArrayBuffer);
   const res = await fetch("/api/wallets/verify", {

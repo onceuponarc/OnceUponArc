@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       return NextResponse.json(result);
     }
 
-    return NextResponse.json({ error: "OnceUpon prints on Arc only. Open the Arc press." }, { status: 410 });
+    return NextResponse.json({ error: "OrbitX prints on Arc only. Open the Arc press." }, { status: 410 });
   } catch (error) {
     console.error("launch route failed", error);
     return NextResponse.json({ error: redactWalletError(error) }, { status: 400 });

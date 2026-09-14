@@ -7,7 +7,7 @@ export const CARD_FLYWHEELS = [
   {
     id: "split",
     label: "Creator + desk",
-    hint: "90% creator, 10% OnceUpon desk. Token still trades on its own curve.",
+    hint: "90% creator, 10% OrbitX desk. Token still trades on its own curve.",
   },
   {
     id: "burn",

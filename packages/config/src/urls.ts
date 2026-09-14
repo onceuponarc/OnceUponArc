@@ -1,1 +1,1 @@
-export const PUBLIC_SITE_URL = "https://once-upon-arc.vercel.app";
+export const PUBLIC_SITE_URL = "https://www.orbitx.world";

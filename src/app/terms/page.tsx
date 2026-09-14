@@ -9,7 +9,7 @@ export default function TermsPage() {
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Legal</p>
       <h1 className="text-4xl font-semibold tracking-tight">Terms</h1>
       <p className="text-white/65">
-        OnceUpon is a software interface for launching and trading tokens on Arc. It is not a broker, exchange, bank, or
+        OrbitX is a software interface for launching and trading tokens on Arc. It is not a broker, exchange, bank, or
         investment adviser. Tokens on this pad are not shares, notes, or claims on any issuer.
       </p>
       <p className="text-white/65">

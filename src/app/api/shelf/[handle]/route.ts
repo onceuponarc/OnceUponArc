@@ -14,6 +14,6 @@ export async function GET(
     .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  if (!data) return NextResponse.json({ error: "Unknown OnceUponer." }, { status: 404 });
+  if (!data) return NextResponse.json({ error: "Unknown OrbitXer." }, { status: 404 });
   return NextResponse.json(data);
 }

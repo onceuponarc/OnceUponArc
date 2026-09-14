@@ -24,8 +24,8 @@ const COLS = [
     links: [
       { href: "/params", label: "Token · not live" },
       { href: "/links", label: "Links" },
-      { href: "https://x.com/onceuponarc", label: "X" },
-      { href: "https://t.me/onceuponupdates", label: "Updates" },
+      { href: "https://x.com/orbitx_wrld", label: "X" },
+      { href: "https://www.orbitx.world/", label: "Updates" },
     ],
   },
   {
@@ -42,7 +42,7 @@ export function SiteFooter() {
     <footer className="border-t border-white/10 px-4 pb-28 pt-10 lg:pb-12">
       <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-5">
         <div>
-          <p className="text-lg font-semibold">OnceUpon</p>
+          <p className="text-lg font-semibold">OrbitX</p>
           <p className="mt-2 max-w-xs text-sm text-white/45">
             Arc launchpad. USDC curve. Jackets track MC. Official token CA only from official channels.
           </p>

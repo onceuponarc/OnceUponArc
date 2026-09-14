@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "OnceUpon — Arc launchpad",
-    short_name: "OnceUpon",
+    name: "OrbitX — Arc launchpad",
+    short_name: "OrbitX",
     description:
       "Token launchpad on Arc. Launch a USDC curve, trade live, graduate the pool.",
     start_url: "/",

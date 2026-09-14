@@ -1,4 +1,4 @@
-const UA = { accept: "application/json", "user-agent": "OnceUpon/1.0" };
+const UA = { accept: "application/json", "user-agent": "OrbitX/1.0" };
 
 const FACTORIES = {
   raydiumAmm: "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",

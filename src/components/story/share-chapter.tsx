@@ -10,7 +10,7 @@ export function ShareChapter({ ticker, slug }: { ticker: string; slug: string })
     const url = `${window.location.origin}/story/${slug}/share`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `$${ticker} on OnceUpon`, url });
+        await navigator.share({ title: `$${ticker} on OrbitX`, url });
         return;
       }
     } catch {

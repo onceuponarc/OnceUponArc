@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export function BrandMark({
   className,
-  alt = "OnceUpon",
+  alt = "OrbitX",
 }: {
   className?: string;
   alt?: string;

@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { hiResPortrait, publicMediaUrl, xAvatarFallback } from "@/lib/media";
 
-export type OnceUponer = {
+export type OrbitXer = {
   id: string;
   handle: string;
   displayName: string;
@@ -16,7 +16,7 @@ export async function getSessionUser() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return { user: null, profile: null as OnceUponer | null };
+    if (!user) return { user: null, profile: null as OrbitXer | null };
 
     const { data: profile } = await supabase
       .from("users")
@@ -43,7 +43,7 @@ export async function getSessionUser() {
     };
   } catch (error) {
     console.error("getSessionUser failed", error);
-    return { user: null, profile: null as OnceUponer | null };
+    return { user: null, profile: null as OrbitXer | null };
   }
 }
 

@@ -8,7 +8,7 @@ import { TokenDeck } from "@/components/pad/token-deck";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Weekly best Chapter",
-  description: "OnceUpon Friday burn. 5% of pad creator fees buy the winning Chapter and burn it.",
+  description: "OrbitX Friday burn. 5% of pad creator fees buy the winning Chapter and burn it.",
 };
 
 export default async function WeekPage() {

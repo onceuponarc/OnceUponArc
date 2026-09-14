@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   try {
     const pubkey = new PublicKey(body.address);
-    const message = new TextEncoder().encode(`OnceUpon:${user.id}:${body.issuedAt}`);
+    const message = new TextEncoder().encode(`OrbitX:${user.id}:${body.issuedAt}`);
     const signature = bytesFromBase64(body.signature);
     const ok = nacl.sign.detached.verify(message, signature, pubkey.toBytes());
     if (!ok) {

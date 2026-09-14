@@ -22,7 +22,7 @@ export default async function StorySharePage({ params }: { params: Promise<{ slu
           snipeTaxBps={0}
         />
         <p className="mt-6 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-white/35">
-          OnceUpon · Arc · /story/{launch.slug}
+          OrbitX · Arc · /story/{launch.slug}
         </p>
       </div>
     </div>

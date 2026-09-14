@@ -46,13 +46,13 @@ export function ProfileDeskView({
     live?.bio ||
     (isSelf
       ? "This is your desk. Launch a Chapter and the tape writes itself."
-      : "Public OnceUpon desk. Chapters print on Arc. X is identity.");
+      : "Public OrbitX desk. Chapters print on Arc. X is identity.");
 
   async function copyPublic() {
     const url = `${window.location.origin}${publicPath}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `@${desk.handle} on OnceUpon`, url });
+        await navigator.share({ title: `@${desk.handle} on OrbitX`, url });
         return;
       }
     } catch {
@@ -119,7 +119,7 @@ export function ProfileDeskView({
                 @{desk.handle}
               </p>
               <p className="mx-auto mt-1 max-w-xl font-mono text-[11px] text-white/30 sm:mx-0">
-                once-upon-arc.vercel.app{publicPath}
+                www.orbitx.world{publicPath}
               </p>
               <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/70 sm:mx-0">{bio}</p>
             </div>

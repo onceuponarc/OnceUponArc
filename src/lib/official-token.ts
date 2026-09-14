@@ -1,13 +1,17 @@
 export const OFFICIAL_TOKEN = {
-  name: "OnceUpon official token",
-  ticker: null as string | null,
-  status: "not_live" as const,
+  name: "OrbitX",
+  ticker: "ORBITX",
+  status: "live" as const,
+  mint: "13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
+  chain: "solana",
   liveRule:
-    "OnceUpon’s official token is not live. No contract address is published on this site. When the chain is live, the CA will be posted only from official OnceUpon channels: X @onceuponarc, t.me/onceuponupdates, and t.me/onceuponarc.",
+    "$ORBITX is live on Solana. Official CA only from OrbitX channels. Arc mainnet print window is Friday.",
+  buyUrl: "https://www.orbitx.world/",
+  chartUrl: "https://solscan.io/token/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
   channels: [
-    { label: "X", href: "https://x.com/onceuponarc" },
-    { label: "Updates", href: "https://t.me/onceuponupdates" },
-    { label: "Community", href: "https://t.me/onceuponarc" },
+    { label: "X", href: "https://x.com/orbitx_wrld" },
+    { label: "Site", href: "https://www.orbitx.world/" },
+    { label: "CA", href: "https://solscan.io/token/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9" },
   ],
 } as const;
 
@@ -18,14 +22,14 @@ export const FEE_WATERFALL = [
     label: "Development + marketing",
     share: "75%",
     bps: 7500,
-    job: "Build OnceUpon. Ops, ads, infra.",
+    job: "Build OrbitX. Ops, ads, infra.",
   },
   {
     id: "burn",
     label: "Official token buyback + burn",
     share: "8%",
     bps: 800,
-    job: "Market-buy the official token and burn. Not live until CA is posted.",
+    job: "Market-buy $ORBITX and burn.",
   },
   {
     id: "team",
@@ -46,7 +50,7 @@ export const FEE_WATERFALL = [
     label: "Weekly best-launch burn",
     share: "5%",
     bps: 500,
-    job: "Buy the week's winning Chapter and burn it.",
+    job: "Buy the week's winning launch and burn it.",
   },
 ] as const;
 

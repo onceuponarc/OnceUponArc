@@ -13,9 +13,9 @@ export async function generateMetadata({
   const { handle } = await params;
   return {
     title: `@${handle}`,
-    description: `Public OnceUpon desk for @${handle}.`,
+    description: `Public OrbitX desk for @${handle}.`,
     openGraph: {
-      title: `@${handle} · OnceUpon`,
+      title: `@${handle} · OrbitX`,
       description: "Public Arc desk. Chapters, tape, and fees.",
       url: `/u/${handle}`,
     },
