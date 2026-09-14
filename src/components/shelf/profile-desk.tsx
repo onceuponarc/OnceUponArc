@@ -6,6 +6,7 @@ import { SignOutButton } from "@/components/sign-in-button";
 import { FollowXButton } from "@/components/shelf/follow-x-button";
 import { Button } from "@/components/ui/button";
 import { formatCompact, formatUsd, timeAgo } from "@/lib/format";
+import { launchHref, launchChainLabel } from "@/lib/feed";
 import type { ProfileDesk } from "@/lib/profile-types";
 import { cn } from "@/lib/utils";
 
@@ -214,30 +215,35 @@ export function ProfileDeskView({
                   {isSelf ? "No Chapters yet. Print one from Launch." : "No public Chapters on this desk."}
                 </p>
               ) : (
-                desk.launches.map((row) => (
-                  <Link
-                    key={row.slug}
-                    href={`/story/${row.slug}`}
-                    className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/25"
-                  >
-                    <div className="h-28 bg-white/5">
-                      {row.coverUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={row.coverUrl} alt="" className="h-full w-full object-cover" />
-                      ) : null}
-                    </div>
-                    <div className="p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="font-semibold">${row.ticker}</p>
-                        <p className="font-mono text-[11px] uppercase text-white/40">{row.status}</p>
+                desk.launches.map((row) => {
+                  const dest = launchHref(row);
+                  const linkProps = dest.external ? { target: "_blank", rel: "noreferrer" } : {};
+                  return (
+                    <Link key={row.slug} href={dest.href} {...linkProps} className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/25">
+                      <div className="h-28 bg-white/5">
+                        {row.coverUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={row.coverUrl} alt="" className="h-full w-full object-cover" />
+                        ) : null}
                       </div>
-                      <p className="truncate text-sm text-white/50">{row.title}</p>
-                      <p className="mt-2 text-xs text-white/40">
-                        {formatUsd(row.volumeUi)} vol · {formatUsd(row.feesUi)} fees
-                      </p>
-                    </div>
-                  </Link>
-                ))
+                      <div className="p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-semibold">${row.ticker}</p>
+                          <div className="flex items-center gap-1.5">
+                            {row.chain !== "arc" ? (
+                              <span className="font-mono text-[10px] uppercase text-white/40">{launchChainLabel(row.chain)}</span>
+                            ) : null}
+                            <p className="font-mono text-[11px] uppercase text-white/40">{row.status}</p>
+                          </div>
+                        </div>
+                        <p className="truncate text-sm text-white/50">{row.title}</p>
+                        <p className="mt-2 text-xs text-white/40">
+                          {dest.external ? `Trades on ${launchChainLabel(row.chain)}` : `${formatUsd(row.volumeUi)} vol · ${formatUsd(row.feesUi)} fees`}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })
               )}
             </div>
           ) : null}
@@ -310,6 +316,7 @@ function SafeImg({
 }) {
   const [current, setCurrent] = useState(src || fallback);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrent(src || fallback);
   }, [src, fallback]);
   return (

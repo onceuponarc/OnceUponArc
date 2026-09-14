@@ -61,7 +61,7 @@ export async function loadProfileDesk(handle: string, viewerId?: string | null):
     walletRows = [];
   }
 
-  const stories = (storyRows ?? []).filter((row) => !row.chain || row.chain === "arc");
+  const stories = (storyRows ?? []).filter((row) => row.status === "live" || row.status === "graduated");
   const storyIds = stories.map((row) => row.id);
   const wallets = new Set(
     (walletRows ?? [])
@@ -114,6 +114,8 @@ export async function loadProfileDesk(handle: string, viewerId?: string | null):
       volumeUi,
       feesUi: volumeUi * (authorBps / 10_000),
       trades: rows.length,
+      chain: row.chain || "arc",
+      tokenAddress: row.token_address ?? null,
     };
   });
 

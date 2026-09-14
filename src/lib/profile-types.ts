@@ -8,6 +8,8 @@ export type ProfileLaunch = {
   volumeUi: number;
   feesUi: number;
   trades: number;
+  chain: string;
+  tokenAddress: string | null;
 };
 
 export type ProfileCard = {
