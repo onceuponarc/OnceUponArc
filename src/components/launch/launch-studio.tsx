@@ -20,6 +20,8 @@ export function LaunchStudio({
       <LaunchKindPicker value={kind} onChange={setKind} />
       {kind === "chapter" || kind === "pair" ? (
         <ArcLaunchStudio handle={handle} pairCard={kind === "pair"} />
+      ) : kind === "v4" ? (
+        <V4LaunchStudio handle={handle} />
       ) : (
         <SpawnDesk handle={handle} mode={kind === "tweet" ? "tweet" : "card"} />
       )}
