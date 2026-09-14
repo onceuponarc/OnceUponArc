@@ -49,7 +49,7 @@ export default async function OnceUponersPage() {
             return (
               <li key={person.handle}>
                 <Link
-                  href={`/shelf/${person.handle}`}
+                  href={`/u/${person.handle}`}
                   className="glass flex items-center gap-3 rounded-2xl border border-gold/20 p-3 transition hover:border-gold/50"
                 >
                   <Avatar>

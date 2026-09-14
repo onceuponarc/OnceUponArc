@@ -7,7 +7,7 @@ export function ShelfGate({ handle }: { handle: string | null }) {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace(handle ? `/shelf/${handle}` : "/onceuponers");
+    router.replace(handle ? `/u/${handle}` : "/onceuponers");
   }, [handle, router]);
 
   return (

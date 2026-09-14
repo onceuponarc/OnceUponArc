@@ -407,7 +407,7 @@ export default async function StoryPage({
           </CardHeader>
           <CardContent>
             {author && "handle" in author ? (
-              <Link href={`/shelf/${author.handle}`} className="text-gold hover:underline">
+              <Link href={`/u/${author.handle}`} className="text-gold hover:underline">
                 @{String(author.handle)}
               </Link>
             ) : (
