@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { originFromHeaders } from "@/lib/auth";
+import { hiResPortrait } from "@/lib/media";
 
 async function copyPortrait(userId: string, sourceUrl: string | null) {
   if (!sourceUrl) return null;
@@ -50,7 +51,8 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
   if (user) {
     const meta = user.user_metadata ?? {};
-    const avatar = (meta.avatar_url as string | undefined) ?? (meta.picture as string | undefined) ?? null;
+    const raw = (meta.avatar_url as string | undefined) ?? (meta.picture as string | undefined) ?? null;
+    const avatar = hiResPortrait(raw) ?? raw;
     await copyPortrait(user.id, avatar);
   }
 
