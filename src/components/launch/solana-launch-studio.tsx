@@ -129,22 +129,6 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
       const sig = await broadcast(await signLegacy(body.transaction, body.mintSecret));
 
       let poolSig: string | undefined;
-      if (mode === "direct" && program === "spl") {
-        await new Promise((resolve) => setTimeout(resolve, 2500));
-        const pool = await fetch("/api/solana/spot-pool", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicKey, mint: body.mint, seedSol: Number(seedSol) }),
-        });
-        const poolBody = await readApiJson<{ error?: string; transaction?: string }>(pool);
-        if (pool.ok && poolBody.transaction) {
-          const poolTx = Transaction.from(Buffer.from(poolBody.transaction, "base64"));
-          const signedPool = (await wallet.signTransaction(poolTx)) as Transaction;
-          poolSig = await broadcast(signedPool.serialize());
-        } else if (poolBody.error) {
-          setError(`Mint live. Pool: ${poolBody.error}`);
-        }
-      }
 
       setResult({ mint: body.mint, vanity: Boolean(body.vanity), sig, poolSig });
     } catch (err) {
@@ -179,11 +163,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         </div>
       ) : null}
       <p className="text-sm text-white/50">
-        {mode === "pump"
-          ? "Bonding curve on pump.fun. Only this lane uses a curve."
-          : mode === "fair"
-            ? "Same price window. Token-2022 accounts start frozen until you thaw. No curve."
-            : "Tradable from the first book. SPL seeds a PumpSwap USDC/SOL pool. No curve."}
+        Bonding curve on pump.fun. Buy and sell from create. Volume feeds the LP.
       </p>
       <CoverField value={cover} onChange={setCover} />
       <div className="grid gap-3 sm:grid-cols-2">
@@ -229,7 +209,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           {wallet.address ? `${wallet.address.slice(0, 4)}…${wallet.address.slice(-4)}` : "Connect Phantom"}
         </Button>
         <Button type="submit" disabled={busy}>
-          {busy ? "Building…" : mode === "pump" ? "Launch on pump.fun" : mode === "fair" ? "Fair launch spot" : "Direct launch spot"}
+          {busy ? "Building…" : "Launch on pump.fun"}
         </Button>
       </div>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}

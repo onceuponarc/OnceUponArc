@@ -75,7 +75,7 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
         <Input className="mt-2" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="@handle" />
       </div>
       <Button type="submit" disabled={busy}>
-        {busy ? "Signing with your desk…" : mode === "fair" ? "Fair launch on v4" : "Direct launch on v4"}
+        {busy ? "Signing with your desk…" : "Launch on Uniswap v4"}
       </Button>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       {txHash ? (
