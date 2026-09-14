@@ -4,7 +4,7 @@ import { getSessionUser } from "@/lib/auth";
 import { deskRhWallet } from "@/lib/wallets/rh-client";
 import { PONS_FACTORY, PONS_FACTORY_ABI } from "@/lib/rh/pons";
 import { RH } from "@onceupon/config/rh";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
     const hash = await wallet.writeContract(simulated);
 
     try {
-      const supabase = await createClient();
+      const supabase = createServiceClient();
       const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
       await supabase.from("stories").insert({
         slug,
@@ -132,8 +132,9 @@ export async function POST(request: Request) {
         vault_address: curveAddress,
         created_tx: hash,
       });
-    } catch {
-      // Don't block a successful on-chain launch on a DB write failure.
+    } catch (error) {
+      // Don't block a successful on-chain launch on a DB write failure, but do log it.
+      console.error("rh launch: stories insert failed", error);
     }
 
     return NextResponse.json({

@@ -2,7 +2,7 @@ import "server-only";
 
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { createServiceClient } from "@/lib/supabase/service";
-import { generateKeypair, openKeypair, sealKeypair } from "@/lib/solana/keys";
+import { generateKeypair, openKeypair, sealKeypair, encodeSecret } from "@/lib/solana/keys";
 import { sealSecret, openSecret } from "@/lib/crypto/secret-box";
 import { ETHEREUM, ROBINHOOD_CHAIN } from "@onceupon/config/solana";
 
@@ -83,7 +83,9 @@ export async function exportDeskSecret(userId: string, chain: DeskChain) {
   if (!data?.ciphertext || !data.address) throw new Error("No wallet on that chain.");
   if (chain === "solana") {
     const keypair = openKeypair(data.ciphertext);
-    return { address: data.address, secret: Buffer.from(keypair.secretKey).toString("base64") };
+    // Phantom/Solflare/Backpack expect the base58-encoded 64-byte secret key on import —
+    // base64 (what this used to return) isn't a format any Solana wallet recognizes.
+    return { address: data.address, secret: encodeSecret(keypair) };
   }
   return { address: data.address, secret: openSecret(data.ciphertext) };
 }

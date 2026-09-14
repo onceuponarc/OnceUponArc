@@ -7,7 +7,7 @@ import { sendSignedTx, waitForTx, explorerFromSig } from "@/lib/solana/partial-t
 import { fetchLatestBlockhash } from "@/lib/solana/blockhash";
 import { serverSolanaRpcs } from "@/lib/solana/rpc-urls";
 import { deskSolanaKey } from "@/lib/wallets/sign-desk";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import { PAD_NAME } from "@onceupon/config/launchpad";
 
@@ -77,9 +77,12 @@ export async function POST(request: Request) {
 
     // Persist the story record before minting so metadataUri (fetched by pump.fun's
     // indexer after the tx lands) already resolves to the real name/description/links
-    // instead of falling back to generic branding.
+    // instead of falling back to generic branding. Uses the service-role client: the
+    // session-scoped client was silently hitting stories' RLS INSERT policy (confirmed
+    // via "new row violates row-level security policy" in Postgres logs), which is why
+    // launches weren't showing up on the home feed even though the on-chain mint worked.
     try {
-      const supabase = await createClient();
+      const supabase = createServiceClient();
       const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
       await supabase.from("stories").insert({
         slug,
@@ -104,8 +107,10 @@ export async function POST(request: Request) {
         quote_mint: quoteMint ? quoteMint.toBase58() : null,
         token_address: mintAddress,
       });
-    } catch {
-      // Don't block a successful on-chain launch on a DB write failure.
+    } catch (error) {
+      // Don't block a successful on-chain launch on a DB write failure, but do log it —
+      // this exact silence is what hid the RLS bug above for two days.
+      console.error("solana launch: stories insert failed", error);
     }
 
     const built = await buildCreateV2Tx({
