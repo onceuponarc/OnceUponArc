@@ -189,6 +189,8 @@
 
 .links-stage {
   perspective: 1400px;
+  isolation: isolate;
+  overflow: hidden;
 }
 
 .links-scroller {

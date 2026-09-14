@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  AreaSeries,
   CandlestickSeries,
   ColorType,
   CrosshairMode,
@@ -26,7 +27,7 @@ export function TokenChart({
   const host = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const [tf, setTf] = useState<ChartTf>("1m");
-  const [mode, setMode] = useState<"candles" | "line">("candles");
+  const [mode, setMode] = useState<"area" | "candles" | "line">("area");
   const candles = candlesFromTrades(trades, tf, fallbackPrice);
   const last = candles.at(-1)?.close ?? fallbackPrice;
   const first = candles[0]?.close ?? last;
@@ -44,22 +45,28 @@ export function TokenChart({
         vertLines: { color: "rgba(255,255,255,0.06)" },
         horzLines: { color: "rgba(255,255,255,0.06)" },
       },
-      crosshair: { mode: CrosshairMode.Normal },
-      rightPriceScale: { borderColor: "rgba(255,255,255,0.12)" },
+      crosshair: { mode: CrosshairMode.Magnet },
+      rightPriceScale: { borderColor: "rgba(255,255,255,0.12)", scaleMargins: { top: 0.08, bottom: 0.22 } },
       timeScale: { borderColor: "rgba(255,255,255,0.12)", timeVisible: true, secondsVisible: tf === "1s" || tf === "1m" },
       autoSize: true,
     });
     chartRef.current = chart;
     const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: "#ffffff",
-      downColor: "#525252",
-      borderUpColor: "#ffffff",
-      borderDownColor: "#525252",
-      wickUpColor: "#ffffff",
-      wickDownColor: "#737373",
+      upColor: "#22c55e",
+      downColor: "#ef4444",
+      borderUpColor: "#22c55e",
+      borderDownColor: "#ef4444",
+      wickUpColor: "#4ade80",
+      wickDownColor: "#f87171",
     });
     const lineSeries = chart.addSeries(LineSeries, {
       color: "#ffffff",
+      lineWidth: 2,
+    });
+    const areaSeries = chart.addSeries(AreaSeries, {
+      lineColor: up ? "#22c55e" : "#ef4444",
+      topColor: up ? "rgba(34,197,94,0.28)" : "rgba(239,68,68,0.28)",
+      bottomColor: "rgba(0,0,0,0)",
       lineWidth: 2,
     });
     const volume = chart.addSeries(HistogramSeries, {
@@ -83,10 +90,11 @@ export function TokenChart({
       const vols = rows.map((row) => ({
         time: row.time as UTCTimestamp,
         value: row.volume,
-        color: row.close >= row.open ? "rgba(255,255,255,0.45)" : "rgba(115,115,115,0.7)",
+        color: row.close >= row.open ? "rgba(34,197,94,0.45)" : "rgba(239,68,68,0.45)",
       }));
       candleSeries.setData(mode === "candles" ? ohlc : []);
       lineSeries.setData(mode === "line" ? line : []);
+      areaSeries.setData(mode === "area" ? line : []);
       volume.setData(vols);
       chart.timeScale().fitContent();
     }
@@ -135,7 +143,7 @@ export function TokenChart({
           ))}
         </div>
         <div className="flex gap-1">
-          {(["candles", "line"] as const).map((item) => (
+          {(["area", "candles", "line"] as const).map((item) => (
             <button
               key={item}
               type="button"

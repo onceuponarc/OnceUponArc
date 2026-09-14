@@ -18,8 +18,8 @@ export function ChapterJacket({
   snipeTaxBps: number;
 }) {
   return (
-    <div className="links-stage">
-      <article className="links-card overflow-hidden rounded-[2rem] border border-white/15">
+    <div className="relative isolate overflow-hidden">
+      <article className="overflow-hidden rounded-[2rem] border border-white/15 bg-black">
         <div
           className="links-card-face relative min-h-[280px] overflow-hidden rounded-[2rem] sm:min-h-[360px]"
           onMouseMove={(event) => {

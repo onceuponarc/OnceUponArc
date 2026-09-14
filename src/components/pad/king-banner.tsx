@@ -5,8 +5,8 @@ import { formatUsd } from "@/lib/format";
 
 export function KingBanner({ launch }: { launch: FeedLaunch }) {
   return (
-    <Link href={`/story/${launch.slug}`} className="links-stage block">
-      <article className="links-card overflow-hidden rounded-[2rem] border border-white/15">
+    <Link href={`/story/${launch.slug}`} className="relative z-0 block overflow-hidden rounded-[2rem]">
+      <article className="overflow-hidden rounded-[2rem] border border-white/15 bg-black">
         <div className="grid min-h-[220px] sm:grid-cols-[minmax(0,1.15fr)_280px]">
           <div className="relative flex flex-col justify-end p-6 sm:p-8">
             <div className="links-sheen pointer-events-none absolute inset-0" />

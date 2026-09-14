@@ -95,9 +95,9 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="relative z-10 space-y-6">
           <TokenDeck launches={shown} />
-          <div className="space-y-1">
+          <div className="relative z-10 space-y-1">
             {shown.map((launch) => (
               <TokenRow key={launch.slug} launch={launch} />
             ))}

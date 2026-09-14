@@ -33,12 +33,11 @@ export function candlesFromTrades(trades: ChartTrade[], tf: ChartTf, fallbackPri
     .sort((a, b) => +new Date(a.at) - +new Date(b.at));
   if (!sorted.length) {
     const now = Math.floor(Date.now() / 1000);
-    const start = now - seconds * 24;
-    return Array.from({ length: 24 }, (_, i) => {
-      const time = start + i * seconds;
-      const wobble = fallbackPrice * (1 + Math.sin(i / 3) * 0.004);
-      return { time, open: wobble, high: wobble * 1.002, low: wobble * 0.998, close: wobble, volume: 0 };
-    });
+    const price = fallbackPrice > 0 ? fallbackPrice : 0.0001;
+    return [
+      { time: now - seconds * 8, open: price, high: price, low: price, close: price, volume: 0 },
+      { time: now, open: price, high: price, low: price, close: price, volume: 0 },
+    ];
   }
   const buckets = new Map<number, Candle>();
   for (const trade of sorted) {

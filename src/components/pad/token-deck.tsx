@@ -24,7 +24,7 @@ export function TokenDeck({ launches }: { launches: FeedLaunch[] }) {
       node.querySelectorAll<HTMLElement>("[data-token-card]").forEach((card, i) => {
         const delta = i - progress;
         const tilt = Math.max(-1, Math.min(1, delta));
-        card.style.transform = `translate3d(0, ${Math.abs(tilt) * 16}px, ${-Math.abs(tilt) * 110}px) rotateY(${tilt * -26}deg) rotateX(${Math.abs(tilt) * 4}deg)`;
+        card.style.transform = `translate3d(0, ${Math.abs(tilt) * 8}px, 0) rotateY(${tilt * -12}deg)`;
         card.style.filter = `brightness(${1 - Math.abs(tilt) * 0.28})`;
         card.style.opacity = String(1 - Math.min(0.5, Math.abs(tilt) * 0.32));
       });
@@ -53,15 +53,17 @@ export function TokenDeck({ launches }: { launches: FeedLaunch[] }) {
   if (!cards.length) return null;
 
   return (
-    <div className="links-stage relative overflow-hidden rounded-3xl border border-white/10">
+    <div className="relative isolate z-0 overflow-hidden rounded-3xl border border-white/10">
       <div
         ref={scroller}
-        className="links-scroller flex h-[min(62dvh,560px)] snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex h-[min(58dvh,520px)] snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        style={{ perspective: "1400px" }}
       >
-        {cards.map((launch) => (
+        {cards.map((launch, i) => (
           <section
             key={launch.slug}
             className="flex h-full w-full shrink-0 snap-center items-center justify-center px-4 py-6 sm:px-8"
+            style={{ pointerEvents: i === index ? "auto" : "none" }}
           >
             <TokenGlossCard launch={launch} />
           </section>
