@@ -44,7 +44,8 @@ export function SiteFooter() {
         <div>
           <p className="text-lg font-semibold">OrbitX</p>
           <p className="mt-2 max-w-xs text-sm text-white/45">
-            Arc launchpad. USDC curve. Jackets track MC. Official token CA only from official channels.
+            Multi-chain launchpad — Solana, Arc, and Robinhood Chain. Every launch signs from your in-app desk
+            wallet. Press Cards mint as real on-chain NFTs. Official token CA only from official channels.
           </p>
         </div>
         {COLS.map((col) => (

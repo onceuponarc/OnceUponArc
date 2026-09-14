@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { formatUsd } from "@/lib/format";
+import { SpaceCanvas } from "@/components/pad/space-canvas";
 
 const CHAINS = [
   { id: "solana", label: "Solana", note: "pump.fun bonding curve", radiusPct: 48, angleDeg: -90, accent: "arc" as const },
   { id: "arc", label: "Arc", note: "Uniswap v4 · USDC", radiusPct: 32, angleDeg: 30, accent: "gold" as const },
-  { id: "robinhood", label: "Robinhood Chain", note: "Pons v2 spot", radiusPct: 16, angleDeg: 150, accent: "arc" as const },
+  { id: "robinhood", label: "Robinhood Chain", note: "Pons v2 spot", radiusPct: 16, angleDeg: 150, accent: "nebula" as const },
 ].map((chain) => {
   const rad = (chain.angleDeg * Math.PI) / 180;
   return {
@@ -13,6 +14,12 @@ const CHAINS = [
     top: 50 + chain.radiusPct * Math.sin(rad),
   };
 });
+
+const ACCENT_TEXT: Record<string, string> = {
+  arc: "text-arc",
+  gold: "text-gold",
+  nebula: "text-nebula",
+};
 
 export function OrbitHero({
   liveCount,
@@ -26,8 +33,16 @@ export function OrbitHero({
   handle: string | null;
 }) {
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent">
-      <div className="grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:p-14">
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent">
+      <SpaceCanvas className="absolute inset-0 h-full w-full opacity-80" />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(60% 60% at 80% 10%, rgb(124 108 240 / 12%), transparent 70%), radial-gradient(50% 50% at 10% 100%, rgb(232 184 75 / 10%), transparent 70%)",
+        }}
+      />
+      <div className="relative z-10 grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:p-14">
         <div>
           <p className="text-sm text-arc/80">{handle ? `Welcome back, @${handle}` : "One desk, three chains"}</p>
           <h1 className="font-display mt-3 text-[2.75rem] leading-[1.05] sm:text-6xl">
@@ -71,14 +86,17 @@ export function OrbitHero({
           <div className="orbit-ring" data-spin="slow" style={{ inset: "0%" }} />
           <div className="orbit-ring" data-spin="med" style={{ inset: "16%" }} />
           <div className="orbit-ring" style={{ inset: "32%" }} />
-          <div className="absolute inset-[42%] rounded-full bg-gradient-to-br from-arc to-gold" />
+          <div
+            className="absolute inset-[42%] rounded-full"
+            style={{ background: "conic-gradient(from 140deg, var(--color-arc), var(--color-nebula), var(--color-gold), var(--color-arc))" }}
+          />
           {CHAINS.map((chain) => (
             <div
               key={chain.id}
               className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 text-center"
               style={{ left: `${chain.left}%`, top: `${chain.top}%` }}
             >
-              <span className={`orbit-node size-2.5 ${chain.accent === "gold" ? "text-gold" : "text-arc"}`} />
+              <span className={`orbit-node size-2.5 ${ACCENT_TEXT[chain.accent]}`} />
               <span className="whitespace-nowrap text-[11px] font-medium text-white/80">{chain.label}</span>
               <span className="whitespace-nowrap text-[10px] text-white/35">{chain.note}</span>
             </div>
