@@ -29,7 +29,7 @@ export function openKeypair(ciphertext: string): Keypair {
 
 export function protocolKeypair(): Keypair {
   const seed = createHash("sha256")
-    .update(process.env.EMBEDDED_WALLET_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "onceupon")
+    .update(process.env.EMBEDDED_WALLET_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "orbitx")
     .update(":solana-protocol")
     .digest();
   return Keypair.fromSeed(seed);

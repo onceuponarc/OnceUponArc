@@ -39,7 +39,7 @@ const CARDS: Card[] = [
     id: "tg",
     kicker: "03 — Floor",
     title: "Community",
-    handle: "t.me/onceuponarc",
+    handle: "x.com/orbitx_wrld",
     body: "Telegram floor. Chapters, fills, and the people writing them.",
     href: "https://x.com/orbitx_wrld",
     cta: "Enter Telegram",

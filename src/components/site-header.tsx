@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const PRIMARY = [
   { href: "/", label: "Board", match: "/" },
-  { href: "/launch/arc", label: "Launch", match: "/launch" },
+  { href: "/launch", label: "Launch", match: "/launch" },
   { href: "/cards", label: "Cards", match: "/cards" },
   { href: "/drop", label: "Drop", match: "/drop" },
 ] as const;

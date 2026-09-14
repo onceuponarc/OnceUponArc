@@ -24,7 +24,7 @@ export async function GET(
   const image =
     (data && "image_uri" in data ? (data.image_uri as string | null) : null) ||
     data?.cover_url ||
-    `${PUBLIC_SITE_URL}/onceupon-cover.svg`;
+    `${PUBLIC_SITE_URL}/brand/logo.jpg`;
   const twitter = data && "twitter_url" in data ? (data.twitter_url as string | null) : null;
   const telegram = data && "telegram_url" in data ? (data.telegram_url as string | null) : null;
   const website = data && "website_url" in data ? (data.website_url as string | null) : null;
@@ -39,7 +39,7 @@ export async function GET(
   return NextResponse.json(
     {
       name: data?.title ?? PAD_NAME,
-      symbol: data?.ticker ?? "ONCE",
+      symbol: data?.ticker ?? "ORBX",
       description: metadataDescription(data?.blurb ?? "", handle),
       image,
       showName: true,

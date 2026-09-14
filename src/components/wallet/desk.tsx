@@ -1,0 +1,99 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { readApiJson } from "@/lib/http/read-json";
+import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
+
+type Desk = {
+  wallets: { solana: string | null; eth: string | null; rh: string | null };
+  explorers: { solana: string | null; eth: string | null; rh: string | null };
+};
+
+const CHAINS = [
+  { id: "solana", label: "Solana" },
+  { id: "eth", label: "Ethereum" },
+  { id: "rh", label: "Robinhood Chain" },
+] as const;
+
+export function WalletDesk() {
+  const injected = useSolanaWallet();
+  const [desk, setDesk] = useState<Desk | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [secret, setSecret] = useState("");
+  const [shown, setShown] = useState<string | null>(null);
+
+  async function load() {
+    const res = await fetch("/api/wallets/desk", { cache: "no-store" });
+    const body = await readApiJson<Desk & { error?: string }>(res);
+    if (!res.ok) throw new Error(body.error ?? "Desk failed.");
+    setDesk(body);
+  }
+
+  useEffect(() => {
+    load().catch((err: unknown) => setError(err instanceof Error ? err.message : "Desk failed."));
+  }, []);
+
+  async function act(chain: string, action: "export" | "import") {
+    setError(null);
+    const res = await fetch("/api/wallets/desk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, chain, secret: action === "import" ? secret : undefined }),
+    });
+    const body = await readApiJson<{ error?: string; secret?: string; address?: string }>(res);
+    if (!res.ok) {
+      setError(body.error ?? "Failed.");
+      return;
+    }
+    if (body.secret) setShown(body.secret);
+    await load().catch(() => undefined);
+  }
+
+  return (
+    <div className="space-y-4 rounded-3xl border border-white/10 p-5">
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Your desk</p>
+      <p className="text-sm text-white/55">
+        Created on first open. Only this account can export. Connect Phantom separately to pay Solana gas.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" onClick={() => void injected.connect()}>
+          {injected.address ? `Phantom ${injected.address.slice(0, 4)}…` : "Connect Phantom"}
+        </Button>
+      </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        {CHAINS.map((chain) => (
+          <div key={chain.id} className="rounded-2xl border border-white/10 p-4">
+            <p className="text-sm text-white/45">{chain.label}</p>
+            <p className="mt-2 break-all font-mono text-xs">{desk?.wallets[chain.id] ?? "—"}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button type="button" variant="outline" onClick={() => void act(chain.id, "export")}>
+                Export
+              </Button>
+              {desk?.explorers[chain.id] ? (
+                <Button type="button" variant="outline" asChild>
+                  <a href={desk.explorers[chain.id]!} target="_blank" rel="noreferrer">
+                    Explorer
+                  </a>
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div>
+        <Input value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="Paste a secret to import" />
+        <div className="mt-2 flex flex-wrap gap-2">
+          {CHAINS.map((chain) => (
+            <Button key={chain.id} type="button" variant="outline" onClick={() => void act(chain.id, "import")}>
+              Import {chain.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+      {shown ? <p className="break-all rounded-2xl border border-amber-300/20 p-3 font-mono text-xs">{shown}</p> : null}
+      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+    </div>
+  );
+}

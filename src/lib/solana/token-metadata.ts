@@ -30,7 +30,7 @@ export function createMetadataV3Instruction(opts: {
 }): TransactionInstruction {
   const metadata = metadataPda(opts.mint);
   const name = borshString(opts.name.trim() || "OrbitX", 32);
-  const symbol = borshString(opts.symbol.trim().toUpperCase() || "ONCE", 10);
+  const symbol = borshString(opts.symbol.trim().toUpperCase() || "ORBX", 10);
   const uri = borshString(opts.uri, 200);
   const sellerFee = Buffer.alloc(2);
   sellerFee.writeUInt16LE(0, 0);

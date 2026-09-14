@@ -54,11 +54,11 @@ export const BASE = {
 } as const;
 
 export type LaunchChain = "arc" | "solana" | "robinhood";
-export type PrintableChain = "arc";
+export type PrintableChain = "arc" | "solana";
 export type LaunchVenue = "spl" | "nft" | "pumpfun" | "pons";
 export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
 
-export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = ["arc"];
+export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = ["arc", "solana"];
 
 export type ChainCard = {
   id: LaunchChain;
@@ -84,6 +84,17 @@ export const CHAINS: ChainCard[] = [
     accent: "from-[#00e5c3]/45 to-[#3d7cff]/30",
     printNote:
       "Native Chapter Curve on Arc. MockUSDC (Devnet) or Circle USDC (Testnet) is the quote. Buy and sell anytime. You do not seed an AMM at print. Graduation seeds the deeper pool from the book.",
+  },
+  {
+    id: "solana",
+    title: "Solana",
+    live: true,
+    prints: true,
+    badge: "Pump.fun · vanity",
+    body: "Print on pump.fun from OrbitX. Image to IPFS. Custom …obx mint. You sign in Phantom. Creator fees stay yours to claim.",
+    caip2: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+    accent: "from-[#22d3ee]/45 to-[#ffffff]/10",
+    printNote: "Pump.fun curve. OrbitX metadata on every mint. Vanity suffix obx.",
   },
 ];
 

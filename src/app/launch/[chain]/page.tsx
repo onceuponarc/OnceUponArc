@@ -1,4 +1,5 @@
 import { LaunchStudio } from "@/components/launch/launch-studio";
+import { SolanaLaunchStudio } from "@/components/launch/solana-launch-studio";
 import { getSessionUser } from "@/lib/auth";
 import { findChain, isPrintableChain } from "@onceupon/config/solana";
 import { redirect } from "next/navigation";
@@ -15,8 +16,9 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function LaunchChainPage({ params }: Props) {
   const { chain } = await params;
-  if (!isPrintableChain(chain)) redirect("/launch/arc");
+  if (!isPrintableChain(chain)) redirect("/launch");
   const { profile } = await getSessionUser();
+  const solana = chain === "solana";
 
   return (
     <div className="space-y-6">
@@ -27,15 +29,24 @@ export default async function LaunchChainPage({ params }: Props) {
         <div className="relative flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo.jpg" alt="" className="size-12 rounded-xl border border-white/15 object-cover" />
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Launch · Arc</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
+            Launch · {solana ? "Solana" : "Arc Devnet"}
+          </p>
         </div>
-        <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Launch on Arc</h1>
+        <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+          {solana ? "Launch on Solana" : "Launch on Arc Devnet"}
+        </h1>
         <p className="relative mt-3 max-w-2xl text-white/60">
-          Chapter token, tweet spawn, press card, or token + card. Coin and jacket are separate markets when you pair
-          them.
+          {solana
+            ? "Pump.fun curve. OrbitX metadata. Custom …obx mint. Sign in Phantom."
+            : "Chapter token, tweet spawn, press card, or token + card. Coin and jacket stay separate when you pair them."}
         </p>
       </section>
-      <LaunchStudio chain="arc" handle={profile?.handle ?? null} signedIn={Boolean(profile)} />
+      {solana ? (
+        <SolanaLaunchStudio handle={profile?.handle ?? null} />
+      ) : (
+        <LaunchStudio chain="arc" handle={profile?.handle ?? null} signedIn={Boolean(profile)} />
+      )}
     </div>
   );
 }

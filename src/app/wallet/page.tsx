@@ -1,5 +1,6 @@
 import { ArcWalletDesk } from "@/components/arc/arc-wallet-desk";
 import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
+import { WalletDesk } from "@/components/wallet/desk";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -10,20 +11,18 @@ export default function WalletPage() {
     <div className="space-y-6">
       <section className="rounded-2xl border border-white/10 p-6 sm:p-8">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Wallet</p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight">Your Arc keys</h1>
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight">Your keys</h1>
         <p className="mt-3 max-w-2xl text-white/60">
-          Two separate wallets: Devnet for this pad, Mainnet for when Arc is live. Keys live in this browser only. Copy
-          them into MetaMask or Rabby. Do not reuse a Devnet key on mainnet.
+          Arc Devnet for the current pad. Solana, Ethereum, and Robinhood Chain desks are created on this account.
+          Phantom pays Solana gas. Export is only visible to you.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Button asChild>
-            <Link href="/launch/arc">Launch a token</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/tools">Network tools</Link>
+            <Link href="/launch">Launch desk</Link>
           </Button>
         </div>
       </section>
+      <WalletDesk />
       <ArcDevnetWallet />
       <ArcWalletDesk />
     </div>
