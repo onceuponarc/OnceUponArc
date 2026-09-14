@@ -11,19 +11,49 @@ import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
 import { readApiJson } from "@/lib/http/read-json";
 import { VANITY_SUFFIX } from "@/lib/solana/vanity";
 
+type Mode = "direct" | "fair" | "pump";
+type Program = "spl" | "token2022";
+
+async function broadcast(raw: Uint8Array) {
+  const send = await fetch("https://api.mainnet-beta.solana.com", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "sendTransaction",
+      params: [Buffer.from(raw).toString("base64"), { encoding: "base64", skipPreflight: true }],
+    }),
+  });
+  const sent = (await send.json()) as { result?: string; error?: { message?: string } };
+  if (!sent.result) throw new Error(sent.error?.message ?? "Send failed.");
+  return sent.result;
+}
+
 export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
   const wallet = useSolanaWallet();
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [blurb, setBlurb] = useState("");
   const [devBuy, setDevBuy] = useState("0.01");
+  const [seedSol, setSeedSol] = useState("0.05");
   const [cover, setCover] = useState<CoverPick | null>(null);
-  const [mode, setMode] = useState<"pump" | "tax">("tax");
+  const [mode, setMode] = useState<Mode>("direct");
+  const [program, setProgram] = useState<Program>("token2022");
   const [taxBps, setTaxBps] = useState("100");
   const [vanity, setVanity] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ mint: string; vanity: boolean; sig?: string } | null>(null);
+  const [result, setResult] = useState<{ mint: string; vanity: boolean; sig?: string; poolSig?: string } | null>(null);
+
+  async function signLegacy(transaction: string, mintSecret: string) {
+    const rawMint = mintSecret.match(/^[1-9A-HJ-NP-Za-km-z]+$/) ? bs58.decode(mintSecret) : Buffer.from(mintSecret, "base64");
+    const mint = Keypair.fromSecretKey(Uint8Array.from(rawMint));
+    const tx = Transaction.from(Buffer.from(transaction, "base64"));
+    tx.partialSign(mint);
+    const signed = (await wallet.signTransaction(tx)) as Transaction;
+    return signed.serialize();
+  }
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
@@ -37,20 +67,52 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
     try {
       const publicKey = wallet.address || (await wallet.connect());
       if (!publicKey) throw new Error("Connect Phantom, Solflare, or Backpack.");
-      const path = mode === "tax" ? "/api/solana/tax-launch" : "/api/solana/launch";
-      const built = await fetch(path, {
+
+      if (mode === "pump") {
+        const built = await fetch("/api/solana/launch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            publicKey,
+            name,
+            symbol,
+            blurb,
+            metadataUri: cover?.imageUri,
+            coverUrl: cover?.url,
+            devBuySol: Number(devBuy),
+            vanity,
+          }),
+        });
+        const body = await readApiJson<{
+          error?: string;
+          transaction?: string;
+          mint?: string;
+          mintSecret?: string;
+          vanity?: boolean;
+        }>(built);
+        if (!built.ok || !body.transaction || !body.mintSecret || !body.mint) {
+          throw new Error(body.error ?? "Could not build the pump.fun tx.");
+        }
+        const tx = VersionedTransaction.deserialize(Buffer.from(body.transaction, "base64"));
+        const mint = Keypair.fromSecretKey(bs58.decode(body.mintSecret));
+        tx.sign([mint]);
+        const signed = (await wallet.signTransaction(tx)) as VersionedTransaction;
+        const sig = await broadcast(signed.serialize());
+        setResult({ mint: body.mint, vanity: Boolean(body.vanity), sig });
+        return;
+      }
+
+      const built = await fetch("/api/solana/spot-launch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           publicKey,
           name,
           symbol,
-          blurb,
-          metadataUri: cover?.imageUri,
-          coverUrl: cover?.url,
-          devBuySol: Number(devBuy),
+          program,
+          mode,
+          taxBps: program === "token2022" ? Number(taxBps) : 0,
           vanity,
-          taxBps: Number(taxBps),
         }),
       });
       const body = await readApiJson<{
@@ -61,37 +123,29 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         vanity?: boolean;
       }>(built);
       if (!built.ok || !body.transaction || !body.mintSecret || !body.mint) {
-        throw new Error(body.error ?? "Could not build the launch tx.");
+        throw new Error(body.error ?? "Could not build the spot mint.");
       }
-      const rawMint = body.mintSecret.match(/^[1-9A-HJ-NP-Za-km-z]+$/)
-        ? bs58.decode(body.mintSecret)
-        : Buffer.from(body.mintSecret, "base64");
-      const mint = Keypair.fromSecretKey(Uint8Array.from(rawMint));
-      let raw: Uint8Array;
-      if (mode === "tax") {
-        const tx = Transaction.from(Buffer.from(body.transaction, "base64"));
-        tx.partialSign(mint);
-        const signed = (await wallet.signTransaction(tx)) as Transaction;
-        raw = signed.serialize();
-      } else {
-        const tx = VersionedTransaction.deserialize(Buffer.from(body.transaction, "base64"));
-        tx.sign([mint]);
-        const signed = (await wallet.signTransaction(tx)) as VersionedTransaction;
-        raw = signed.serialize();
+      const sig = await broadcast(await signLegacy(body.transaction, body.mintSecret));
+
+      let poolSig: string | undefined;
+      if (mode === "direct" && program === "spl") {
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        const pool = await fetch("/api/solana/spot-pool", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ publicKey, mint: body.mint, seedSol: Number(seedSol) }),
+        });
+        const poolBody = await readApiJson<{ error?: string; transaction?: string }>(pool);
+        if (pool.ok && poolBody.transaction) {
+          const poolTx = Transaction.from(Buffer.from(poolBody.transaction, "base64"));
+          const signedPool = (await wallet.signTransaction(poolTx)) as Transaction;
+          poolSig = await broadcast(signedPool.serialize());
+        } else if (poolBody.error) {
+          setError(`Mint live. Pool: ${poolBody.error}`);
+        }
       }
-      const send = await fetch("https://api.mainnet-beta.solana.com", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "sendTransaction",
-          params: [Buffer.from(raw).toString("base64"), { encoding: "base64", skipPreflight: true }],
-        }),
-      });
-      const sent = (await send.json()) as { result?: string; error?: { message?: string } };
-      if (!sent.result) throw new Error(sent.error?.message ?? "Send failed.");
-      setResult({ mint: body.mint, vanity: Boolean(body.vanity), sig: sent.result });
+
+      setResult({ mint: body.mint, vanity: Boolean(body.vanity), sig, poolSig });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Launch failed.");
     } finally {
@@ -105,18 +159,39 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Solana</p>
         <h2 className="mt-1 text-2xl font-semibold">Print on Solana</h2>
         <p className="mt-2 text-sm text-white/55">
-          Tax mint: Token-2022 cut on every transfer, including off-platform. Pump.fun: curve + Pump fees only.
+          Direct and Fair are spot tokens. No bonding curve. Pump.fun is the only curve. Token-2022 can tax every
+          transfer, including off-platform.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" variant={mode === "tax" ? "default" : "outline"} onClick={() => setMode("tax")}>
-            Tax mint
+          <Button type="button" variant={mode === "direct" ? "default" : "outline"} onClick={() => setMode("direct")}>
+            Direct Launch
+          </Button>
+          <Button type="button" variant={mode === "fair" ? "default" : "outline"} onClick={() => setMode("fair")}>
+            Fair Launch · anti-snipe
           </Button>
           <Button type="button" variant={mode === "pump" ? "default" : "outline"} onClick={() => setMode("pump")}>
-            Pump.fun
+            Pump.fun curve
           </Button>
         </div>
       </div>
-      <CoverField value={cover} required onChange={setCover} />
+      {mode !== "pump" ? (
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant={program === "spl" ? "default" : "outline"} onClick={() => setProgram("spl")}>
+            SPL
+          </Button>
+          <Button type="button" variant={program === "token2022" ? "default" : "outline"} onClick={() => setProgram("token2022")}>
+            Token-2022
+          </Button>
+        </div>
+      ) : null}
+      <p className="text-sm text-white/50">
+        {mode === "pump"
+          ? "Bonding curve on pump.fun. Only this lane uses a curve."
+          : mode === "fair"
+            ? "Same price window. Token-2022 accounts start frozen until you thaw. No curve."
+            : "Tradable from the first book. SPL seeds a PumpSwap USDC/SOL pool. No curve."}
+      </p>
+      <CoverField value={cover} onChange={setCover} />
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <Label>Name</Label>
@@ -137,10 +212,18 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           <Input className="mt-2" value={devBuy} onChange={(e) => setDevBuy(e.target.value)} />
         </div>
       ) : (
-        <div>
-          <Label>Platform tax (bps)</Label>
-          <Input className="mt-2" value={taxBps} onChange={(e) => setTaxBps(e.target.value)} />
-          <p className="mt-1 text-xs text-white/40">100 = 1%. Locked on the mint. Max 200.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {program === "token2022" ? (
+            <div>
+              <Label>Platform tax (bps)</Label>
+              <Input className="mt-2" value={taxBps} onChange={(e) => setTaxBps(e.target.value)} />
+            </div>
+          ) : (
+            <div>
+              <Label>Seed book (SOL)</Label>
+              <Input className="mt-2" value={seedSol} onChange={(e) => setSeedSol(e.target.value)} />
+            </div>
+          )}
         </div>
       )}
       <label className="flex items-center gap-2 text-sm text-white/70">
@@ -152,14 +235,15 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           {wallet.address ? `${wallet.address.slice(0, 4)}…${wallet.address.slice(-4)}` : "Connect Phantom"}
         </Button>
         <Button type="submit" disabled={busy}>
-          {busy ? "Building…" : mode === "tax" ? "Launch taxed mint" : "Launch on pump.fun"}
+          {busy ? "Building…" : mode === "pump" ? "Launch on pump.fun" : mode === "fair" ? "Fair launch spot" : "Direct launch spot"}
         </Button>
       </div>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       {result ? (
         <p className="break-all text-sm text-white/70">
-          {result.vanity ? "Vanity mint" : "Mint"} {result.mint}
-          {result.sig ? ` · ${result.sig}` : ""} ·{" "}
+          Mint {result.mint}
+          {result.sig ? ` · ${result.sig}` : ""}
+          {result.poolSig ? ` · pool ${result.poolSig}` : ""} ·{" "}
           <a className="underline" href={`https://solscan.io/token/${result.mint}`} target="_blank" rel="noreferrer">
             solscan
           </a>
