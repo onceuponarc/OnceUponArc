@@ -1,0 +1,71 @@
+import Link from "next/link";
+
+const COLS = [
+  {
+    title: "Desk",
+    links: [
+      { href: "/", label: "Board" },
+      { href: "/launch/arc", label: "Launch" },
+      { href: "/cards", label: "Cards" },
+      { href: "/drop", label: "Drop" },
+    ],
+  },
+  {
+    title: "Trade",
+    links: [
+      { href: "/wallet", label: "Wallet" },
+      { href: "/week", label: "Week" },
+      { href: "/you", label: "You" },
+      { href: "/tools", label: "Tools" },
+    ],
+  },
+  {
+    title: "Official",
+    links: [
+      { href: "/params", label: "Token · not live" },
+      { href: "/links", label: "Links" },
+      { href: "https://x.com/onceuponarc", label: "X" },
+      { href: "https://t.me/onceuponupdates", label: "Updates" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/terms", label: "Terms" },
+      { href: "/privacy", label: "Privacy" },
+    ],
+  },
+];
+
+export function SiteFooter() {
+  return (
+    <footer className="border-t border-white/10 px-4 pb-28 pt-10 lg:pb-12">
+      <div className="mx-auto grid max-w-7xl gap-8 sm:grid-cols-2 lg:grid-cols-5">
+        <div>
+          <p className="text-lg font-semibold">OnceUpon</p>
+          <p className="mt-2 max-w-xs text-sm text-white/45">
+            Arc launchpad. USDC curve. Jackets track MC. Official token CA only from official channels.
+          </p>
+        </div>
+        {COLS.map((col) => (
+          <div key={col.title}>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/35">{col.title}</p>
+            <ul className="mt-3 space-y-2 text-sm text-white/55">
+              {col.links.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="hover:text-white"
+                    {...(link.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </footer>
+  );
+}

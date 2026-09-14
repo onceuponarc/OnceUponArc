@@ -139,15 +139,15 @@
   }
 
   .glass-nav {
-    background: rgb(0 0 0 / 86%);
-    backdrop-filter: blur(18px);
+    background: rgb(0 0 0 / 88%);
+    backdrop-filter: blur(22px);
     box-shadow: 0 1px 0 rgb(255 255 255 / 8%);
   }
 
   .glass-tab {
-    background: rgb(10 10 10 / 92%);
-    backdrop-filter: blur(18px);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 10%) inset;
+    background: rgb(8 8 8 / 94%);
+    backdrop-filter: blur(22px);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 12%) inset, 0 12px 40px rgb(0 0 0 / 45%);
   }
 
   .pad-vignette {
