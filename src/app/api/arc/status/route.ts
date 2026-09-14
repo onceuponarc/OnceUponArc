@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json(status);
   } catch (error) {
     return NextResponse.json(
-      { ready: false, error: error instanceof Error ? error.message : "Arc Devnet is down." },
+      { ready: false, error: error instanceof Error ? error.message : "Arc is down." },
       { status: 200 },
     );
   }

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const EMPTY: Record<FeedTab, { title: string; body: string }> = {
   new: {
     title: "No launches yet",
-    body: "Be first. Launch a token on Arc Devnet — it is tradable the moment create lands.",
+    body: "Be first. Launch a token on Arc — it is tradable the moment create lands.",
   },
   trending: {
     title: "Nothing trending yet",

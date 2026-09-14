@@ -87,7 +87,7 @@ function KeyCard({
             </Button>
             {onFund ? (
               <Button type="button" size="sm" onClick={onFund} disabled={funding}>
-                {funding ? "Funding…" : "Fund Devnet"}
+                {funding ? "Funding…" : "Fund"}
               </Button>
             ) : null}
           </div>

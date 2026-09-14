@@ -21,8 +21,7 @@ export default function TermsPage() {
         claims are a protocol split of a pool the creator deposits — not profit sharing.
       </p>
       <p className="text-white/65">
-        Arc Devnet is for testing. Balances there have no value. Arc mainnet is used only when official RPC and chain
-        IDs are published.
+        Arc mainnet is chain 5042. You are responsible for every on-chain action.
       </p>
       <Button asChild variant="outline">
         <Link href="/">Back to the pad</Link>

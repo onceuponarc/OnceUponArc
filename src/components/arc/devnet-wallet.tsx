@@ -34,7 +34,7 @@ export function NetworkChip() {
       .catch(() => setStatus({ ready: false }));
   }, []);
   const live = Boolean(status?.ready);
-  const label = status == null ? "…" : live ? "DEVNET" : "OFFLINE";
+  const label = status == null ? "ARC" : status.chainId === 5042 || live ? "ARC" : "ARC";
   return <Linkish live={live} label={label} />;
 }
 
@@ -63,7 +63,7 @@ export function ArcDevnetWallet({ compact = false }: { compact?: boolean }) {
   }
 
   useEffect(() => {
-    refresh().catch(() => setStatus({ ready: false, error: "Could not reach Arc Devnet." }));
+    refresh().catch(() => setStatus({ ready: false, error: "Could not reach Arc." }));
   }, []);
 
   async function faucet() {
@@ -92,7 +92,7 @@ export function ArcDevnetWallet({ compact = false }: { compact?: boolean }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/45">Arc pad wallet</p>
-          <h2 className="mt-1 text-xl font-semibold">{status?.ready ? "Devnet live" : "Devnet offline"}</h2>
+          <h2 className="mt-1 text-xl font-semibold">{status?.ready ? "Arc live" : "Arc offline"}</h2>
         </div>
         <Badge variant={status?.ready ? "default" : "outline"}>{status?.ready ? "Ready" : "Offline"}</Badge>
       </div>

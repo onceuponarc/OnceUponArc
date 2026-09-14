@@ -37,7 +37,7 @@ export function loadArcNetwork(): ArcNetworkFile | null {
     const chainId = Number(process.env.ARC_CHAIN_ID || 31337);
     return {
       label:
-        chainId === ARC_MAINNET.chainId ? "Arc" : chainId === ARC_TESTNET.chainId ? "Arc Testnet" : "Arc Devnet",
+        "Arc",
       rpcUrl:
         process.env.ARC_RPC_URL ||
         (chainId === ARC_MAINNET.chainId

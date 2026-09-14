@@ -37,7 +37,7 @@ async function requireLiveCurve(story: { quoteAddress: `0x${string}`; curveAddre
   ]);
   if (!curveCode || curveCode === "0x" || !quoteCode || quoteCode === "0x") {
     throw new Error(
-      "This Chapter’s curve is not a contract on the current RPC. Launch on Arc Testnet instead of Devnet.",
+      "This Chapter’s curve is not a contract on the current RPC.",
     );
   }
 }
@@ -85,7 +85,7 @@ export async function arcStatus() {
   if (!net) {
     return {
       ready: false as const,
-      label: "Arc Devnet",
+      label: "Arc",
       error: "Factory is not deployed. Run pnpm arc:devnet.",
     };
   }
@@ -131,7 +131,7 @@ export async function arcStatus() {
         note:
           net.nativeGas === "usdc"
             ? "Public Arc uses USDC for gas."
-            : "Local Arc Devnet. ETH pays gas. MockUSDC is the quote.",
+            : "Arc mainnet. USDC pays gas.",
   };
 }
 

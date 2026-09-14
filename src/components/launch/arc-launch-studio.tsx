@@ -48,7 +48,7 @@ export function ArcLaunchStudio({
     event.preventDefault();
     setBusy(true);
     setError(null);
-      setStatus("Launching on Arc Devnet…");
+      setStatus("Launching on Arc…");
     try {
       const res = await fetch("/api/arc/launch", {
         method: "POST",
@@ -214,7 +214,7 @@ export function ArcLaunchStudio({
         <section className="glass space-y-4 rounded-2xl border border-arc/20 p-4">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-arc">Launch on Arc</p>
           <p className="text-sm text-parchment/70">
-            {handle ? `@${handle}` : "Devnet"} · {PAD_NAME} · USDC curve. The funded Arc test wallet signs create.
+            {handle ? `@${handle}` : "Arc"} · {PAD_NAME} · USDC curve. Your Arc wallet signs create.
           </p>
           {pairCard ? (
             <div className="space-y-3 rounded-2xl border border-white/10 p-4">
