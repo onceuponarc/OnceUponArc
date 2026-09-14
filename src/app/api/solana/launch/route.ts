@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { Keypair, VersionedTransaction } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import { getSessionUser } from "@/lib/auth";
 import { generateVanityMint, VANITY_SUFFIX } from "@/lib/solana/vanity";
-import { pumpBuyTx } from "@/lib/solana/pumpportal";
 import { buildCreateV2Tx, parseQuoteMintChoice, type PoolPairChoice } from "@/lib/solana/pump-sdk";
 import { sendSignedTx, waitForTx, explorerFromSig } from "@/lib/solana/partial-tx";
 import { fetchLatestBlockhash } from "@/lib/solana/blockhash";
@@ -45,7 +44,6 @@ export async function POST(request: Request) {
       telegram?: string;
       metadataUri?: string;
       coverUrl?: string;
-      devBuySol?: number;
       vanity?: boolean;
       poolPair?: PoolPairChoice;
       customQuoteMint?: string;
@@ -130,31 +128,9 @@ export async function POST(request: Request) {
     const signature = await sendSignedTx(raw.toString("base64"));
     await waitForTx(signature).catch(() => undefined);
 
-    // Optional dev buy: only wired up for SOL-paired coins for now. A separate,
-    // simple PumpPortal buy after the create has landed — keeps the risky custom
-    // fee-math for token-quoted buys out of this pass.
-    let devBuySignature: string | null = null;
-    const devBuySol = Number(body.devBuySol ?? 0);
-    if (devBuySol > 0 && poolPair === "sol") {
-      try {
-        const buyBase64 = await pumpBuyTx({
-          publicKey: payer.publicKey.toBase58(),
-          mint: mintAddress,
-          solAmount: devBuySol,
-        });
-        const buyTx = VersionedTransaction.deserialize(Buffer.from(buyBase64, "base64"));
-        buyTx.sign([payer]);
-        devBuySignature = await sendSignedTx(Buffer.from(buyTx.serialize()).toString("base64"));
-        await waitForTx(devBuySignature).catch(() => undefined);
-      } catch {
-        // Coin is live either way; the dev buy is a nice-to-have.
-      }
-    }
-
     return NextResponse.json({
       mint: mintAddress,
       signature,
-      devBuySignature,
       explorer: explorerFromSig(signature),
       creator: payer.publicKey.toBase58(),
       vanity: minted.vanity,

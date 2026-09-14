@@ -27,7 +27,6 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
     ...EMPTY_DESCRIPTION_LINKS,
     twitter: handle ? `@${handle}` : "",
   });
-  const [devBuy, setDevBuy] = useState("0.01");
   const [advanced, setAdvanced] = useState<AdvancedLaunchValue>(DEFAULT_ADVANCED_LAUNCH);
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [vanity, setVanity] = useState(true);
@@ -57,7 +56,6 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           telegram: links.telegram,
           metadataUri: cover?.imageUri,
           coverUrl: cover?.url,
-          devBuySol: Number(devBuy),
           vanity,
           poolPair: advanced.poolPair,
           customQuoteMint: advanced.customQuoteMint,
@@ -123,13 +121,6 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
       </div>
       <DescriptionLinksFields value={links} onChange={setLinks} />
       <AdvancedLaunchFields value={advanced} onChange={setAdvanced} />
-      <div>
-        <Label>Dev buy (SOL)</Label>
-        <Input className="mt-2" value={devBuy} onChange={(e) => setDevBuy(e.target.value)} disabled={advanced.poolPair !== "sol"} />
-        {advanced.poolPair !== "sol" ? (
-          <p className="mt-1 text-xs text-white/45">Dev buy is only available on a SOL pair right now.</p>
-        ) : null}
-      </div>
       <label className="flex items-center gap-2 text-sm text-white/70">
         <input type="checkbox" checked={vanity} onChange={(e) => setVanity(e.target.checked)} />
         Mine a …{VANITY_SUFFIX} mint
