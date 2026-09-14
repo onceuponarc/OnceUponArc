@@ -13,6 +13,7 @@ export type LiveLaunch = {
   mint: string;
   signature?: string;
   creator?: string;
+  slug?: string | null;
 };
 
 function linksFor(live: LiveLaunch) {
@@ -53,7 +54,7 @@ export function LaunchLiveCard({ live, onAgain }: { live: LiveLaunch; onAgain: (
       venueLine(live.venue),
       live.blurb || "",
       `CA: ${live.mint}`,
-      live.venue === "pumpfun" ? `https://pump.fun/coin/${live.mint}` : "",
+      live.slug ? `https://www.orbitx.world/story/${live.slug}` : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -101,11 +102,9 @@ export function LaunchLiveCard({ live, onAgain }: { live: LiveLaunch; onAgain: (
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            {live.venue === "pumpfun" ? (
+            {live.slug ? (
               <Button type="button" asChild>
-                <a href={`https://pump.fun/coin/${live.mint}`} target="_blank" rel="noreferrer">
-                  Open on pump.fun
-                </a>
+                <a href={`/story/${live.slug}`}>View on OrbitX</a>
               </Button>
             ) : null}
             <Button type="button" variant="outline" onClick={onAgain}>

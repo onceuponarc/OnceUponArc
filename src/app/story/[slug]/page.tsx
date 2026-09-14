@@ -2,7 +2,6 @@ import { getSessionUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CurveTrade } from "@/components/pad/curve-trade";
 import { PIECE_EXPLAINER, AUTHOR_FEE_EXPLAINER } from "@onceupon/config/copy";
 import { findChain, SOLANA, type LaunchVenue } from "@onceupon/config/solana";
 import { ARC_TESTNET } from "@onceupon/config/arc";
@@ -23,6 +22,8 @@ import { loadArcStory } from "@/lib/arc/persist";
 import { chapterStartPriceUi, virtualQuoteUiFor } from "@onceupon/config/chapter";
 import { viewCardsForStory } from "@/lib/cards/resolve";
 import { CardRail } from "@/components/cards/card-rail";
+import { DexScreenerEmbed } from "@/components/token/dexscreener-embed";
+import { TokenChat } from "@/components/token/token-chat";
 
 const STORY_SELECT =
   "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
@@ -259,58 +260,58 @@ export default async function StoryPage({
       ) : null}
 
       {chain !== "arc" ? (
-        <div className="glass rounded-2xl border border-arc/25 px-4 py-3 text-sm text-parchment/75">
-          This Story printed before OrbitX became Arc-only. New Chapters launch on Arc in USDC.
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/50">
+            <p>Live chart, price, and buys/sells straight from the chain via DexScreener.</p>
+            {story.token_address ? (
+              <a
+                href={`https://www.geckoterminal.com/${chain === "solana" ? "solana" : "eth"}/tokens/${story.token_address}`}
+                target="_blank"
+                rel="noreferrer"
+                className="shrink-0 underline"
+              >
+                Also view on GeckoTerminal
+              </a>
+            ) : null}
+          </div>
+          <DexScreenerEmbed chain={chain} tokenAddress={story.token_address ?? null} />
         </div>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
-        <PriceChart
-          trades={trades}
-          fallbackPrice={chapterStartPriceUi(virtualQuoteUiFor(), 1_073_000_000)}
-          ticker={story.ticker}
-        />
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Trade</CardTitle>
-              <CardDescription>
-                {chain === "arc"
-                  ? "Buy and sell the curve in USDC anytime. Graduation seeds the deeper pool from the book."
-                  : "Buy and sell the curve anytime. Graduation seeds a deeper pool from the book."}
-                {snipeTax > 0 ? ` Opening tax ${ (snipeTax / 100).toFixed(2) }% on early buys.` : ""}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {chain === "arc" ? (
-                story.status !== "graduated" ? (
+      {chain === "arc" ? (
+        <div className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+          <PriceChart
+            trades={trades}
+            fallbackPrice={chapterStartPriceUi(virtualQuoteUiFor(), 1_073_000_000)}
+            ticker={story.ticker}
+          />
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Trade</CardTitle>
+                <CardDescription>
+                  Buy and sell the curve in USDC anytime. Graduation seeds the deeper pool from the book.
+                  {snipeTax > 0 ? ` Opening tax ${(snipeTax / 100).toFixed(2)}% on early buys.` : ""}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {story.status !== "graduated" ? (
                   <ArcTrade slug={slug} pairLabel={story.pair_label} />
                 ) : (
                   <p className="text-sm text-parchment/70">This Chapter graduated. The book is open.</p>
-                )
-              ) : story.status !== "graduated" ? (
-                <CurveTrade
-                  slug={slug}
-                  venue={story.venue ?? "spl"}
-                  engine={story.engine}
-                  pairLabel={story.pair_label}
-                  decimals={Number(story.mint_decimals ?? 6)}
-                  quoteDecimals={Number(story.quote_decimals ?? 9)}
-                  isAuthor={isAuthor}
-                  vaultRaw={Number((story as { reward_vault_lamports?: number | string | null }).reward_vault_lamports ?? 0)}
-                />
-              ) : (
-                <p className="text-sm text-parchment/70">This Chapter graduated. The book is open.</p>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
+      ) : null}
+
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        {chain === "arc" ? <StoryTape trades={trades} /> : <div />}
+        <TokenChat slug={slug} viewerHandle={profile?.handle ?? null} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <StoryTape trades={trades} />
-        <HoldersTable holders={holders} />
-      </div>
+      {chain === "arc" ? <HoldersTable holders={holders} /> : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
@@ -433,11 +434,15 @@ export default async function StoryPage({
           {chain === "arc" ? (
             <p>Trade on the curve above. Quote is USDC on Arc.</p>
           ) : (
-            <p>OrbitX no longer prints on this chain. Open a new Chapter on Arc.</p>
+            <p>
+              This token trades on {chainCard?.title ?? chain}&apos;s own market (pump.fun / PumpSwap for Solana),
+              not an OrbitX curve — the chart and live trades above come straight from the chain.
+            </p>
           )}
         </CardContent>
       </Card>
 
+      {chain === "arc" ? (
       <Card>
         <CardHeader>
           <CardTitle>The Binding</CardTitle>
@@ -504,6 +509,7 @@ export default async function StoryPage({
           ) : null}
         </CardContent>
       </Card>
+      ) : null}
     </div>
   );
 }

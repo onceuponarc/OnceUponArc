@@ -67,6 +67,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
       const body = await readApiJson<{
         error?: string;
         mint?: string;
+        slug?: string;
         signature?: string;
         creator?: string;
       }>(built);
@@ -80,6 +81,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         blurb: links.description,
         image: cover?.url ?? cover?.imageUri ?? null,
         mint: body.mint,
+        slug: body.slug,
         signature: body.signature,
         creator: body.creator,
       });

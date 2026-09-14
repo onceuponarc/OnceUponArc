@@ -31,10 +31,10 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
   const hot = launch.volumeUi >= 100 || launch.changePct >= 20;
   const dest = launchHref(launch);
   const chain = launchChainLabel(launch.chain);
-  const linkProps = dest.external ? { target: "_blank", rel: "noreferrer" } : {};
+  const offPlatform = launch.chain !== "arc";
   return (
     <div className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_88px]">
-      <Link href={dest.href} {...linkProps} className="flex min-w-0 items-center gap-3">
+      <Link href={dest.href} className="flex min-w-0 items-center gap-3">
         <Avatar launch={launch} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -54,15 +54,15 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
             {" · "}
             {timeAgo(launch.createdAt)}
           </p>
-          {dest.external ? (
-            <p className="mt-2 text-[11px] text-white/35">Trades on {chain} · off-platform pricing</p>
+          {offPlatform ? (
+            <p className="mt-2 text-[11px] text-white/35">Live chart &amp; trades on the token page</p>
           ) : (
             <CurveMeter progressBps={launch.progressBps} graduated={launch.status === "graduated"} className="mt-2 max-w-48" />
           )}
         </div>
       </Link>
       <Sparkline points={launch.spark} up={up} className="hidden sm:block" />
-      <Link href={dest.href} {...linkProps} className="text-right">
+      <Link href={dest.href} className="text-right">
         <p className="font-medium tabular-nums">{formatUsd(launch.priceUi, 4)}</p>
         <p className={cn("text-xs tabular-nums", up ? "text-buy" : "text-sell")}>{formatPct(launch.changePct)}</p>
       </Link>
@@ -70,11 +70,10 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
       <div className="flex flex-col items-end gap-1">
         <WatchButton slug={launch.slug} />
         <Link
-          href={dest.external ? dest.href : `/story/${launch.slug}?buy=1`}
-          {...linkProps}
+          href={offPlatform ? dest.href : `/story/${launch.slug}?buy=1`}
           className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-black"
         >
-          {dest.external ? "View" : "Buy"}
+          {offPlatform ? "View" : "Buy"}
         </Link>
       </div>
     </div>

@@ -75,6 +75,8 @@ export async function POST(request: Request) {
     const twitterUrl = normalizeUrl(body.twitter, "twitter");
     const telegramUrl = normalizeUrl(body.telegram, "telegram");
 
+    const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
+
     // Persist the story record before minting so metadataUri (fetched by pump.fun's
     // indexer after the tx lands) already resolves to the real name/description/links
     // instead of falling back to generic branding. Uses the service-role client: the
@@ -83,7 +85,6 @@ export async function POST(request: Request) {
     // launches weren't showing up on the home feed even though the on-chain mint worked.
     try {
       const supabase = createServiceClient();
-      const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
       await supabase.from("stories").insert({
         slug,
         title: name,
@@ -135,6 +136,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       mint: mintAddress,
+      slug,
       signature,
       explorer: explorerFromSig(signature),
       creator: payer.publicKey.toBase58(),

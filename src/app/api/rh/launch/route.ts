@@ -105,9 +105,10 @@ export async function POST(request: Request) {
 
     const hash = await wallet.writeContract(simulated);
 
+    const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
+
     try {
       const supabase = createServiceClient();
-      const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
       await supabase.from("stories").insert({
         slug,
         title: name,
@@ -140,6 +141,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       hash,
       token: tokenAddress,
+      slug,
       curve: curveAddress,
       creator: address,
       feeRecipient: address,

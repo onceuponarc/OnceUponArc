@@ -50,6 +50,7 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
         error?: string;
         hash?: string;
         token?: string;
+        slug?: string;
         explorer?: string;
       }>(res);
       if (!res.ok || !body.token || !body.hash) {
@@ -62,6 +63,7 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
         blurb: links.description,
         image: cover?.url ?? null,
         mint: body.token,
+        slug: body.slug,
         signature: body.hash,
       });
     } catch (err) {

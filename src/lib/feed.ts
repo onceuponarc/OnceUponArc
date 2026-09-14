@@ -146,12 +146,6 @@ export function launchHref(launch: Pick<FeedLaunch, "slug" | "chain" | "tokenAdd
   href: string;
   external: boolean;
 } {
-  if (launch.chain === "solana" && launch.tokenAddress) {
-    return { href: `https://pump.fun/coin/${launch.tokenAddress}`, external: true };
-  }
-  if (launch.chain === "robinhood" && launch.tokenAddress) {
-    return { href: `https://explorer.robinhood.com/address/${launch.tokenAddress}`, external: true };
-  }
   return { href: `/story/${launch.slug}`, external: false };
 }
 

@@ -217,9 +217,9 @@ export function ProfileDeskView({
               ) : (
                 desk.launches.map((row) => {
                   const dest = launchHref(row);
-                  const linkProps = dest.external ? { target: "_blank", rel: "noreferrer" } : {};
+                  const offPlatform = row.chain !== "arc";
                   return (
-                    <Link key={row.slug} href={dest.href} {...linkProps} className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/25">
+                    <Link key={row.slug} href={dest.href} className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/25">
                       <div className="h-28 bg-white/5">
                         {row.coverUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -238,7 +238,7 @@ export function ProfileDeskView({
                         </div>
                         <p className="truncate text-sm text-white/50">{row.title}</p>
                         <p className="mt-2 text-xs text-white/40">
-                          {dest.external ? `Trades on ${launchChainLabel(row.chain)}` : `${formatUsd(row.volumeUi)} vol · ${formatUsd(row.feesUi)} fees`}
+                          {offPlatform ? "Live chart & trades on the token page" : `${formatUsd(row.volumeUi)} vol · ${formatUsd(row.feesUi)} fees`}
                         </p>
                       </div>
                     </Link>
