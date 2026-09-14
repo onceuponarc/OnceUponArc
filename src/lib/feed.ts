@@ -83,11 +83,20 @@ export function isAnvilLaunch(item: {
   return quote === ANVIL_QUOTE;
 }
 
+const EVM_ADDRESS = /^0x[a-fA-F0-9]{40}$/;
+const SOLANA_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+
+function hasValidTokenAddress(chain: string, mint: string): boolean {
+  if (!mint) return false;
+  if (chain === "solana") return SOLANA_ADDRESS.test(mint);
+  return EVM_ADDRESS.test(mint);
+}
+
 export function isListedLaunch(item: FeedLaunch & { quoteAddress?: string | null }): boolean {
-  if (item.chain && item.chain !== "arc") return false;
-  if (isAnvilLaunch(item)) return false;
+  const chain = item.chain ?? "arc";
+  if (chain === "arc" && isAnvilLaunch(item)) return false;
   const mint = item.tokenAddress ?? "";
-  if (!/^0x[a-fA-F0-9]{40}$/.test(mint)) return false;
+  if (!hasValidTokenAddress(chain, mint)) return false;
   const ticker = item.ticker.trim().toUpperCase();
   if (["DEMO", "MOCK", "FOO", "BAR"].includes(ticker)) return false;
   return item.status === "live" || item.status === "graduated";
@@ -123,6 +132,27 @@ export function tickerHue(ticker: string): number {
   let hash = 0;
   for (const char of ticker) hash = (hash * 33 + char.charCodeAt(0)) % 360;
   return hash;
+}
+
+export function launchChainLabel(chain: string | undefined): string {
+  if (chain === "solana") return "Solana";
+  if (chain === "robinhood") return "Robinhood";
+  return "Arc";
+}
+
+/** Where a token row should send people. Arc trades in-app; Solana and Robinhood
+ *  Chain tokens trade on their native venue, so those go external. */
+export function launchHref(launch: Pick<FeedLaunch, "slug" | "chain" | "tokenAddress">): {
+  href: string;
+  external: boolean;
+} {
+  if (launch.chain === "solana" && launch.tokenAddress) {
+    return { href: `https://pump.fun/coin/${launch.tokenAddress}`, external: true };
+  }
+  if (launch.chain === "robinhood" && launch.tokenAddress) {
+    return { href: `https://explorer.robinhood.com/address/${launch.tokenAddress}`, external: true };
+  }
+  return { href: `/story/${launch.slug}`, external: false };
 }
 
 export type RawTrade = {

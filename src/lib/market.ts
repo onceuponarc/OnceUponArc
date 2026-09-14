@@ -49,7 +49,7 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
         "id, slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, token_address, quote_mint, curve_quote_lamports, graduation_quote_raw, quote_decimals, mint_decimals, supply, users:author_user_id(handle)",
       )
       .in("status", ["live", "graduated"])
-      .eq("chain", "arc")
+      .in("chain", ["arc", "solana", "robinhood"])
       .order("created_at", { ascending: false })
       .limit(48);
 

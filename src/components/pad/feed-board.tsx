@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FEED_TABS, filterFeed, isListedLaunch, type FeedLaunch, type FeedTab } from "@/lib/feed";
+import { FEED_TABS, filterFeed, isListedLaunch, launchHref, type FeedLaunch, type FeedTab } from "@/lib/feed";
 import { EmptyPad, TokenRow } from "@/components/pad/launch-card";
-import { TokenDeck } from "@/components/pad/token-deck";
 import { readWatch } from "@/components/pad/watch-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const EMPTY: Record<FeedTab, { title: string; body: string }> = {
@@ -29,7 +29,7 @@ const EMPTY: Record<FeedTab, { title: string; body: string }> = {
   },
 };
 
-export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
+export function FeedBoard({ launches, king }: { launches: FeedLaunch[]; king?: FeedLaunch | null }) {
   const [tab, setTab] = useState<FeedTab>("trending");
   const [watchOnly, setWatchOnly] = useState(false);
   const [watch, setWatch] = useState<string[]>([]);
@@ -67,6 +67,18 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Board</p>
           <h2 className="mt-1 text-3xl font-semibold tracking-tight">Tokens</h2>
         </div>
+        {king ? (
+          <Link
+            href={launchHref(king).href}
+            className="flex items-center gap-2 self-start rounded-full border border-gold/25 bg-gold/[0.06] px-3 py-1.5 text-sm text-gold transition-colors hover:border-gold/45 lg:self-auto"
+          >
+            <span aria-hidden>👑</span>
+            <span className="font-medium">${king.ticker}</span>
+            <span className="text-gold/70">{formatPct(king.changePct)}</span>
+          </Link>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Input
             value={q}
@@ -128,13 +140,10 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
           </div>
         </div>
       ) : (
-        <div className="relative z-10 space-y-6">
-          <TokenDeck launches={shown} />
-          <div className="relative z-10 space-y-1">
-            {shown.map((launch) => (
-              <TokenRow key={launch.slug} launch={launch} />
-            ))}
-          </div>
+        <div className="relative z-10 space-y-1">
+          {shown.map((launch) => (
+            <TokenRow key={launch.slug} launch={launch} />
+          ))}
         </div>
       )}
     </section>
