@@ -24,6 +24,8 @@ type StoryRow = {
   mint_decimals?: number | null;
   supply?: number | string | null;
   token_address?: string | null;
+  quote_mint?: string | null;
+  quote_address?: string | null;
   users: { handle: string } | { handle: string }[] | null;
 };
 
@@ -44,7 +46,7 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
     const { data: storyRows } = await supabase
       .from("stories")
       .select(
-        "id, slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, token_address, curve_quote_lamports, graduation_quote_raw, quote_decimals, mint_decimals, supply, users:author_user_id(handle)",
+        "id, slug, title, ticker, blurb, engine, pair_label, author_bps, cover_url, status, created_at, chain, venue, token_address, quote_mint, curve_quote_lamports, graduation_quote_raw, quote_decimals, mint_decimals, supply, users:author_user_id(handle)",
       )
       .in("status", ["live", "graduated"])
       .eq("chain", "arc")
@@ -111,6 +113,7 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
           chain: row.chain ?? "arc",
           venue: row.venue ?? "spl",
           tokenAddress: row.token_address ?? null,
+          quoteAddress: row.quote_address ?? row.quote_mint ?? null,
         },
         tradesByStory.get(row.id) ?? [],
         {

@@ -16,6 +16,7 @@ export type FeedLaunch = {
   chain?: string;
   venue?: string;
   tokenAddress?: string | null;
+  quoteAddress?: string | null;
   priceUi: number;
   changePct: number;
   volumeUi: number;
@@ -68,12 +69,27 @@ export function filterFeed(launches: FeedLaunch[], tab: FeedTab): FeedLaunch[] {
   }
 }
 
-export function isListedLaunch(item: FeedLaunch): boolean {
+const ANVIL_QUOTE = "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707";
+const MOCK_SLUGS = new Set(["volt-hrrb", "rune-kuou", "edge-u7iw"]);
+
+export function isAnvilLaunch(item: {
+  slug?: string | null;
+  quoteAddress?: string | null;
+  tokenAddress?: string | null;
+}): boolean {
+  const slug = (item.slug ?? "").toLowerCase();
+  if (MOCK_SLUGS.has(slug)) return true;
+  const quote = (item.quoteAddress ?? "").toLowerCase();
+  return quote === ANVIL_QUOTE;
+}
+
+export function isListedLaunch(item: FeedLaunch & { quoteAddress?: string | null }): boolean {
   if (item.chain && item.chain !== "arc") return false;
+  if (isAnvilLaunch(item)) return false;
   const mint = item.tokenAddress ?? "";
   if (!/^0x[a-fA-F0-9]{40}$/.test(mint)) return false;
   const ticker = item.ticker.trim().toUpperCase();
-  if (["TEST", "DEMO", "MOCK", "FOO", "BAR"].includes(ticker)) return false;
+  if (["DEMO", "MOCK", "FOO", "BAR"].includes(ticker)) return false;
   return item.status === "live" || item.status === "graduated";
 }
 

@@ -25,12 +25,17 @@ export async function GET() {
     const supabase = await createClient();
     const { data } = await supabase
       .from("trades")
-      .select("side, trader, amount_in, amount_out, traded_at, stories:story_id(slug, ticker, quote_decimals, pair_label)")
+      .select("side, trader, amount_in, amount_out, traded_at, stories:story_id(slug, ticker, quote_decimals, pair_label, quote_mint, token_address)")
       .order("traded_at", { ascending: false })
       .limit(24);
     for (const row of data ?? []) {
       const story = Array.isArray(row.stories) ? row.stories[0] : row.stories;
       if (!story || typeof story !== "object" || !("slug" in story)) continue;
+      const slug = String((story as { slug: string }).slug);
+      const quote = String((story as { quote_mint?: string | null }).quote_mint ?? "").toLowerCase();
+      if (["volt-hrrb", "rune-kuou", "edge-u7iw"].includes(slug) || quote === "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707") {
+        continue;
+      }
       const quoteDecimals = Number((story as { quote_decimals?: number }).quote_decimals ?? 6);
       const amountIn = Number(row.amount_in ?? 0);
       const quoteUi =
