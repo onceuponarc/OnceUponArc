@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
 import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { readApiJson } from "@/lib/http/read-json";
-import { ARC_V4 } from "@onceupon/config/ubi-v4";
+import { LaunchLiveCard, type LiveLaunch } from "@/components/launch/launch-live-card";
 
 type Mode = "direct" | "fair";
 
@@ -19,13 +19,13 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [result, setResult] = useState<LiveLaunch | null>(null);
 
   async function launch(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
-    setTxHash(null);
+    setResult(null);
     try {
       const res = await fetch("/api/arc/v4-launch", {
         method: "POST",
@@ -38,14 +38,27 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
           xHandle,
         }),
       });
-      const body = await readApiJson<{ error?: string; hash?: string; creator?: string }>(res);
+      const body = await readApiJson<{ error?: string; hash?: string; creator?: string; token?: string }>(res);
       if (!res.ok || !body.hash) throw new Error(body.error ?? "V4 launch failed. Fund your in-app Arc wallet with USDC.");
-      setTxHash(body.hash);
+      setResult({
+        venue: "uniswap-v4",
+        name,
+        symbol: symbol.toUpperCase(),
+        blurb: xHandle,
+        image: cover?.url ?? null,
+        mint: body.token || body.creator || body.hash,
+        signature: body.hash,
+        creator: body.creator,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "V4 launch failed.");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (result) {
+    return <LaunchLiveCard live={result} onAgain={() => setResult(null)} />;
   }
 
   return (
@@ -78,14 +91,6 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
         {busy ? "Signing with your desk…" : "Launch on Uniswap v4"}
       </Button>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      {txHash ? (
-        <p className="break-all text-sm text-white/70">
-          Sent{" "}
-          <a className="underline" href={`${ARC_V4.explorer}/tx/${txHash}`} target="_blank" rel="noreferrer">
-            {txHash}
-          </a>
-        </p>
-      ) : null}
     </form>
   );
 }
