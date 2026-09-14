@@ -9,7 +9,7 @@ import { formatCompact, formatUsd, timeAgo } from "@/lib/format";
 import type { ProfileDesk } from "@/lib/profile-types";
 import { cn } from "@/lib/utils";
 
-type Tab = "launches" | "holds" | "activity";
+type Tab = "launches" | "cards" | "holds" | "activity";
 
 export function ProfileDeskView({
   desk,
@@ -160,6 +160,7 @@ export function ProfileDeskView({
             {(
               [
                 ["launches", `Launches ${desk.launches.length}`],
+                ["cards", `Cards ${desk.cards.length}`],
                 ["holds", `Holdings ${desk.holds.length}`],
                 ["activity", "Tape"],
               ] as const
@@ -177,6 +178,34 @@ export function ProfileDeskView({
               </button>
             ))}
           </div>
+
+          {tab === "cards" ? (
+            <div className="grid gap-3 p-3 sm:grid-cols-2">
+              {!desk.cards.length ? (
+                <p className="col-span-full px-3 py-12 text-center text-sm text-white/45">
+                  {isSelf ? "No jackets yet. Print one from /cards/new." : "No press cards on this desk."}
+                </p>
+              ) : (
+                desk.cards.map((row) => (
+                  <Link key={row.slug} href={`/cards/${row.slug}`} className="overflow-hidden rounded-2xl border border-white/10">
+                    <div className="h-28 bg-white/5">
+                      {row.coverUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={row.coverUrl} alt="" className="h-full w-full object-cover" />
+                      ) : null}
+                    </div>
+                    <div className="p-3">
+                      <p className="font-semibold">${row.ticker}</p>
+                      <p className="text-sm text-white/50">{row.title}</p>
+                      <p className="mt-1 font-mono text-[11px] uppercase text-white/35">
+                        {row.owner ? "Held" : "Created"} · {row.listed ? "listed" : "unlisted"}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          ) : null}
 
           {tab === "launches" ? (
             <div className="grid gap-3 p-3 sm:grid-cols-2">

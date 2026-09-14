@@ -30,6 +30,9 @@ export function SiteHeader({
           <Link href="/launch/arc" className="transition-colors hover:text-white">
             Launch
           </Link>
+          <Link href="/cards" className="transition-colors hover:text-white">
+            Cards
+          </Link>
           <Link href="/wallet" className="transition-colors hover:text-white">
             Wallet
           </Link>

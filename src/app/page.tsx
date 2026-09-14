@@ -69,6 +69,10 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <Link href="/cards" className="block rounded-2xl border border-white/10 px-5 py-4">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Press cards</p>
+        <p className="mt-1 text-lg font-semibold">3D jackets that track Chapter MC. Coin and card stay separate.</p>
+      </Link>
       <Link
         href="/params"
         className="block rounded-2xl border border-amber-300/25 bg-amber-300/[0.05] px-5 py-4 text-center sm:text-left"

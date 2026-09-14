@@ -5,6 +5,8 @@ import { bannerFromCover, hiResPortrait, publicMediaUrl, xAvatarFallback } from 
 import { fetchXProfile } from "@/lib/x-profile";
 
 import type { ProfileDesk, ProfileFill, ProfileHold, ProfileLaunch } from "@/lib/profile-types";
+import { cardsForHandle } from "@/lib/cards/store";
+import { viewCard } from "@/lib/cards/math";
 
 function quoteUi(side: string, amountIn: number, amountOut: number, decimals: number) {
   const div = 10 ** (decimals || 6);
@@ -178,6 +180,18 @@ export async function loadProfileDesk(handle: string, viewerId?: string | null):
       "/brand/logo.jpg",
     bannerUrl,
     launches,
+    cards: cardsForHandle(user.handle).map((card) => {
+      const view = viewCard(card);
+      return {
+        slug: card.slug,
+        ticker: card.ticker,
+        title: card.title,
+        coverUrl: card.coverUrl,
+        valueUi: view.valueUi,
+        listed: card.listed,
+        owner: card.ownerHandle.toLowerCase() === user.handle.toLowerCase(),
+      };
+    }),
     holds,
     fills: fills.slice(0, 40),
     launchCount: launches.length,

@@ -1,0 +1,22 @@
+create table if not exists public.press_cards (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  title text not null,
+  ticker text not null,
+  blurb text,
+  tweet_url text,
+  tweet_id text,
+  tweet_handle text,
+  cover_url text,
+  start_price_ui numeric not null,
+  start_mcap_ui numeric not null,
+  flywheel text not null default 'creator',
+  story_slug text,
+  creator_handle text not null,
+  creator_pay_address text not null,
+  pay_network text not null default 'arc',
+  owner_handle text not null,
+  listed boolean not null default true,
+  last_pay_tx text,
+  created_at timestamptz not null default now()
+);

@@ -46,6 +46,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/week" className="hover:text-white">
             Week
           </Link>
+          <Link href="/cards" className="hover:text-white">
+            Cards
+          </Link>
           <span>Arc launchpad</span>
         </footer>
         <TabBar />

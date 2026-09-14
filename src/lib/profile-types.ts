@@ -10,6 +10,16 @@ export type ProfileLaunch = {
   trades: number;
 };
 
+export type ProfileCard = {
+  slug: string;
+  ticker: string;
+  title: string;
+  coverUrl: string | null;
+  valueUi: number;
+  listed: boolean;
+  owner: boolean;
+};
+
 export type ProfileHold = {
   slug: string;
   ticker: string;
@@ -35,6 +45,7 @@ export type ProfileDesk = {
   portraitUrl: string | null;
   bannerUrl: string | null;
   launches: ProfileLaunch[];
+  cards: ProfileCard[];
   holds: ProfileHold[];
   fills: ProfileFill[];
   launchCount: number;
