@@ -74,7 +74,7 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
             placeholder="Search ticker, name, handle"
             className="sm:w-64"
           />
-          <div className="flex flex-wrap gap-1 rounded-lg border border-white/10 p-1">
+          <div className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-white/10 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {FEED_TABS.map((item) => (
               <button
                 key={item.id}
@@ -84,22 +84,23 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
                   setTab(item.id);
                 }}
                 className={cn(
-                  "rounded-md px-3 py-1.5 text-sm transition-colors",
+                  "shrink-0 rounded-full px-3 py-1.5 text-sm transition-colors",
                   !watchOnly && tab === item.id ? "bg-white text-black" : "text-white/60 hover:text-white",
                 )}
               >
                 {item.label}
+                <span className="ml-1 text-xs opacity-60">{filterFeed(listed, item.id).length}</span>
               </button>
             ))}
             <button
               type="button"
               onClick={() => setWatchOnly(true)}
               className={cn(
-                "rounded-md px-3 py-1.5 text-sm transition-colors",
+                "shrink-0 rounded-full px-3 py-1.5 text-sm transition-colors",
                 watchOnly ? "bg-white text-black" : "text-white/60 hover:text-white",
               )}
             >
-              Watch {watch.length ? watch.length : ""}
+              Watch {watch.length}
             </button>
           </div>
         </div>
