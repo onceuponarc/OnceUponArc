@@ -256,6 +256,7 @@ export default async function StoryPage({
         <PriceChart
           trades={trades}
           fallbackPrice={chapterStartPriceUi(virtualQuoteUiFor(), 1_073_000_000)}
+          ticker={story.ticker}
         />
         <div className="space-y-4">
           {chain === "arc" ? <ArcDevnetWallet compact /> : null}

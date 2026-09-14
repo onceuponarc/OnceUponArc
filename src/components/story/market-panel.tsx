@@ -8,11 +8,25 @@ export type { ChartTrade };
 export function PriceChart({
   trades,
   fallbackPrice,
+  ticker,
+  mcapUi,
+  liquidityUi,
 }: {
   trades: ChartTrade[];
   fallbackPrice: number;
+  ticker?: string;
+  mcapUi?: number;
+  liquidityUi?: number;
 }) {
-  return <TokenChart trades={trades} fallbackPrice={fallbackPrice} />;
+  return (
+    <TokenChart
+      trades={trades}
+      fallbackPrice={fallbackPrice}
+      ticker={ticker}
+      mcapUi={mcapUi}
+      liquidityUi={liquidityUi}
+    />
+  );
 }
 
 export function HoldersTable({

@@ -20,14 +20,20 @@ import { cn } from "@/lib/utils";
 export function TokenChart({
   trades,
   fallbackPrice,
+  ticker,
+  mcapUi,
+  liquidityUi,
 }: {
   trades: ChartTrade[];
   fallbackPrice: number;
+  ticker?: string;
+  mcapUi?: number;
+  liquidityUi?: number;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const [tf, setTf] = useState<ChartTf>("1m");
-  const [mode, setMode] = useState<"area" | "candles" | "line">("area");
+  const [mode, setMode] = useState<"area" | "candles" | "line">("candles");
   const candles = candlesFromTrades(trades, tf, fallbackPrice);
   const last = candles.at(-1)?.close ?? fallbackPrice;
   const first = candles[0]?.close ?? last;
@@ -111,19 +117,33 @@ export function TokenChart({
 
   const vol = trades.reduce((sum, item) => sum + item.quoteUi, 0);
 
+  const change = ((last - first) / (first || 1)) * 100;
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
-      <div className="flex flex-wrap items-end justify-between gap-3 px-4 pt-4">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b0b]">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 px-4 py-3">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Price</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
+            {ticker ? `$${ticker} / USDC` : "DEX chart"}
+          </p>
           <p className="mt-1 text-3xl font-semibold tabular-nums">{formatUsd(last, 6)}</p>
         </div>
-        <div className="text-right text-sm">
-          <p className={up ? "text-buy" : "text-sell"}>
-            {up ? "+" : ""}
-            {(((last - first) / (first || 1)) * 100).toFixed(2)}%
-          </p>
-          <p className="text-white/45">{formatUsd(vol)} vol</p>
+        <div className="grid grid-cols-3 gap-4 text-right text-sm">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">Change</p>
+            <p className={up ? "text-buy" : "text-sell"}>
+              {up ? "+" : ""}
+              {change.toFixed(2)}%
+            </p>
+          </div>
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">Volume</p>
+            <p className="tabular-nums">{formatUsd(vol)}</p>
+          </div>
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">{mcapUi != null ? "MCap" : "Liq"}</p>
+            <p className="tabular-nums">{formatUsd(mcapUi ?? liquidityUi ?? 0)}</p>
+          </div>
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 px-4">

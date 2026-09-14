@@ -70,7 +70,11 @@ export function ArcDevnetWallet({ compact = false }: { compact?: boolean }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/arc/faucet", { method: "POST" });
+      const res = await fetch("/api/arc/faucet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: status?.address }),
+      });
       const body = await readApiJson<{ error?: string }>(res);
       if (!res.ok) setError(body.error ?? "Faucet failed.");
       await refresh();
@@ -112,10 +116,15 @@ export function ArcDevnetWallet({ compact = false }: { compact?: boolean }) {
       </dl>
       <div className="flex flex-wrap gap-2">
         <Button type="button" onClick={faucet} disabled={busy || !status?.ready}>
-          {busy ? "Minting…" : "Drip 25,000 USDC"}
+          {busy ? "Minting…" : "Fund $500 test USDC"}
         </Button>
         <Button type="button" variant="outline" onClick={() => refresh()}>
           Refresh
+        </Button>
+        <Button type="button" variant="outline" asChild>
+          <a href="https://faucet.circle.com" target="_blank" rel="noreferrer">
+            Circle faucet
+          </a>
         </Button>
       </div>
       {status?.error || error ? (

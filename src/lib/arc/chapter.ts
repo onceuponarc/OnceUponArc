@@ -141,14 +141,10 @@ export async function dripFaucet(to?: `0x${string}`) {
   const pub = publicArc(net);
   const deployer = deployerWallet(net);
   const testnet = net.chainId === 5042002;
-  const blocked = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8".toLowerCase();
   const fallback = testnet
     ? ("0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7" as `0x${string}`)
     : traderWallet(net).account.address;
-  const requested = to || fallback;
-  const trader = requested.toLowerCase() === blocked
-    ? fallback
-    : requested;
+  const trader = to || fallback;
   const dripNative = testnet ? parseEther("0.25") : parseEther("25");
   const gas = await deployer.sendTransaction({
     to: trader,
@@ -156,9 +152,15 @@ export async function dripFaucet(to?: `0x${string}`) {
   });
   await pub.waitForTransactionReceipt({ hash: gas });
   if (testnet) {
-    return { hash: gas, amountUi: 0.25, address: trader, gas };
+    return {
+      hash: gas,
+      amountUi: 0.25,
+      address: trader,
+      gas,
+      note: "Public Arc Testnet USDC is Circle’s. Get test USDC from faucet.circle.com — this drip only covers gas.",
+    };
   }
-  const amount = parseUnits("25000", 6);
+  const amount = parseUnits("500", 6);
   const hash = await deployer.writeContract({
     address: net.usdc,
     abi: erc20Abi,
@@ -166,7 +168,7 @@ export async function dripFaucet(to?: `0x${string}`) {
     args: [trader, amount],
   });
   await pub.waitForTransactionReceipt({ hash });
-  return { hash, amountUi: 25_000, address: trader, gas };
+  return { hash, amountUi: 500, address: trader, gas };
 }
 
 export async function launchOnArc(input: {
