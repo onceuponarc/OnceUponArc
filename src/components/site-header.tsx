@@ -45,6 +45,9 @@ export function SiteHeader({
           <Link href="/week" className="transition-colors hover:text-white">
             Week
           </Link>
+          <Link href="/drop" className="transition-colors hover:text-white">
+            Drop
+          </Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <p className="hidden font-mono text-[11px] text-white/35 lg:block">{onlineCount} online</p>

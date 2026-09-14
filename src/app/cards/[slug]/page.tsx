@@ -9,6 +9,21 @@ import { formatUsd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const card = await viewOneCard(slug);
+  if (!card) return { title: "Card" };
+  return {
+    title: `$${card.ticker} jacket`,
+    description: `${card.title} · ${card.multiple.toFixed(2)}x · start $${card.startPriceUi}`,
+    openGraph: {
+      title: `$${card.ticker} · OnceUpon jacket`,
+      description: card.blurb,
+      images: card.coverUrl ? [card.coverUrl] : ["/brand/banner.jpg"],
+    },
+  };
+}
+
 export default async function CardPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const card = await viewOneCard(slug);

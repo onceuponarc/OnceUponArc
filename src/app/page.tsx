@@ -13,6 +13,8 @@ import { KingBanner } from "@/components/pad/king-banner";
 import { LivePulse } from "@/components/pad/live-pulse";
 import { viewAllCards } from "@/lib/cards/resolve";
 import { CardRail } from "@/components/cards/card-rail";
+import { DropBanner } from "@/components/pad/drop-banner";
+import { FlywheelRow } from "@/components/pad/flywheel-row";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +32,8 @@ export default async function HomePage() {
       <LiveRefresh intervalMs={2000} />
       <LivePulse />
       <ArcDeskBar />
+      <DropBanner />
+      <FlywheelRow />
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black p-5 sm:p-7">
           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeftRight, Home, Rocket, Sparkles, UserRound } from "lucide-react";
+import { ArrowLeftRight, Home, Layers3, Rocket, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/", label: "Home", icon: Home },
   { href: "/launch/arc", label: "Launch", icon: Rocket, match: "/launch" },
+  { href: "/cards", label: "Cards", icon: Layers3, match: "/cards" },
   { href: "/wallet", label: "Wallet", icon: ArrowLeftRight },
-  { href: "/tools", label: "Tools", icon: Sparkles, match: "/tools" },
   { href: "/you", label: "You", icon: UserRound },
 ] as const;
 

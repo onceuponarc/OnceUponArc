@@ -14,6 +14,7 @@ export function ClaimDesk({ card }: { card: CardView }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [done, setDone] = useState(false);
 
   async function copyPay() {
     await navigator.clipboard.writeText(card.creatorPayAddress);
@@ -32,7 +33,8 @@ export function ClaimDesk({ card }: { card: CardView }) {
       });
       const body = await readApiJson<{ error?: string }>(res);
       if (!res.ok) throw new Error(body.error ?? "Claim failed.");
-      router.refresh();
+      setDone(true);
+      window.setTimeout(() => router.refresh(), 900);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Claim failed.");
     } finally {
@@ -62,8 +64,9 @@ export function ClaimDesk({ card }: { card: CardView }) {
       <Input value={tx} onChange={(e) => setTx(e.target.value)} placeholder="tx hash / signature" />
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       <Button type="button" onClick={() => void claim()} disabled={busy}>
-        {busy ? "Moving jacket…" : "I paid · take card"}
+        {busy ? "Moving jacket…" : done ? "Jacket moved" : "I paid · take card"}
       </Button>
+      {done ? <p className="text-sm text-white">Transferred. It now sits on your profile.</p> : null}
     </div>
   );
 }
