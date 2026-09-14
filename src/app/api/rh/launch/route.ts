@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/auth";
 import { deskRhWallet } from "@/lib/wallets/rh-client";
 import { PONS_FACTORY, PONS_FACTORY_ABI } from "@/lib/rh/pons";
 import { RH } from "@onceupon/config/rh";
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export const dynamic = "force-dynamic";
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
     const description = (body.description ?? "").trim() || "Launched on OrbitX";
     const twitterFallback = profile?.handle ? `https://x.com/${profile.handle}` : "";
     const twitter = normalizeUrl(body.twitter, "twitter", twitterFallback);
-    const website = normalizeUrl(body.website, "website", "https://www.orbitx.world");
+    const website = normalizeUrl(body.website, "website", PUBLIC_SITE_URL);
     const telegram = normalizeUrl(body.telegram, "telegram");
 
     const salt = keccak256(toHex(`${address}:${name}:${symbol}:${Date.now()}`));

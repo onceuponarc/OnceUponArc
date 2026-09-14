@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,6 +22,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(PUBLIC_SITE_URL),
   title: {
     default: "OrbitX — multi-chain launchpad",
     template: "%s · OrbitX",

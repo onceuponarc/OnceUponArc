@@ -1,1 +1,1 @@
-export const PUBLIC_SITE_URL = "https://www.orbitx.world";
+export const PUBLIC_SITE_URL = "https://www.orbitxtrade.world";

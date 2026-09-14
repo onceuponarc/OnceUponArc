@@ -6,6 +6,7 @@ import { isPublicArc } from "@onceupon/config/arc";
 import { curveAbi, erc20Abi, factoryAbi } from "@/lib/arc/abi";
 import { publicArc, requireArcNetwork, traderWallet } from "@/lib/arc/client";
 import { loadArcNetwork } from "@/lib/arc/env";
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import { ensureArcDevnet } from "@/lib/arc/ensure";
 import {
   appendLocalArcTrade,
@@ -94,7 +95,7 @@ export async function arcStatus() {
   const address = wallet.account.address;
   let gas = 0n;
   let usdc = 0n;
-  let tokenBalance = 0n;
+  const tokenBalance = 0n;
   try {
     gas = await pub.getBalance({ address });
     usdc = await pub.readContract({
@@ -195,7 +196,7 @@ export function prepareUserCreate(input: {
       {
         name: title.slice(0, 32),
         symbol: ticker.slice(0, 10),
-        uri: input.coverUrl || "https://www.orbitx.world/onceupon-cover.svg",
+        uri: input.coverUrl || `${PUBLIC_SITE_URL}/onceupon-cover.svg`,
         quote: net.usdc,
         engine: input.engine === "onceuponers" ? 1 : 0,
         authorBps,
@@ -262,7 +263,7 @@ export async function launchOnArc(input: {
       {
         name: title.slice(0, 32),
         symbol: ticker.slice(0, 10),
-        uri: input.coverUrl || "https://www.orbitx.world/onceupon-cover.svg",
+        uri: input.coverUrl || `${PUBLIC_SITE_URL}/onceupon-cover.svg`,
         quote: net.usdc,
         engine: input.engine === "onceuponers" ? 1 : 0,
         authorBps,

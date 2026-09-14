@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCard } from "@/lib/cards/store";
 import { pressId } from "@/lib/cards/types";
 import { CARD_FLYWHEELS } from "@/lib/cards/types";
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     symbol: card.ticker,
     description: card.blurb,
     image: card.coverUrl ?? undefined,
-    external_url: `https://www.orbitx.world/cards/${card.slug}`,
+    external_url: `${PUBLIC_SITE_URL}/cards/${card.slug}`,
     attributes: [
       { trait_type: "Press ID", value: pressId(card.pressNumber) },
       { trait_type: "Card mode", value: flywheel?.label ?? card.flywheel },

@@ -25,7 +25,7 @@ const COLS = [
       { href: "/params", label: "$ORBITX live" },
       { href: "/links", label: "Links" },
       { href: "https://x.com/orbitx_wrld", label: "X" },
-      { href: "https://www.orbitx.world/", label: "Updates" },
+      { href: "https://www.orbitxtrade.world/", label: "Updates" },
     ],
   },
   {

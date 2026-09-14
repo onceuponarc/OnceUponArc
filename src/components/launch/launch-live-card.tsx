@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CopyCa } from "@/components/story/copy-ca";
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 
 export type LiveLaunch = {
   venue: "pumpfun" | "uniswap-v4" | "pons";
@@ -54,7 +55,7 @@ export function LaunchLiveCard({ live, onAgain }: { live: LiveLaunch; onAgain: (
       venueLine(live.venue),
       live.blurb || "",
       `CA: ${live.mint}`,
-      live.slug ? `https://www.orbitx.world/story/${live.slug}` : "",
+      live.slug ? `${PUBLIC_SITE_URL}/story/${live.slug}` : "",
     ]
       .filter(Boolean)
       .join("\n");

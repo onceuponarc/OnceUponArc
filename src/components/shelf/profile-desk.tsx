@@ -120,7 +120,7 @@ export function ProfileDeskView({
                 @{desk.handle}
               </p>
               <p className="mx-auto mt-1 max-w-xl font-mono text-[11px] text-white/30 sm:mx-0">
-                www.orbitx.world{publicPath}
+                www.orbitxtrade.world{publicPath}
               </p>
               <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/70 sm:mx-0">{bio}</p>
             </div>
