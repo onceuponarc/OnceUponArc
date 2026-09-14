@@ -23,17 +23,24 @@ export default async function HomePage() {
     <div className="space-y-6">
       <LiveRefresh />
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
-        <div className="rounded-2xl border border-white/10 bg-black p-5 sm:p-7">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Arc launchpad</p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black p-5 sm:p-7">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/banner.jpg"
+            alt=""
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-35"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/40" />
+          <p className="relative font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Arc launchpad</p>
+          <h1 className="relative mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
             Launch. Trade.
             <span className="block text-white/50">Graduate.</span>
           </h1>
-          <p className="mt-3 max-w-xl text-sm text-white/55 sm:text-base">
+          <p className="relative mt-3 max-w-xl text-sm text-white/55 sm:text-base">
             Bonding curve in USDC on Arc. No seeded AMM at create. Highest volume is token of the day.
             {profile ? ` Signed in as @${profile.handle}.` : " Sign in with X to bind a profile."}
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="relative mt-5 flex flex-wrap gap-2">
             <Button asChild>
               <Link href="/launch/arc">Launch token</Link>
             </Button>

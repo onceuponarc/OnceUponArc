@@ -20,10 +20,17 @@ export default async function LaunchChainPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-white/10 px-5 py-7 sm:px-10">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Launch · Arc</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Create a token on Arc</h1>
-        <p className="mt-3 max-w-2xl text-white/60">
+      <section className="relative overflow-hidden rounded-2xl border border-white/10 px-5 py-7 sm:px-10">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/banner.jpg" alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/50" />
+        <div className="relative flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo.jpg" alt="" className="size-12 rounded-xl border border-white/15 object-cover" />
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Launch · Arc</p>
+        </div>
+        <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Create a token on Arc</h1>
+        <p className="relative mt-3 max-w-2xl text-white/60">
           USDC bonding curve. Tradable the moment create lands. Graduation opens the pool from the vault. Devnet is
           live.
         </p>

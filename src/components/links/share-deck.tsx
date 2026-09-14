@@ -129,7 +129,11 @@ export function ShareDeck() {
 
       <div className="relative z-10 flex items-end justify-between gap-4 px-5 pt-2 sm:px-10">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-white/40">OnceUpon · Arc</p>
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/logo.jpg" alt="" className="size-12 rounded-xl border border-white/15 object-cover" />
+            <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-white/40">OnceUpon · Arc</p>
+          </div>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-6xl">The desk.</h1>
           <p className="mt-2 max-w-md text-sm text-white/55">
             Drag sideways. Every card is a door. Website still on the press.

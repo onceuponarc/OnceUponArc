@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import { bannerFromCover, hiResPortrait } from "@/lib/media";
+import { fetchXProfile } from "@/lib/x-profile";
 
 import type { ProfileDesk, ProfileFill, ProfileHold, ProfileLaunch } from "@/lib/profile-types";
 
@@ -17,12 +18,31 @@ function tokensUi(side: string, amountIn: number, amountOut: number) {
 
 export async function loadProfileDesk(handle: string, viewerId?: string | null): Promise<ProfileDesk | null> {
   const supabase = await createClient();
-  const { data: user } = await supabase
+  let userQuery = await supabase
     .from("users")
-    .select("id, handle, display_name, bio, portrait_url, storage_portrait_path")
+    .select("id, handle, display_name, bio, portrait_url, storage_portrait_path, banner_url")
     .eq("handle", handle)
     .maybeSingle();
+  if (userQuery.error) {
+    userQuery = await supabase
+      .from("users")
+      .select("id, handle, display_name, bio, portrait_url, storage_portrait_path")
+      .eq("handle", handle)
+      .maybeSingle();
+  }
+  const user = userQuery.data as
+    | {
+        id: string;
+        handle: string;
+        display_name: string;
+        bio: string | null;
+        portrait_url: string | null;
+        storage_portrait_path: string | null;
+        banner_url?: string | null;
+      }
+    | null;
   if (!user) return null;
+  const x = await fetchXProfile(user.handle);
 
   const { data: storyRows } = await supabase
     .from("stories")
@@ -140,15 +160,21 @@ export async function loadProfileDesk(handle: string, viewerId?: string | null):
   const feesUi = launches.reduce((sum, row) => sum + row.feesUi, 0);
   const tradedUi = fills.reduce((sum, row) => sum + row.quoteUi, 0);
   const bannerUrl =
-    bannerFromCover(launches.find((row) => row.coverUrl)?.coverUrl) ??
-    hiResPortrait(user.portrait_url);
+    user.banner_url ||
+    x?.bannerUrl ||
+    bannerFromCover(launches.find((row) => row.coverUrl)?.coverUrl) ||
+    "/brand/banner.jpg";
 
   return {
     id: user.id,
     handle: user.handle,
-    displayName: user.display_name,
-    bio: user.bio ?? "",
-    portraitUrl: hiResPortrait(user.portrait_url) ?? user.storage_portrait_path ?? user.portrait_url,
+    displayName: user.display_name || x?.name || user.handle,
+    bio: user.bio || x?.bio || "",
+    portraitUrl:
+      hiResPortrait(user.portrait_url) ??
+      x?.avatarUrl ??
+      user.storage_portrait_path ??
+      user.portrait_url,
     bannerUrl,
     launches,
     holds,
