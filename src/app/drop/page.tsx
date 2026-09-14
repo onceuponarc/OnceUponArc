@@ -16,7 +16,7 @@ import { OFFICIAL_TOKEN } from "@/lib/official-token";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Drop — launch day",
-  description: "OrbitX is live on Arc Devnet. Launch a Chapter. Print a jacket. Official token CA only from official channels.",
+  description: "$ORBITX is live on Solana. Official CA only from @orbitx_wrld and Telegram. Arc mainnet prints Friday.",
   openGraph: {
     title: "OrbitX drop",
     description: "Print a Chapter. Print a jacket. Let MC move both.",

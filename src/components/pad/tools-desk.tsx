@@ -42,7 +42,7 @@ export function ToolsDesk() {
           Fee math, graduation progress, and Arc network injectors. This is not a broker terminal.
         </p>
         <p className="mt-3 text-sm text-white/50">
-          Official token and the 75/25 pad split live on <a className="text-white underline" href="/params">/params</a>. Not live. No CA here.
+          Official token and the 75/25 pad split on <a className="text-white underline" href="/params">/params</a>. $ORBITX is live on Solana.
         </p>
       </section>
       <div className="grid gap-4 lg:grid-cols-2">

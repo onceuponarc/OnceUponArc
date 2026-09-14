@@ -22,7 +22,7 @@ const COLS = [
   {
     title: "Official",
     links: [
-      { href: "/params", label: "Token · not live" },
+      { href: "/params", label: "$ORBITX live" },
       { href: "/links", label: "Links" },
       { href: "https://x.com/orbitx_wrld", label: "X" },
       { href: "https://www.orbitx.world/", label: "Updates" },

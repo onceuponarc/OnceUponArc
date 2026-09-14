@@ -5,13 +5,16 @@ export const OFFICIAL_TOKEN = {
   mint: "13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
   chain: "solana",
   liveRule:
-    "$ORBITX is live on Solana. Official CA only from OrbitX channels. Arc mainnet print window is Friday.",
-  buyUrl: "https://www.orbitx.world/",
-  chartUrl: "https://solscan.io/token/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
+    "Ignore anywhere else. Anyone posting a mint, “stealth CA,” or “official ticker live” outside X @orbitx_wrld and the Telegram rooms is not us. $ORBITX CA is posted below. Arc mainnet prints Friday.",
+  buyUrl: "https://jup.ag/swap/SOL-13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
+  chartUrl: "https://dexscreener.com/solana/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
   channels: [
     { label: "X", href: "https://x.com/orbitx_wrld" },
-    { label: "Site", href: "https://www.orbitx.world/" },
-    { label: "CA", href: "https://solscan.io/token/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9" },
+    { label: "Updates", href: "https://t.me/onceuponupdates" },
+    { label: "Telegram", href: "https://t.me/onceuponarc" },
+    { label: "Chart", href: "https://dexscreener.com/solana/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9" },
+    { label: "Buy", href: "https://jup.ag/swap/SOL-13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9" },
+    { label: "Solscan", href: "https://solscan.io/token/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9" },
   ],
 } as const;
 

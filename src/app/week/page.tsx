@@ -22,8 +22,8 @@ export default async function WeekPage() {
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Friday 00:00 UTC window</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight">Weekly best Chapter</h1>
         <p className="mt-3 max-w-2xl text-white/60">
-          Score is 50% volume, 30% holders, 20% curve progress. When the official token is live, 5% of the creator-fee
-          slice buys the winner and burns it. No CA on this site until official channels post it.
+          Score is 50% volume, 30% holders, 20% curve progress. 5% of the creator-fee slice buys the week’s winner and
+          burns it. $ORBITX is live on Solana. Arc mainnet prints Friday.
         </p>
       </section>
 

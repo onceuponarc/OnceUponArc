@@ -37,6 +37,14 @@ export default function ParamsPage() {
         <h2 className="mt-2 text-2xl font-semibold tracking-tight">{OFFICIAL_TOKEN.name}</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-white/75">{OFFICIAL_TOKEN.liveRule}</p>
         <p className="mt-3 break-all font-mono text-sm text-white/45">{OFFICIAL_TOKEN.mint}</p>
+        <div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
+          <Link href={OFFICIAL_TOKEN.buyUrl} target="_blank" rel="noreferrer" className="rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-black">
+            Buy $ORBITX
+          </Link>
+          <Link href={OFFICIAL_TOKEN.chartUrl} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-3 py-1.5 text-sm text-white/80">
+            Chart
+          </Link>
+        </div>
         <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
           {OFFICIAL_TOKEN.channels.map((row) => (
             <Link
@@ -76,7 +84,7 @@ export default function ParamsPage() {
       <section className="rounded-3xl border border-white/10 px-5 py-6 sm:px-8">
         <h2 className="text-center text-xl font-semibold sm:text-left">Worked day · $100,000 volume at 0.30%</h2>
         <p className="mt-1 text-center text-sm text-white/50 sm:text-left">
-          Creator-fee pot ${pot.toFixed(0)}. Same weights the official token uses when it is live.
+          Creator-fee pot ${pot.toFixed(0)}. Same weights $ORBITX uses now.
         </p>
         <div className="mt-4 divide-y divide-white/10">
           {day.map((row) => (
@@ -95,15 +103,13 @@ export default function ParamsPage() {
             <li>8% of the pad creator-fee slice buys the official token and burns it.</li>
             <li>5% buys the week’s best launch and burns that coin.</li>
             <li>6% rewards holders. 6% team, vested. 75% builds the company.</li>
-            <li>No CA, no buy link, no chart until official channels post it.</li>
+            <li>$ORBITX is live on Solana. CA, chart, and buy links are on this page.</li>
           </ul>
         </div>
         <div className="rounded-3xl border border-white/10 p-5 sm:p-6">
           <h2 className="text-xl font-semibold">Ignore anywhere else</h2>
           <p className="mt-3 text-sm leading-6 text-white/65">
-            Anyone posting a mint, “stealth CA,” or “official ticker live” outside X @orbitx_wrld and the Telegram rooms is
-            not us. $ORBITX CA is posted below. Arc mainnet prints Friday.
-            that post exists.
+            {OFFICIAL_TOKEN.liveRule}
           </p>
           <Link href="/links" className="mt-4 inline-block text-sm text-white underline">
             Official links
