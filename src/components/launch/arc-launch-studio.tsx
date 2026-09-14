@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CHAPTER } from "@onceupon/config/chapter";
 import { PROTOCOL } from "@onceupon/config/arc";
@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
+import { V4LaunchStudio } from "@/components/launch/v4-launch-studio";
 import { readApiJson } from "@/lib/http/read-json";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,19 @@ export function ArcLaunchStudio({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [useV4, setUseV4] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/arc/status")
+      .then((res) => res.json())
+      .then((body: { ready?: boolean; error?: string }) => {
+        if (!body.ready || /StoryFactory|ARC_FACTORY|no code/i.test(body.error ?? "")) {
+          setUseV4(true);
+        }
+      })
+      .catch(() => setUseV4(true));
+  }, []);
+
   const cap = engine === "author" ? PROTOCOL.authorModeAuthorBpsCap : PROTOCOL.onceuponersAuthorBpsCap;
   const example = feeExample(1000, Math.min(authorBps, cap));
 
@@ -66,7 +80,12 @@ export function ArcLaunchStudio({
       });
       const body = await readApiJson<{ error?: string; slug?: string; mint?: string }>(res);
       if (!res.ok || !body.slug) {
-        setError(body.error ?? "Arc launch failed.");
+        const msg = body.error ?? "Arc launch failed.";
+        if (/StoryFactory has no code|ARC_FACTORY/i.test(msg)) {
+          setUseV4(true);
+          return;
+        }
+        setError(msg);
         return;
       }
       setStatus("Live on Arc.");
@@ -93,6 +112,17 @@ export function ArcLaunchStudio({
     } finally {
       setBusy(false);
     }
+  }
+
+  if (useV4) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-white/55">
+          Chapter factory is not on Arc 5042 yet. This desk prints on the live Uniswap v4 zap instead.
+        </p>
+        <V4LaunchStudio handle={handle} />
+      </div>
+    );
   }
 
   return (
