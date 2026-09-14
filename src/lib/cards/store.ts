@@ -2,7 +2,7 @@ import "server-only";
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { PressCard } from "@/lib/cards/types";
+import type { PressCard, PressOffer, PressActivity, OfferStatus } from "@/lib/cards/types";
 
 const FILE =
   process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
@@ -57,6 +57,11 @@ function fromRow(row: Record<string, unknown>): PressCard {
     listed: Boolean(row.listed),
     lastPayTx: (row.last_pay_tx as string | null) ?? null,
     createdAt: String(row.created_at),
+    nftMint: (row.nft_mint as string | null) ?? null,
+    pressNumber: row.press_number != null ? Number(row.press_number) : null,
+    rarity: (row.rarity as string) || "common",
+    editionIndex: Number(row.edition_index ?? 1),
+    editionTotal: Number(row.edition_total ?? 1),
   };
 }
 
@@ -126,6 +131,10 @@ export async function writeCard(card: PressCard) {
         listed: card.listed,
         last_pay_tx: card.lastPayTx,
         created_at: card.createdAt,
+        nft_mint: card.nftMint,
+        rarity: card.rarity,
+        edition_index: card.editionIndex,
+        edition_total: card.editionTotal,
       },
       { onConflict: "slug" },
     );
@@ -151,4 +160,140 @@ export function slugifyCard(ticker: string) {
     .replace(/^-|-$/g, "")
     .slice(0, 16);
   return `${base || "card"}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+/** Resolves an @handle to the Supabase user id backing its desk wallets.
+ *  Every settlement step re-resolves fresh from here rather than trusting a
+ *  cached wallet address, so a stale/rotated desk key can never be used to
+ *  authorize someone else's card or payment. */
+export async function resolveHandleUserId(handle: string): Promise<string | null> {
+  const db = await supabase();
+  if (!db) return null;
+  const needle = handle.replace(/^@/, "");
+  const { data } = await db.from("users").select("id").ilike("handle", needle).maybeSingle();
+  return (data?.id as string | undefined) ?? null;
+}
+
+function offerFromRow(row: Record<string, unknown>): PressOffer {
+  return {
+    id: String(row.id),
+    cardSlug: String(row.card_slug),
+    buyerHandle: String(row.buyer_handle),
+    sellerHandle: String(row.seller_handle),
+    offerAmountUi: Number(row.offer_amount_ui),
+    paymentMint: (row.payment_mint as string | null) ?? null,
+    status: row.status as OfferStatus,
+    txSignature: (row.tx_signature as string | null) ?? null,
+    failReason: (row.fail_reason as string | null) ?? null,
+    expiresAt: String(row.expires_at),
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at),
+  };
+}
+
+export async function createOffer(input: {
+  cardSlug: string;
+  buyerHandle: string;
+  sellerHandle: string;
+  offerAmountUi: number;
+  paymentMint?: string | null;
+}): Promise<PressOffer> {
+  const db = await supabase();
+  if (!db) throw new Error("Offers need the database configured.");
+  const { data, error } = await db
+    .from("press_offers")
+    .insert({
+      card_slug: input.cardSlug,
+      buyer_handle: input.buyerHandle,
+      seller_handle: input.sellerHandle,
+      offer_amount_ui: input.offerAmountUi,
+      payment_mint: input.paymentMint ?? null,
+      status: "open",
+    })
+    .select("*")
+    .single();
+  if (error || !data) throw new Error(error?.message ?? "Could not create the offer.");
+  return offerFromRow(data as Record<string, unknown>);
+}
+
+export async function getOffer(id: string): Promise<PressOffer | null> {
+  const db = await supabase();
+  if (!db) return null;
+  const { data } = await db.from("press_offers").select("*").eq("id", id).maybeSingle();
+  return data ? offerFromRow(data as Record<string, unknown>) : null;
+}
+
+export async function listOffersForCard(slug: string): Promise<PressOffer[]> {
+  const db = await supabase();
+  if (!db) return [];
+  const { data } = await db
+    .from("press_offers")
+    .select("*")
+    .eq("card_slug", slug)
+    .order("created_at", { ascending: false });
+  return (data ?? []).map((row) => offerFromRow(row as Record<string, unknown>));
+}
+
+/** Every transition is validated server-side by the caller; this just persists
+ *  it and stamps updated_at. `expectedStatus` is an optimistic-concurrency
+ *  guard — if someone else already moved the offer, this fails loudly instead
+ *  of double-settling it. */
+export async function setOfferStatus(
+  id: string,
+  expectedStatus: OfferStatus | OfferStatus[],
+  next: { status: OfferStatus; txSignature?: string | null; failReason?: string | null },
+): Promise<PressOffer> {
+  const db = await supabase();
+  if (!db) throw new Error("Offers need the database configured.");
+  const expected = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
+  const { data, error } = await db
+    .from("press_offers")
+    .update({
+      status: next.status,
+      tx_signature: next.txSignature ?? undefined,
+      fail_reason: next.failReason ?? undefined,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .in("status", expected)
+    .select("*")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("This offer already moved — refresh and try again.");
+  return offerFromRow(data as Record<string, unknown>);
+}
+
+export async function logActivity(input: {
+  cardSlug: string;
+  kind: string;
+  detail?: Record<string, unknown>;
+  txSignature?: string | null;
+}): Promise<void> {
+  const db = await supabase();
+  if (!db) return;
+  await db.from("press_activity").insert({
+    card_slug: input.cardSlug,
+    kind: input.kind,
+    detail: input.detail ?? {},
+    tx_signature: input.txSignature ?? null,
+  });
+}
+
+export async function listActivity(slug: string, limit = 50): Promise<PressActivity[]> {
+  const db = await supabase();
+  if (!db) return [];
+  const { data } = await db
+    .from("press_activity")
+    .select("*")
+    .eq("card_slug", slug)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    cardSlug: String(row.card_slug),
+    kind: String(row.kind),
+    detail: (row.detail as Record<string, unknown>) ?? {},
+    txSignature: (row.tx_signature as string | null) ?? null,
+    createdAt: String(row.created_at),
+  }));
 }

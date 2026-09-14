@@ -2,10 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { viewOneCard } from "@/lib/cards/resolve";
 import { CardJacket } from "@/components/cards/card-jacket";
-import { ClaimDesk } from "@/components/cards/claim-desk";
+import { OfferDesk, OfferInbox } from "@/components/cards/offer-desk";
+import { Storyline } from "@/components/cards/storyline";
 import { OwnerDesk } from "@/components/cards/owner-desk";
 import { getSessionUser } from "@/lib/auth";
 import { formatUsd } from "@/lib/format";
+import { pressId } from "@/lib/cards/types";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +37,7 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <CardJacket card={card} />
       <div className="space-y-4">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Jacket</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">{pressId(card.pressNumber)}</p>
         <h1 className="text-4xl font-semibold tracking-tight">${card.ticker}</h1>
         <p className="text-white/60">{card.blurb}</p>
         <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -80,6 +82,37 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
             </dd>
           </div>
         </dl>
+        <div className="rounded-2xl border border-white/10 p-3">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/35">Card DNA</p>
+          <dl className="mt-2 grid grid-cols-2 gap-2 text-xs text-white/60">
+            <div>
+              <dt className="text-white/35">Rarity</dt>
+              <dd className="capitalize text-white">{card.rarity}</dd>
+            </div>
+            <div>
+              <dt className="text-white/35">Edition</dt>
+              <dd className="text-white">
+                {card.editionIndex}/{card.editionTotal}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-white/35">Chain</dt>
+              <dd className="text-white">Solana</dd>
+            </div>
+            <div>
+              <dt className="text-white/35">NFT</dt>
+              <dd className="truncate text-white">
+                {card.nftMint ? (
+                  <a href={`https://solscan.io/token/${card.nftMint}`} target="_blank" rel="noreferrer" className="underline">
+                    {card.nftMint.slice(0, 6)}…{card.nftMint.slice(-4)}
+                  </a>
+                ) : (
+                  "pending"
+                )}
+              </dd>
+            </div>
+          </dl>
+        </div>
         <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/35">
           Pay {card.payNetwork} · {card.lastPayTx ? `last tx ${card.lastPayTx.slice(0, 10)}…` : "no transfer yet"}
         </p>
@@ -95,7 +128,15 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
             Source post
           </a>
         ) : null}
-        {isOwner ? <OwnerDesk card={card} /> : <ClaimDesk card={card} />}
+        {isOwner ? (
+          <>
+            <OwnerDesk card={card} />
+            <OfferInbox card={card} />
+          </>
+        ) : (
+          <OfferDesk card={card} viewerHandle={profile?.handle ?? null} />
+        )}
+        <Storyline slug={card.slug} />
       </div>
     </div>
   );

@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { Keypair, Transaction } from "@solana/web3.js";
 import { getSessionUser } from "@/lib/auth";
 import { fetchTweet } from "@/lib/cards/tweet";
-import { slugifyCard, writeCard } from "@/lib/cards/store";
+import { slugifyCard, writeCard, getCard, logActivity } from "@/lib/cards/store";
 import { CARD_FLYWHEELS, type CardFlywheel, type PressCard } from "@/lib/cards/types";
+import { buildMintPressCardIx } from "@/lib/press/nft";
+import { deskSolanaKey } from "@/lib/wallets/sign-desk";
+import { sendSignedTx, waitForTx, explorerFromSig } from "@/lib/solana/partial-tx";
+import { fetchLatestBlockhash } from "@/lib/solana/blockhash";
+import { serverSolanaRpcs } from "@/lib/solana/rpc-urls";
+import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +17,8 @@ const FLY = new Set(CARD_FLYWHEELS.map((row) => row.id));
 
 export async function POST(request: Request) {
   try {
-  const { profile } = await getSessionUser();
-  if (!profile) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
+  const { user, profile } = await getSessionUser();
+  if (!profile || !user) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
   const body = (await request.json()) as {
     url?: string;
     title?: string;
@@ -38,7 +45,7 @@ export async function POST(request: Request) {
     ? body.flywheel
     : "creator") as CardFlywheel;
 
-  let tweet = body.url ? await fetchTweet(body.url) : null;
+  const tweet = body.url ? await fetchTweet(body.url) : null;
   const ticker = (body.ticker || tweet?.handle || "CARD").replace(/[^A-Za-z0-9]/g, "").slice(0, 12).toUpperCase();
   const title = (body.title || tweet?.name || ticker).slice(0, 48);
   const pay = (body.creatorPayAddress ?? "").trim();
@@ -65,9 +72,57 @@ export async function POST(request: Request) {
     listed: true,
     lastPayTx: null,
     createdAt: new Date().toISOString(),
+    nftMint: null,
+    pressNumber: null,
+    rarity: "common",
+    editionIndex: 1,
+    editionTotal: 1,
   };
   await writeCard(card);
-  return NextResponse.json({ slug: card.slug, card });
+  const saved = (await getCard(card.slug)) ?? card;
+
+  // Mint a real, transferable Metaplex Core NFT for the card. This is a
+  // separate step from the DB write above on purpose: if minting fails, the
+  // card still exists and is usable (matches "never lose state that already
+  // succeeded" — the creator can retry the mint rather than losing the card).
+  let nftMint: string | null = null;
+  let mintError: string | null = null;
+  let mintSignature: string | null = null;
+  try {
+    const creatorKey = await deskSolanaKey(user.id);
+    const assetKeypair = Keypair.generate();
+    const ixs = await buildMintPressCardIx({
+      assetKeypair,
+      payer: creatorKey,
+      owner: creatorKey.publicKey,
+      name: `${title} ${saved.ticker}`,
+      uri: `${PUBLIC_SITE_URL}/api/cards/${card.slug}/nft-metadata`,
+    });
+    const tx = new Transaction().add(...ixs);
+    const latest = await fetchLatestBlockhash(serverSolanaRpcs());
+    tx.feePayer = creatorKey.publicKey;
+    tx.recentBlockhash = latest.blockhash;
+    tx.sign(assetKeypair, creatorKey);
+    mintSignature = await sendSignedTx(tx.serialize().toString("base64"));
+    await waitForTx(mintSignature).catch(() => undefined);
+    nftMint = assetKeypair.publicKey.toBase58();
+    await writeCard({ ...saved, nftMint });
+    await logActivity({
+      cardSlug: card.slug,
+      kind: "minted",
+      detail: { owner: profile.handle, nftMint },
+      txSignature: mintSignature,
+    });
+  } catch (error) {
+    mintError = error instanceof Error ? error.message : "NFT mint failed.";
+  }
+
+  return NextResponse.json({
+    slug: card.slug,
+    card: { ...saved, nftMint },
+    nft: nftMint ? { mint: nftMint, signature: mintSignature, explorer: explorerFromSig(mintSignature!) } : null,
+    mintError,
+  });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Could not print the card." },

@@ -49,7 +49,58 @@ export type PressCard = {
   listed: boolean;
   lastPayTx: string | null;
   createdAt: string;
+  nftMint: string | null;
+  pressNumber: number | null;
+  rarity: string;
+  editionIndex: number;
+  editionTotal: number;
 };
+
+export const OFFER_STATES = [
+  "draft",
+  "open",
+  "accepted",
+  "payment_pending",
+  "payment_detected",
+  "payment_confirmed",
+  "transfer_pending",
+  "transfer_confirmed",
+  "completed",
+  "declined",
+  "expired",
+  "cancelled",
+  "failed",
+] as const;
+export type OfferStatus = (typeof OFFER_STATES)[number];
+
+export type PressOffer = {
+  id: string;
+  cardSlug: string;
+  buyerHandle: string;
+  sellerHandle: string;
+  offerAmountUi: number;
+  paymentMint: string | null;
+  status: OfferStatus;
+  txSignature: string | null;
+  failReason: string | null;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PressActivity = {
+  id: string;
+  cardSlug: string;
+  kind: string;
+  detail: Record<string, unknown>;
+  txSignature: string | null;
+  createdAt: string;
+};
+
+export function pressId(n: number | null): string {
+  if (!n) return "PX-??????";
+  return `PX-${String(n).padStart(6, "0")}`;
+}
 
 export type CardView = PressCard & {
   currentMcapUi: number;
