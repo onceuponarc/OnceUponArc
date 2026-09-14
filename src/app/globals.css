@@ -186,3 +186,100 @@
     transform: translateY(0);
   }
 }
+
+.links-stage {
+  perspective: 1400px;
+}
+
+.links-scroller {
+  perspective: 1600px;
+  scroll-behavior: smooth;
+}
+
+.links-card {
+  transform-style: preserve-3d;
+  transition: transform 160ms linear, filter 160ms linear, opacity 160ms linear;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+    #070707;
+}
+
+.links-card-face {
+  height: 100%;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 140ms ease-out;
+}
+
+.links-sheen {
+  background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.16) 46%, transparent 70%);
+  transform: translateX(-40%) rotate(12deg);
+  animation: links-sheen 5.6s ease-in-out infinite;
+}
+
+.links-grid {
+  position: absolute;
+  inset: -10%;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(circle at 50% 40%, black, transparent 70%);
+  animation: links-drift 22s linear infinite;
+}
+
+.links-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(70px);
+  opacity: 0.35;
+}
+
+.links-orb-a {
+  width: 28rem;
+  height: 28rem;
+  left: -6rem;
+  top: 10%;
+  background: #2aabee;
+  animation: links-float 9s ease-in-out infinite;
+}
+
+.links-orb-b {
+  width: 24rem;
+  height: 24rem;
+  right: -4rem;
+  bottom: 0;
+  background: #ffffff;
+  animation: links-float 11s ease-in-out infinite reverse;
+}
+
+@keyframes links-sheen {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(12deg);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateX(30%) rotate(12deg);
+    opacity: 0.55;
+  }
+}
+
+@keyframes links-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(40px, -30px, 0) scale(1.08);
+  }
+}
+
+@keyframes links-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-64px, -64px, 0);
+  }
+}
