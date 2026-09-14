@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { readApiJson } from "@/lib/http/read-json";
-import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
 
 type Desk = {
   wallets: { solana: string | null; eth: string | null; rh: string | null; arc?: string | null };
@@ -18,7 +17,6 @@ const CHAINS = [
 ] as const;
 
 export function WalletDesk() {
-  const injected = useSolanaWallet();
   const [desk, setDesk] = useState<Desk | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [secret, setSecret] = useState("");
@@ -58,11 +56,6 @@ export function WalletDesk() {
         Created on first open. This is your dev wallet on every chain. Fund the address, then launch. The pad signs
         with this key. Fees land here.
       </p>
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" onClick={() => void injected.connect()}>
-          {injected.address ? `Phantom ${injected.address.slice(0, 4)}…` : "Connect Phantom"}
-        </Button>
-      </div>
       <div className="grid gap-3 md:grid-cols-3">
         {CHAINS.map((chain) => (
           <div key={chain.id} className="rounded-2xl border border-white/10 p-4">
