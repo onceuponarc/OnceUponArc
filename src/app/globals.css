@@ -285,3 +285,48 @@
     transform: translate3d(-64px, -64px, 0);
   }
 }
+
+.jacket-scene {
+  perspective: 1400px;
+}
+
+.jacket-rig {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: jacket-spin 8.5s linear infinite;
+}
+
+.jacket-rig.is-paused {
+  animation-play-state: paused;
+}
+
+.jacket-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 2rem;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.jacket-back {
+  transform: rotateY(180deg);
+}
+
+@keyframes jacket-spin {
+  from {
+    transform: rotateY(0deg) rotateX(4deg);
+  }
+  to {
+    transform: rotateY(360deg) rotateX(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jacket-rig {
+    animation: none;
+  }
+}

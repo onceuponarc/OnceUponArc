@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { CardView } from "@/lib/cards/types";
 import { CardDeck } from "@/components/cards/card-deck";
+import { CardJacket } from "@/components/cards/card-jacket";
 import { formatUsd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -91,28 +92,9 @@ export function CardsBoard({ cards }: { cards: CardView[] }) {
       {shown.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((card) => (
-            <Link key={card.slug} href={`/cards/${card.slug}`} className="overflow-hidden rounded-3xl border border-white/10">
-              <div className="relative h-44 bg-white/5">
-                {card.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={card.coverUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-4xl font-semibold text-white/20">
-                    ${card.ticker.slice(0, 4)}
-                  </div>
-                )}
-                <span className="absolute left-3 top-3 rounded-full bg-black/70 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em]">
-                  {card.listed ? "Listed" : "Held"}
-                </span>
-              </div>
-              <div className="space-y-1 p-4">
-                <p className="text-xl font-semibold">${card.ticker}</p>
-                <p className="truncate text-sm text-white/50">{card.title}</p>
-                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/35">
-                  {formatUsd(card.valueUi)} · {card.multiple.toFixed(2)}x · @{card.ownerHandle}
-                </p>
-              </div>
-            </Link>
+            <div key={card.slug} className="flex justify-center px-2 py-4">
+              <CardJacket card={card} href={`/cards/${card.slug}`} compact />
+            </div>
           ))}
         </div>
       ) : (

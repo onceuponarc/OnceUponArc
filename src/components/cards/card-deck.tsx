@@ -16,8 +16,7 @@ export function CardDeck({ cards }: { cards: CardView[] }) {
       const node = scroller.current;
       if (!node) return;
       const width = node.clientWidth || 1;
-      const progress = node.scrollLeft / width;
-      setIndex(Math.round(progress));
+      setIndex(Math.round(node.scrollLeft / width));
     }
     function onScroll() {
       cancelAnimationFrame(frame);
@@ -31,10 +30,21 @@ export function CardDeck({ cards }: { cards: CardView[] }) {
     };
   }, [cards.length]);
 
+  useEffect(() => {
+    if (cards.length < 2) return;
+    const id = window.setInterval(() => {
+      const node = scroller.current;
+      if (!node) return;
+      const next = (index + 1) % cards.length;
+      node.scrollTo({ left: next * node.clientWidth, behavior: "smooth" });
+    }, 5200);
+    return () => window.clearInterval(id);
+  }, [cards.length, index]);
+
   function go(next: number) {
     const node = scroller.current;
     if (!node) return;
-    const clamped = Math.max(0, Math.min(cards.length - 1, next));
+    const clamped = (next + cards.length) % cards.length;
     node.scrollTo({ left: clamped * node.clientWidth, behavior: "smooth" });
   }
 
@@ -44,14 +54,10 @@ export function CardDeck({ cards }: { cards: CardView[] }) {
     <div className="relative isolate z-0 overflow-hidden rounded-3xl border border-white/10">
       <div
         ref={scroller}
-        className="flex h-[min(70dvh,620px)] snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex h-[min(72dvh,640px)] snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {cards.map((card, i) => (
-          <section
-            key={card.slug}
-            className="flex h-full w-full shrink-0 snap-center items-center justify-center px-4 py-6"
-            style={{ pointerEvents: i === index ? "auto" : "none" }}
-          >
+        {cards.map((card) => (
+          <section key={card.slug} className="flex h-full w-full shrink-0 snap-center items-center justify-center px-4 py-8">
             <CardJacket card={card} href={`/cards/${card.slug}`} />
           </section>
         ))}
