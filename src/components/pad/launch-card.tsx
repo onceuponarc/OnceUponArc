@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/pad/sparkline";
+import { CurveMeter } from "@/components/pad/curve-meter";
+import { WatchButton } from "@/components/pad/watch-button";
 import { tickerHue, type FeedLaunch } from "@/lib/feed";
 import { formatCompact, formatPct, formatUsd, timeAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -26,17 +28,21 @@ function Avatar({ launch }: { launch: FeedLaunch }) {
 
 export function TokenRow({ launch }: { launch: FeedLaunch }) {
   const up = launch.changePct >= 0;
+  const hot = launch.volumeUi >= 100 || launch.changePct >= 20;
   return (
-    <Link
-      href={`/story/${launch.slug}`}
-      className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_72px_56px]"
-    >
-      <div className="flex min-w-0 items-center gap-3">
+    <div className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_88px]">
+      <Link href={`/story/${launch.slug}`} className="flex min-w-0 items-center gap-3">
         <Avatar launch={launch} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
             <p className="truncate text-base font-semibold tracking-tight">${launch.ticker}</p>
             <Badge variant="outline">{launch.status === "graduated" ? "Graduated" : "Live"}</Badge>
+            {hot ? <Badge>Hot</Badge> : null}
+            {launch.lastSide ? (
+              <span className={launch.lastSide === "buy" ? "text-[10px] uppercase text-buy" : "text-[10px] uppercase text-sell"}>
+                {launch.lastSide}
+              </span>
+            ) : null}
           </div>
           <p className="truncate text-xs text-parchment/55">
             {launch.title}
@@ -44,19 +50,22 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
             {" · "}
             {timeAgo(launch.createdAt)}
           </p>
+          <CurveMeter progressBps={launch.progressBps} graduated={launch.status === "graduated"} className="mt-2 max-w-48" />
         </div>
-      </div>
+      </Link>
       <Sparkline points={launch.spark} up={up} className="hidden sm:block" />
-      <div className="text-right">
+      <Link href={`/story/${launch.slug}`} className="text-right">
         <p className="font-medium tabular-nums">{formatUsd(launch.priceUi, 4)}</p>
         <p className={cn("text-xs tabular-nums", up ? "text-buy" : "text-sell")}>{formatPct(launch.changePct)}</p>
-      </div>
+      </Link>
       <p className="hidden text-right text-sm tabular-nums text-parchment/80 sm:block">{formatUsd(launch.volumeUi)}</p>
-      <p className="hidden text-right text-sm tabular-nums text-parchment/70 sm:block">{formatCompact(launch.holders)}</p>
-      <p className="text-right text-[11px] uppercase tracking-wide text-parchment/45">
-        {launch.status === "graduated" ? "Bonded" : `${(launch.progressBps / 100).toFixed(0)}%`}
-      </p>
-    </Link>
+      <div className="flex flex-col items-end gap-1">
+        <WatchButton slug={launch.slug} />
+        <Link href={`/story/${launch.slug}?buy=1`} className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-black">
+          Buy
+        </Link>
+      </div>
+    </div>
   );
 }
 
@@ -90,6 +99,7 @@ export function LaunchCard({ launch }: { launch: FeedLaunch }) {
             <Sparkline points={launch.spark} up={up} />
             <p className="text-sm tabular-nums text-parchment/80">{formatUsd(launch.priceUi, 4)}</p>
           </div>
+          <CurveMeter progressBps={launch.progressBps} graduated={launch.status === "graduated"} />
           <div className="mt-auto flex flex-wrap gap-1.5 text-[11px] text-parchment/55">
             <span>{formatUsd(launch.volumeUi)} vol</span>
             <span>· {launch.holders} holders</span>

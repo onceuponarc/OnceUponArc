@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FEED_TABS, filterFeed, isListedLaunch, type FeedLaunch, type FeedTab } from "@/lib/feed";
 import { EmptyPad, TokenRow } from "@/components/pad/launch-card";
 import { TokenDeck } from "@/components/pad/token-deck";
+import { readWatch } from "@/components/pad/watch-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -30,10 +31,24 @@ const EMPTY: Record<FeedTab, { title: string; body: string }> = {
 
 export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
   const [tab, setTab] = useState<FeedTab>("trending");
+  const [watchOnly, setWatchOnly] = useState(false);
+  const [watch, setWatch] = useState<string[]>([]);
   const [q, setQ] = useState("");
+  useEffect(() => {
+    function sync() {
+      setWatch(readWatch());
+    }
+    sync();
+    window.addEventListener("onceupon-watch", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("onceupon-watch", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
   const listed = useMemo(() => launches.filter(isListedLaunch), [launches]);
   const shown = useMemo(() => {
-    const rows = filterFeed(listed, tab);
+    const rows = watchOnly ? listed.filter((row) => watch.includes(row.slug)) : filterFeed(listed, tab);
     const needle = q.trim().toLowerCase();
     if (!needle) return rows;
     return rows.filter(
@@ -42,7 +57,7 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
         item.title.toLowerCase().includes(needle) ||
         (item.handle ?? "").toLowerCase().includes(needle),
     );
-  }, [listed, tab, q]);
+  }, [listed, tab, q, watchOnly, watch]);
   const empty = EMPTY[tab];
 
   return (
@@ -64,30 +79,47 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setTab(item.id)}
+                onClick={() => {
+                  setWatchOnly(false);
+                  setTab(item.id);
+                }}
                 className={cn(
                   "rounded-md px-3 py-1.5 text-sm transition-colors",
-                  tab === item.id ? "bg-white text-black" : "text-white/60 hover:text-white",
+                  !watchOnly && tab === item.id ? "bg-white text-black" : "text-white/60 hover:text-white",
                 )}
               >
                 {item.label}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setWatchOnly(true)}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-sm transition-colors",
+                watchOnly ? "bg-white text-black" : "text-white/60 hover:text-white",
+              )}
+            >
+              Watch {watch.length ? watch.length : ""}
+            </button>
           </div>
         </div>
       </div>
-      <p className="text-sm text-white/50 sm:text-left">{FEED_TABS.find((item) => item.id === tab)?.hint}</p>
-      <div className="hidden px-3 font-mono text-[11px] uppercase tracking-[0.16em] text-white/30 sm:grid sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_72px_56px]">
+      <p className="text-sm text-white/50 sm:text-left">
+        {watchOnly ? "Your watched Chapters. Stored on this device." : FEED_TABS.find((item) => item.id === tab)?.hint}
+      </p>
+      <div className="hidden px-3 font-mono text-[11px] uppercase tracking-[0.16em] text-white/30 sm:grid sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_88px]">
         <span>Token</span>
         <span>Chart</span>
         <span className="text-right">Price</span>
         <span className="text-right">Volume</span>
-        <span className="text-right">Holders</span>
-        <span className="text-right">Curve</span>
+        <span className="text-right">Trade</span>
       </div>
       {shown.length === 0 ? (
         <div className="space-y-4">
-          <EmptyPad title={empty.title} body={empty.body} />
+          <EmptyPad
+            title={watchOnly ? "Nothing watched" : empty.title}
+            body={watchOnly ? "Tap Watch on a row. It stays on this device." : empty.body}
+          />
           <div className="flex justify-center">
             <Button asChild>
               <Link href="/launch/arc">Launch a token</Link>

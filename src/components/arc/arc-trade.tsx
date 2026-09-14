@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,7 @@ export function ArcTrade({
   const [bookUi, setBookUi] = useState<number | null>(null);
   const [targetUi, setTargetUi] = useState<number | null>(null);
   const router = useRouter();
+  const search = useSearchParams();
 
   async function refresh() {
     const res = await fetch(`/api/arc/stories?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
@@ -47,6 +48,13 @@ export function ArcTrade({
     setBookUi(body.onchain?.realQuote ?? null);
     setTargetUi(body.onchain?.target ?? null);
   }
+
+  useEffect(() => {
+    if (search.get("buy") === "1") {
+      setSide("buy");
+      document.getElementById("trade-desk")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [search]);
 
   useEffect(() => {
     refresh().catch(() => undefined);
@@ -116,7 +124,7 @@ export function ArcTrade({
   }
 
   return (
-    <div className="space-y-4">
+    <div id="trade-desk" className="space-y-4">
       <div className="flex gap-2">
         <Button type="button" variant={side === "buy" ? "default" : "outline"} onClick={() => { setSide("buy"); setAmount("25"); setQuote(null); }}>
           Buy
