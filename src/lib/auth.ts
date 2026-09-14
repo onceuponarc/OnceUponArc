@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { hiResPortrait, publicMediaUrl, xAvatarFallback } from "@/lib/media";
 
 export type OnceUponer = {
   id: string;
@@ -31,7 +32,11 @@ export async function getSessionUser() {
             handle: profile.handle as string,
             displayName: profile.display_name as string,
             bio: profile.bio as string,
-            portraitUrl: (profile.portrait_url as string | null) ?? null,
+            portraitUrl:
+              hiResPortrait(profile.portrait_url as string | null) ??
+              publicMediaUrl(profile.portrait_url as string | null) ??
+              xAvatarFallback(profile.handle as string) ??
+              "/brand/logo.jpg",
             isStaff: Boolean(profile.is_staff),
           }
         : null,

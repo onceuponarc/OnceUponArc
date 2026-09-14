@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { bannerFromCover, hiResPortrait } from "@/lib/media";
+import { bannerFromCover, hiResPortrait, publicMediaUrl, xAvatarFallback } from "@/lib/media";
 import { fetchXProfile } from "@/lib/x-profile";
 
 import type { ProfileDesk, ProfileFill, ProfileHold, ProfileLaunch } from "@/lib/profile-types";
@@ -160,21 +160,22 @@ export async function loadProfileDesk(handle: string, viewerId?: string | null):
   const feesUi = launches.reduce((sum, row) => sum + row.feesUi, 0);
   const tradedUi = fills.reduce((sum, row) => sum + row.quoteUi, 0);
   const bannerUrl =
-    user.banner_url ||
-    x?.bannerUrl ||
+    publicMediaUrl(x?.bannerUrl) ||
+    publicMediaUrl(user.banner_url) ||
     bannerFromCover(launches.find((row) => row.coverUrl)?.coverUrl) ||
     "/brand/banner.jpg";
 
   return {
     id: user.id,
     handle: user.handle,
-    displayName: user.display_name || x?.name || user.handle,
+    displayName: x?.name || user.display_name || user.handle,
     bio: user.bio || x?.bio || "",
     portraitUrl:
+      publicMediaUrl(x?.avatarUrl) ??
       hiResPortrait(user.portrait_url) ??
-      x?.avatarUrl ??
-      user.storage_portrait_path ??
-      user.portrait_url,
+      publicMediaUrl(user.portrait_url) ??
+      xAvatarFallback(user.handle) ??
+      "/brand/logo.jpg",
     bannerUrl,
     launches,
     holds,

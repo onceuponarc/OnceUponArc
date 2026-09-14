@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-in-button";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,33 @@ export function ProfileDeskView({
 }) {
   const [tab, setTab] = useState<Tab>("launches");
   const [copied, setCopied] = useState(false);
-  const initial = desk.handle.slice(0, 1).toUpperCase();
+  const [live, setLive] = useState<{ avatarUrl: string | null; bannerUrl: string | null; name: string; bio: string } | null>(
+    null,
+  );
   const publicPath = `/u/${desk.handle}`;
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/x-profile?handle=${encodeURIComponent(desk.handle)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setLive(data);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [desk.handle]);
+
+  const portrait = live?.avatarUrl || desk.portraitUrl;
+  const banner = live?.bannerUrl || desk.bannerUrl;
+  const name = live?.name || desk.displayName || desk.handle;
+  const bio =
+    desk.bio ||
+    live?.bio ||
+    (isSelf
+      ? "This is your desk. Launch a Chapter and the tape writes itself."
+      : "Public OnceUpon desk. Chapters print on Arc. X is identity.");
 
   async function copyPublic() {
     const url = `${window.location.origin}${publicPath}`;
@@ -40,14 +65,13 @@ export function ProfileDeskView({
   return (
     <div className="w-full space-y-5">
       <section className="overflow-hidden rounded-3xl border border-white/10 bg-black">
-        <div className="relative h-44 sm:h-56 lg:h-72">
-          {desk.bannerUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={desk.bannerUrl} alt="" className="absolute inset-0 h-full w-full object-cover object-center" />
-          ) : (
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(255,255,255,0.18),transparent_42%),linear-gradient(120deg,#171717,#000)]" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-transparent" />
+        <div className="relative h-48 sm:h-64 lg:h-80">
+          <SafeImg
+            src={banner}
+            fallback="/brand/banner.jpg"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
           <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
             <span
               className={cn(
@@ -58,22 +82,19 @@ export function ProfileDeskView({
               {isSelf ? "Your desk" : "Public profile"}
             </span>
           </div>
+          <div className="absolute bottom-4 left-4 size-24 overflow-hidden rounded-3xl border-4 border-black bg-neutral-900 sm:bottom-5 sm:left-6 sm:size-32">
+            <SafeImg
+              src={portrait}
+              fallback={`https://unavatar.io/twitter/${desk.handle}`}
+              lastResort="/brand/logo.jpg"
+              className="size-full object-cover"
+            />
+          </div>
         </div>
 
         <div className="grid gap-6 px-4 pb-6 sm:px-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)] lg:px-8">
           <div>
-            <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
-              <div className="size-24 overflow-hidden rounded-3xl border-4 border-black bg-neutral-800 sm:size-32">
-                {desk.portraitUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={desk.portraitUrl} alt="" className="size-full object-cover" />
-                ) : (
-                  <div className="flex size-full items-center justify-center text-4xl font-semibold text-white/70">
-                    {initial}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2 pb-1">
+            <div className="flex flex-wrap items-start justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => void copyPublic()}>
                   {copied ? "Copied" : isSelf ? "Copy public link" : "Share profile"}
                 </Button>
@@ -91,22 +112,16 @@ export function ProfileDeskView({
                     </a>
                   </Button>
                 )}
-              </div>
             </div>
 
             <div className="mt-4">
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                {desk.displayName || desk.handle}
+                {name}
               </h1>
               <p className="mt-1 font-mono text-sm text-white/45">
                 @{desk.handle} · once-upon-arc.vercel.app{publicPath}
               </p>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-white/70">
-                {desk.bio ||
-                  (isSelf
-                    ? "This is your desk. Launch a Chapter and the tape writes itself."
-                    : "Public OnceUpon desk. Chapters print on Arc. X is identity.")}
-              </p>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-white/70">{bio}</p>
             </div>
           </div>
 
@@ -250,6 +265,35 @@ export function ProfileDeskView({
         </aside>
       </section>
     </div>
+  );
+}
+
+function SafeImg({
+  src,
+  fallback,
+  lastResort,
+  className,
+}: {
+  src: string | null | undefined;
+  fallback: string;
+  lastResort?: string;
+  className?: string;
+}) {
+  const [current, setCurrent] = useState(src || fallback);
+  useEffect(() => {
+    setCurrent(src || fallback);
+  }, [src, fallback]);
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={current}
+      alt=""
+      className={className}
+      onError={() => {
+        if (current !== fallback) setCurrent(fallback);
+        else if (lastResort && current !== lastResort) setCurrent(lastResort);
+      }}
+    />
   );
 }
 
