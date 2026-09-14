@@ -48,10 +48,10 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
     <form onSubmit={(event) => void launch(event)} className="space-y-5 rounded-3xl border border-white/10 p-5">
       <div>
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Robinhood Chain · 4663</p>
-        <h2 className="mt-1 text-2xl font-semibold">Spot launch</h2>
+        <h2 className="mt-1 text-2xl font-semibold">Pons launch</h2>
         <p className="mt-2 text-sm text-white/55">
-          No bonding curve. Your in-app RH wallet is the dev wallet. Fund it with ETH. It pays gas, signs the mint,
-          holds the 1B supply, and receives fees. Token is transferable the second the tx lands.
+          Best path on Robinhood: Pons v2. Curve is live at create so anyone can buy and sell. Volume feeds the
+          book and graduates into a locked Uniswap v4 LP. Your in-app RH wallet pays gas and takes creator fees.
         </p>
       </div>
       <DevFundBanner chain="rh" />

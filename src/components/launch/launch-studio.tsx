@@ -14,7 +14,7 @@ export function LaunchStudio({
   handle: string | null;
   signedIn: boolean;
 }) {
-  const [kind, setKind] = useState<LaunchKind>("chapter");
+  const [kind, setKind] = useState<LaunchKind>("v4");
 
   return (
     <div className="space-y-6">
