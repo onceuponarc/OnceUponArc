@@ -1,9 +1,9 @@
 export const OFFICIAL_TOKEN = {
-  name: "Official token",
-  ticker: "ORBITX",
+  name: "OnceUpon official token",
+  ticker: null as string | null,
   status: "not_live" as const,
   liveRule:
-    "The official token is not live. No contract address is published on this site. When the chain is live, the CA will be posted only from official OnceUpon / OrbitX channels: X @onceuponarc, t.me/onceuponupdates, and t.me/onceuponarc.",
+    "OnceUpon’s official token is not live. No contract address is published on this site. When the chain is live, the CA will be posted only from official OnceUpon channels: X @onceuponarc, t.me/onceuponupdates, and t.me/onceuponarc.",
   channels: [
     { label: "X", href: "https://x.com/onceuponarc" },
     { label: "Updates", href: "https://t.me/onceuponupdates" },
@@ -18,7 +18,7 @@ export const FEE_WATERFALL = [
     label: "Development + marketing",
     share: "75%",
     bps: 7500,
-    job: "Build the company. Ops, ads, infra.",
+    job: "Build OnceUpon. Ops, ads, infra.",
   },
   {
     id: "burn",
@@ -46,7 +46,7 @@ export const FEE_WATERFALL = [
     label: "Weekly best-launch burn",
     share: "5%",
     bps: 500,
-    job: "Buy the week's winning launch and burn it.",
+    job: "Buy the week's winning Chapter and burn it.",
   },
 ] as const;
 

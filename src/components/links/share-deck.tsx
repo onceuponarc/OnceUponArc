@@ -59,7 +59,7 @@ const CARDS: Card[] = [
     id: "token",
     kicker: "05 — Official token",
     title: "Token",
-    handle: "$ORBITX · not live",
+    handle: "Official token · not live",
     body: "75/25 fee waterfall. No CA on this site. Address only from official channels when the chain is live.",
     href: "/params",
     cta: "Read /params",

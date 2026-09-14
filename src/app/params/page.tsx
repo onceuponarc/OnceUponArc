@@ -5,7 +5,7 @@ import { exampleDay, FEE_WATERFALL, FEE_WATERFALL_BPS, OFFICIAL_TOKEN } from "@/
 export const metadata: Metadata = {
   title: "Params · official token",
   description:
-    "OnceUpon / OrbitX creator-fee split. Official token is not live. CA only from official channels when the chain is live.",
+    "OnceUpon creator-fee split. Official token is not live. CA only from official OnceUpon channels when the chain is live.",
 };
 
 export default function ParamsPage() {
@@ -34,7 +34,7 @@ export default function ParamsPage() {
 
       <section className="rounded-3xl border border-amber-300/25 bg-amber-300/[0.06] px-5 py-6 text-center sm:px-8 sm:text-left">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/80">Official token</p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight">${OFFICIAL_TOKEN.ticker}</h2>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">{OFFICIAL_TOKEN.name}</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-white/75">{OFFICIAL_TOKEN.liveRule}</p>
         <p className="mt-3 font-mono text-sm text-white/45">Contract address: unpublished</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">

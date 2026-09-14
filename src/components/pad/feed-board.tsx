@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { FEED_TABS, filterFeed, isListedLaunch, type FeedLaunch, type FeedTab } from "@/lib/feed";
 import { EmptyPad, TokenRow } from "@/components/pad/launch-card";
+import { TokenDeck } from "@/components/pad/token-deck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -94,10 +95,13 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
           </div>
         </div>
       ) : (
-        <div className="space-y-1">
-          {shown.map((launch) => (
-            <TokenRow key={launch.slug} launch={launch} />
-          ))}
+        <div className="space-y-6">
+          <TokenDeck launches={shown} />
+          <div className="space-y-1">
+            {shown.map((launch) => (
+              <TokenRow key={launch.slug} launch={launch} />
+            ))}
+          </div>
         </div>
       )}
     </section>
