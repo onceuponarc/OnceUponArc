@@ -41,6 +41,9 @@ export function ToolsDesk() {
         <p className="mt-3 max-w-2xl text-white/60">
           Fee math, graduation progress, and Arc network injectors. This is not a broker terminal.
         </p>
+        <p className="mt-3 text-sm text-white/50">
+          Official token and the 75/25 pad split live on <a className="text-white underline" href="/params">/params</a>. Not live. No CA here.
+        </p>
       </section>
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border border-white/10 p-5">

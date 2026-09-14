@@ -64,6 +64,14 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <Link
+        href="/params"
+        className="block rounded-2xl border border-amber-300/25 bg-amber-300/[0.05] px-5 py-4 text-center sm:text-left"
+      >
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/80">Official token · not live</p>
+        <p className="mt-1 text-lg font-semibold">75 / 25 fee split. CA only from official channels when the chain is live.</p>
+      </Link>
+
       {totd ? (
         <Link
           href={`/story/${totd.slug}`}

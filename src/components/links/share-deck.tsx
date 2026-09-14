@@ -55,6 +55,16 @@ const CARDS: Card[] = [
     cta: "Coming soon",
     accent: "#a3a3a3",
   },
+  {
+    id: "token",
+    kicker: "05 — Official token",
+    title: "Token",
+    handle: "$ORBITX · not live",
+    body: "75/25 fee waterfall. No CA on this site. Address only from official channels when the chain is live.",
+    href: "/params",
+    cta: "Read /params",
+    accent: "#e8c36a",
+  },
 ];
 
 export function ShareDeck() {

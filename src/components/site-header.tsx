@@ -36,6 +36,9 @@ export function SiteHeader({
           <Link href="/tools" className="transition-colors hover:text-white">
             Tools
           </Link>
+          <Link href="/params" className="transition-colors hover:text-white">
+            Token
+          </Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <p className="hidden font-mono text-[11px] text-white/35 lg:block">{onlineCount} online</p>
