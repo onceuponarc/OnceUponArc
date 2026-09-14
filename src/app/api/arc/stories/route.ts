@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     try {
       const snap = await arcSnapshot(slug);
       if (!snap) return NextResponse.json({ error: "Unknown Chapter." }, { status: 404 });
-      return NextResponse.json(snap);
+      return NextResponse.json(snap, { headers: { "Cache-Control": "no-store" } });
     } catch (error) {
       return NextResponse.json(
         { error: error instanceof Error ? error.message : "Could not read the curve." },

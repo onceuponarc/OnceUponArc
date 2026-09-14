@@ -18,6 +18,7 @@ import { ArcTrade } from "@/components/arc/arc-trade";
 import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { HoldersTable, PriceChart, StoryTape, type ChartTrade } from "@/components/story/market-panel";
 import { getLocalArcStory } from "@/lib/arc/store";
+import { LiveRefresh } from "@/components/pad/live-refresh";
 import { loadArcStory } from "@/lib/arc/persist";
 import { chapterStartPriceUi, virtualQuoteUiFor } from "@onceupon/config/chapter";
 
@@ -144,6 +145,7 @@ type BindingRow = {
 };
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
@@ -177,6 +179,7 @@ export default async function StoryPage({
     if (!local) {
       return (
         <div className="glass mx-auto max-w-lg space-y-3 rounded-3xl border border-arc/25 p-8">
+      <LiveRefresh />
           <h1 className="font-heading text-3xl font-bold">This Story could not load</h1>
           <p className="text-parchment/70">Supabase did not answer. Reload, then sign in with X if you were trading.</p>
         </div>
@@ -203,6 +206,7 @@ export default async function StoryPage({
 
   return (
     <div className="space-y-8">
+      <LiveRefresh />
       <section
         className="relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-10"
         style={{

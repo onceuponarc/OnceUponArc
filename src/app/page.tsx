@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FeedBoard } from "@/components/pad/feed-board";
 import { LiveTape } from "@/components/pad/live-tape";
+import { LiveRefresh } from "@/components/pad/live-refresh";
 import { loadPadMarket } from "@/lib/market";
 import { getSessionUser } from "@/lib/auth";
 import { PROTOCOL } from "@onceupon/config/arc";
@@ -20,6 +21,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-6">
+      <LiveRefresh />
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
         <div className="rounded-2xl border border-white/10 bg-black p-5 sm:p-7">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Arc launchpad</p>

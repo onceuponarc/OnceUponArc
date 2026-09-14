@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { SolanaConnectButton } from "@/components/wallet/connect-button";
 import { useWalletSigner } from "@/components/wallet/use-wallet-signer";
 import { readApiJson } from "@/lib/http/read-json";
 import { defaultCurveBuyUi } from "@onceupon/config/quotes";
+import { pingMarket } from "@/lib/live-market";
 
 export function CurveTrade({
   slug,
@@ -30,6 +32,7 @@ export function CurveTrade({
   vaultRaw?: number;
 }) {
   const { address, signAndSend, ensureBound } = useWalletSigner();
+  const router = useRouter();
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState(defaultCurveBuyUi(pairLabel));
   const [fundAmount, setFundAmount] = useState(pairLabel === "SOL" ? "0.25" : pairLabel.toUpperCase() === "USDC" ? "25" : "1");
@@ -89,6 +92,8 @@ export function CurveTrade({
         return;
       }
       setResult(confirmed.explorer ?? sent.explorer);
+      pingMarket();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Trade failed.");
     } finally {

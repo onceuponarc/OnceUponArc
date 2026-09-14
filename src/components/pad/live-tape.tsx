@@ -5,20 +5,27 @@ import Link from "next/link";
 import { formatUsd, timeAgo } from "@/lib/format";
 import type { TapeItem } from "@/lib/feed";
 import { cn } from "@/lib/utils";
+import { MARKET_EVENT } from "@/lib/live-market";
 
 export function LiveTape({ initial }: { initial: TapeItem[] }) {
   const [tape, setTape] = useState(initial);
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      fetch("/api/market/tape")
+    function pull() {
+      fetch("/api/market/tape", { cache: "no-store" })
         .then((res) => res.json())
         .then((body: { tape?: TapeItem[] }) => {
           if (Array.isArray(body.tape)) setTape(body.tape);
         })
         .catch(() => undefined);
-    }, 4000);
-    return () => window.clearInterval(timer);
+    }
+    pull();
+    const timer = window.setInterval(pull, 4000);
+    window.addEventListener(MARKET_EVENT, pull);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener(MARKET_EVENT, pull);
+    };
   }, []);
 
   if (!tape.length) {

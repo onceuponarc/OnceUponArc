@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { readApiJson } from "@/lib/http/read-json";
 import { formatCompact, formatUsd } from "@/lib/format";
+import { pingMarket } from "@/lib/live-market";
 
 export function ArcTrade({
   slug,
@@ -24,9 +26,10 @@ export function ArcTrade({
   const [tokenUi, setTokenUi] = useState<number | null>(null);
   const [usdcUi, setUsdcUi] = useState<number | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
+  const router = useRouter();
 
   async function refresh() {
-    const res = await fetch(`/api/arc/stories?slug=${encodeURIComponent(slug)}`);
+    const res = await fetch(`/api/arc/stories?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
     const body = await readApiJson<{
       onchain?: { tokenUi?: number; usdcUi?: number; progressBps?: number };
     }>(res);
@@ -37,6 +40,10 @@ export function ArcTrade({
 
   useEffect(() => {
     refresh().catch(() => undefined);
+    const timer = window.setInterval(() => {
+      refresh().catch(() => undefined);
+    }, 4000);
+    return () => window.clearInterval(timer);
   }, [slug]);
 
   async function preview() {
@@ -79,6 +86,8 @@ export function ArcTrade({
       }
       setResult(`Landed ${body.hash?.slice(0, 10)}… · ${formatUsd(body.priceUsd ?? 0, 6)} / token`);
       await refresh();
+      pingMarket();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Trade failed.");
     } finally {

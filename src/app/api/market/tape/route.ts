@@ -48,5 +48,5 @@ export async function GET() {
     console.error("tape load failed", error);
   }
   tape.sort((a, b) => +new Date(b.at) - +new Date(a.at));
-  return NextResponse.json({ tape: tape.slice(0, 24) });
+  return NextResponse.json({ tape: tape.slice(0, 24) }, { headers: { "Cache-Control": "no-store" } });
 }
