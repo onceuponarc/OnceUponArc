@@ -52,3 +52,26 @@ export async function pumpCollectFeeTx(publicKey: string) {
   const buf = Buffer.from(await res.arrayBuffer());
   return buf.toString("base64");
 }
+
+export async function pumpBuyTx(input: { publicKey: string; mint: string; solAmount: number; slippage?: number }) {
+  const res = await fetch(PUMP_LOCAL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      publicKey: input.publicKey,
+      action: "buy",
+      mint: input.mint,
+      denominatedInSol: "true",
+      amount: input.solAmount,
+      slippage: input.slippage ?? 15,
+      priorityFee: 0.0005,
+      pool: "pump",
+    }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Pump.fun would not build the dev-buy tx.");
+  }
+  const buf = Buffer.from(await res.arrayBuffer());
+  return buf.toString("base64");
+}

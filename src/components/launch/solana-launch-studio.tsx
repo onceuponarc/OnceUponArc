@@ -10,6 +10,11 @@ import {
   EMPTY_DESCRIPTION_LINKS,
   type DescriptionLinksValue,
 } from "@/components/launch/description-links-fields";
+import {
+  AdvancedLaunchFields,
+  DEFAULT_ADVANCED_LAUNCH,
+  type AdvancedLaunchValue,
+} from "@/components/launch/advanced-launch-fields";
 import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { readApiJson } from "@/lib/http/read-json";
 import { VANITY_SUFFIX } from "@/lib/solana/vanity";
@@ -23,6 +28,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
     twitter: handle ? `@${handle}` : "",
   });
   const [devBuy, setDevBuy] = useState("0.01");
+  const [advanced, setAdvanced] = useState<AdvancedLaunchValue>(DEFAULT_ADVANCED_LAUNCH);
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [vanity, setVanity] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -53,6 +59,11 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           coverUrl: cover?.url,
           devBuySol: Number(devBuy),
           vanity,
+          poolPair: advanced.poolPair,
+          customQuoteMint: advanced.customQuoteMint,
+          mayhemMode: advanced.mayhemMode,
+          rewardsTo: advanced.rewardsTo,
+          creatorFeeBps: advanced.creatorFeeBps,
         }),
       });
       const body = await readApiJson<{
@@ -111,9 +122,13 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         </div>
       </div>
       <DescriptionLinksFields value={links} onChange={setLinks} />
+      <AdvancedLaunchFields value={advanced} onChange={setAdvanced} />
       <div>
         <Label>Dev buy (SOL)</Label>
-        <Input className="mt-2" value={devBuy} onChange={(e) => setDevBuy(e.target.value)} />
+        <Input className="mt-2" value={devBuy} onChange={(e) => setDevBuy(e.target.value)} disabled={advanced.poolPair !== "sol"} />
+        {advanced.poolPair !== "sol" ? (
+          <p className="mt-1 text-xs text-white/45">Dev buy is only available on a SOL pair right now.</p>
+        ) : null}
       </div>
       <label className="flex items-center gap-2 text-sm text-white/70">
         <input type="checkbox" checked={vanity} onChange={(e) => setVanity(e.target.checked)} />
