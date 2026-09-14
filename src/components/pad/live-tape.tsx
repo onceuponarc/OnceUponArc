@@ -30,7 +30,7 @@ export function LiveTape({ initial }: { initial: TapeItem[] }) {
 
   if (!tape.length) {
     return (
-      <div className="glass overflow-hidden rounded-2xl border border-arc/20 px-4 py-3 text-sm text-parchment/55">
+      <div className="glass overflow-hidden rounded-2xl border border-arc/20 px-4 py-3 text-center text-sm text-parchment/55">
         Live tape is quiet. Launch a token and the first buy prints here.
       </div>
     );

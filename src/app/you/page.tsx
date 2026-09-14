@@ -33,7 +33,7 @@ export default async function YouPage() {
 
   if (!desk) {
     return (
-      <div className="mx-auto max-w-md rounded-2xl border border-white/10 p-8">
+      <div className="mx-auto max-w-md rounded-2xl border border-white/10 p-8 text-center">
         <h1 className="text-2xl font-semibold">@{profile.handle}</h1>
         <p className="mt-2 text-sm text-white/55">Profile did not load. Reload after sign-in settles.</p>
       </div>

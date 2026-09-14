@@ -56,7 +56,7 @@ export default async function HomePage() {
             ["Volume", formatUsd(volume)],
             ["Fee", `${(PROTOCOL.protocolBpsDefault / 100).toFixed(2)}%`],
           ].map(([label, value]) => (
-            <div key={label} className="rounded-2xl border border-white/10 p-4">
+            <div key={label} className="rounded-2xl border border-white/10 p-4 text-center">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">{label}</p>
               <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
             </div>

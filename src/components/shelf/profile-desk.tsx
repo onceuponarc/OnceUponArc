@@ -95,7 +95,7 @@ export function ProfileDeskView({
 
         <div className="grid gap-6 px-4 pb-6 sm:px-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)] lg:px-8">
           <div>
-            <div className="flex flex-wrap items-start justify-end gap-2 pt-4">
+            <div className="flex flex-wrap items-start justify-center gap-2 pt-4 sm:justify-end">
                 <Button variant="outline" onClick={() => void copyPublic()}>
                   {copied ? "Copied" : isSelf ? "Copy public link" : "Share profile"}
                 </Button>
@@ -111,14 +111,17 @@ export function ProfileDeskView({
                 )}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 text-center sm:text-left">
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                 {name}
               </h1>
               <p className="mt-1 font-mono text-sm text-white/45">
-                @{desk.handle} · once-upon-arc.vercel.app{publicPath}
+                @{desk.handle}
               </p>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-white/70">{bio}</p>
+              <p className="mx-auto mt-1 max-w-xl font-mono text-[11px] text-white/30 sm:mx-0">
+                once-upon-arc.vercel.app{publicPath}
+              </p>
+              <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-white/70 sm:mx-0">{bio}</p>
             </div>
           </div>
 
@@ -134,7 +137,7 @@ export function ProfileDeskView({
       </section>
 
       {isSelf ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
           <Button asChild>
             <Link href="/launch/arc">Launch a Chapter</Link>
           </Button>
@@ -146,8 +149,8 @@ export function ProfileDeskView({
           </Button>
         </div>
       ) : (
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/35">
-          Visitor view · holdings are public tape, not a private wallet
+        <p className="text-center font-mono text-[11px] uppercase tracking-[0.2em] text-white/35 sm:text-left">
+          Public desk · holdings are tape, not a private wallet
         </p>
       )}
 
@@ -178,7 +181,7 @@ export function ProfileDeskView({
           {tab === "launches" ? (
             <div className="grid gap-3 p-3 sm:grid-cols-2">
               {!desk.launches.length ? (
-                <p className="col-span-full px-3 py-10 text-sm text-white/45">
+                <p className="col-span-full px-3 py-12 text-center text-sm text-white/45">
                   {isSelf ? "No Chapters yet. Print one from Launch." : "No public Chapters on this desk."}
                 </p>
               ) : (
@@ -213,7 +216,7 @@ export function ProfileDeskView({
           {tab === "holds" ? (
             <ul className="divide-y divide-white/10">
               {!desk.holds.length ? (
-                <li className="px-4 py-10 text-sm text-white/45">No bags printed on this desk yet.</li>
+                <li className="px-4 py-12 text-center text-sm text-white/45">No bags printed on this desk yet.</li>
               ) : (
                 desk.holds.map((row) => (
                   <li key={row.slug}>
@@ -237,13 +240,13 @@ export function ProfileDeskView({
 
         <aside className="space-y-3">
           <div className="rounded-3xl border border-white/10 p-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Recent tape</p>
+            <p className="text-center font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Recent tape</p>
             <div className="mt-3">
               <FillList desk={desk} compact />
             </div>
           </div>
           {!isSelf ? (
-            <div className="rounded-3xl border border-white/10 p-4 text-sm text-white/55">
+            <div className="rounded-3xl border border-white/10 p-4 text-center text-sm text-white/55">
               You are visiting @{desk.handle}. Your own desk stays at{" "}
               <Link href="/you" className="text-white underline">
                 /you
@@ -251,7 +254,7 @@ export function ProfileDeskView({
               .
             </div>
           ) : (
-            <div className="rounded-3xl border border-white/10 p-4 text-sm text-white/55">
+            <div className="rounded-3xl border border-white/10 p-4 text-center text-sm text-white/55">
               Public link:{" "}
               <Link href={publicPath} className="text-white underline">
                 {publicPath}
@@ -296,7 +299,7 @@ function SafeImg({
 
 function FillList({ desk, compact = false }: { desk: ProfileDesk; compact?: boolean }) {
   if (!desk.fills.length) {
-    return <p className="px-1 py-6 text-sm text-white/45">Tape is quiet.</p>;
+    return <p className="px-4 py-10 text-center text-sm text-white/45">Tape is quiet.</p>;
   }
   const rows = compact ? desk.fills.slice(0, 8) : desk.fills;
   return (
@@ -321,7 +324,7 @@ function FillList({ desk, compact = false }: { desk: ProfileDesk; compact?: bool
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3 text-center">
       <p className="text-lg font-semibold tabular-nums sm:text-xl">{value}</p>
       <p className="text-[11px] uppercase tracking-[0.14em] text-white/40">{label}</p>
     </div>

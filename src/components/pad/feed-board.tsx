@@ -75,7 +75,7 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
           </div>
         </div>
       </div>
-      <p className="text-sm text-white/50">{FEED_TABS.find((item) => item.id === tab)?.hint}</p>
+      <p className="text-sm text-white/50 sm:text-left">{FEED_TABS.find((item) => item.id === tab)?.hint}</p>
       <div className="hidden px-3 font-mono text-[11px] uppercase tracking-[0.16em] text-white/30 sm:grid sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_72px_56px]">
         <span>Token</span>
         <span>Chart</span>
