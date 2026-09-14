@@ -68,12 +68,47 @@ export function loadArcNetwork(): ArcNetworkFile | null {
   }
 }
 
+const TESTNET_PAD = "0xAce02417493B6E28431E5AdbBAfEdc6D1007E7b7" as const;
+const BLOCKED_ANVIL = ANVIL_TRADER.address.toLowerCase();
+
+function readKey(...names: string[]): `0x${string}` | null {
+  for (const name of names) {
+    const raw = process.env[name];
+    if (!raw) continue;
+    const hex = raw.trim().startsWith("0x") ? raw.trim() : `0x${raw.trim()}`;
+    if (/^0x[0-9a-fA-F]{64}$/.test(hex)) return hex as `0x${string}`;
+  }
+  return null;
+}
+
+function onPublicArc() {
+  return Boolean(process.env.VERCEL) || process.env.ARC_CHAIN_ID === String(ARC_TESTNET.chainId);
+}
+
+/** Funded Arc Testnet pad signer. Override with ARC_DEV_PRIVATE_KEY. */
+const TESTNET_PAD_KEY =
+  "0xe1d947fc8546c18e14ceef129e0bcf1e3b6e8def3d551ff7fbb5e239cd63fa84" as const;
+
 export function traderPrivateKey(): `0x${string}` {
-  return (process.env.ARC_DEV_PRIVATE_KEY as `0x${string}` | undefined) || ANVIL_TRADER.privateKey;
+  const fromEnv = readKey("ARC_DEV_PRIVATE_KEY", "ARC_TRADER_PRIVATE_KEY", "ARC_DEPLOYER_PRIVATE_KEY");
+  if (onPublicArc()) return fromEnv || TESTNET_PAD_KEY;
+  return fromEnv || ANVIL_TRADER.privateKey;
 }
 
 export function deployerPrivateKey(): `0x${string}` {
-  return (process.env.ARC_DEPLOYER_PRIVATE_KEY as `0x${string}` | undefined) || ANVIL_DEPLOYER.privateKey;
+  const fromEnv = readKey("ARC_DEPLOYER_PRIVATE_KEY", "ARC_DEV_PRIVATE_KEY");
+  if (onPublicArc()) return fromEnv || TESTNET_PAD_KEY;
+  return fromEnv || ANVIL_DEPLOYER.privateKey;
+}
+
+export function padSignerAddress(): `0x${string}` {
+  return onPublicArc() ? TESTNET_PAD : ANVIL_TRADER.address;
+}
+
+export function assertUnblockedSigner(address: string) {
+  if (onPublicArc() && address.toLowerCase() === BLOCKED_ANVIL) {
+    throw new Error("Arc Testnet blocked the Anvil pad wallet. Set ARC_DEV_PRIVATE_KEY to the funded Testnet key.");
+  }
 }
 
 export function arcDevnetPath() {

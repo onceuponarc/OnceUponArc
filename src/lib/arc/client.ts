@@ -3,7 +3,7 @@ import "server-only";
 import { createPublicClient, createWalletClient, http, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { defineChain } from "viem";
-import { deployerPrivateKey, loadArcNetwork, traderPrivateKey, type ArcNetworkFile } from "@/lib/arc/env";
+import { assertUnblockedSigner, deployerPrivateKey, loadArcNetwork, traderPrivateKey, type ArcNetworkFile } from "@/lib/arc/env";
 
 export function requireArcNetwork(): ArcNetworkFile {
   const net = loadArcNetwork();
@@ -35,6 +35,7 @@ export function publicArc(net = requireArcNetwork()) {
 
 export function traderWallet(net = requireArcNetwork()) {
   const account = privateKeyToAccount(traderPrivateKey());
+  assertUnblockedSigner(account.address);
   return createWalletClient({
     account,
     chain: arcChain(net),
