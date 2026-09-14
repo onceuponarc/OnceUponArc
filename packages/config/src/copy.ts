@@ -60,6 +60,42 @@ export const LAUNCH_TYPES = [
       "Graduation opens the Arc pool from vault reserves. The creator does not seed an AMM at launch.",
     ],
   },
+  {
+    id: "tweet" as const,
+    title: "Tweet spawn",
+    headline: "Paste an X link",
+    badge: "Auto jacket",
+    summary: "Read the post. Print a 3D card from the tweet. Optionally pair a Chapter so the jacket tracks MC.",
+    how: [
+      "Paste an x.com/status link. OnceUpon pulls the photo, handle, and text.",
+      "Pick a start card price and a start MC. Value = start price × live MC / start MC.",
+      "Buyer pays USDC to your wallet. The jacket moves to their profile after they paste the tx.",
+    ],
+  },
+  {
+    id: "card" as const,
+    title: "Press card",
+    headline: "Jacket only",
+    badge: "Off-curve collectible",
+    summary: "No coin required. A tradable 3D card with a start price. Pair a Chapter later if you want MC tracking.",
+    how: [
+      "Set start price. Default start MC is $25,000.",
+      "List the receive wallet on Arc or Solana USDC.",
+      "The card lives on your profile until someone pays the current value.",
+    ],
+  },
+  {
+    id: "pair" as const,
+    title: "Token + card",
+    headline: "Two markets",
+    badge: "Paired flywheel",
+    summary: "Launch the USDC curve and a jacket that tracks that Chapter’s MC. They trade separately.",
+    how: [
+      "Create the token on the Arc curve as usual.",
+      "Print a card with the same name. Link the Chapter slug.",
+      "Coin tape is the curve. Card price is start price × MC multiple.",
+    ],
+  },
 ] as const;
 
 export const PAIR_TYPES = [

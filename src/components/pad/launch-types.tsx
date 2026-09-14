@@ -28,6 +28,11 @@ export function LaunchTypeGrid({
           </div>
           <h3 className="font-heading mt-2 text-2xl font-bold">{type.headline}</h3>
           <p className="mt-2 text-sm text-parchment/70">{type.summary}</p>
+          {type.id === "tweet" || type.id === "card" || type.id === "pair" ? (
+            <Link href="/launch/arc" className="mt-3 inline-block text-sm text-white underline">
+              Open in Launch
+            </Link>
+          ) : null}
           {detailed ? (
             <ol className="mt-4 list-decimal space-y-2 pl-4 text-sm text-parchment/75">
               {type.how.map((step) => (

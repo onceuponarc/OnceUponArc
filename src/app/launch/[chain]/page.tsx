@@ -29,10 +29,10 @@ export default async function LaunchChainPage({ params }: Props) {
           <img src="/brand/logo.jpg" alt="" className="size-12 rounded-xl border border-white/15 object-cover" />
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Launch · Arc</p>
         </div>
-        <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Create a token on Arc</h1>
+        <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Launch on Arc</h1>
         <p className="relative mt-3 max-w-2xl text-white/60">
-          USDC bonding curve. Tradable the moment create lands. Graduation opens the pool from the vault. Devnet is
-          live.
+          Chapter token, tweet spawn, press card, or token + card. Coin and jacket are separate markets when you pair
+          them.
         </p>
       </section>
       <LaunchStudio chain="arc" handle={profile?.handle ?? null} signedIn={Boolean(profile)} />

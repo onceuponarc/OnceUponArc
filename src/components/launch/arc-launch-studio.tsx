@@ -19,7 +19,13 @@ import { cn } from "@/lib/utils";
 
 const STEPS = ["Token", "Curve", "Launch"] as const;
 
-export function ArcLaunchStudio({ handle }: { handle: string | null }) {
+export function ArcLaunchStudio({
+  handle,
+  pairCard = false,
+}: {
+  handle: string | null;
+  pairCard?: boolean;
+}) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [engine, setEngine] = useState<"author" | "onceuponers">("author");
@@ -30,6 +36,9 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
   const [authorBps, setAuthorBps] = useState<number>(PROTOCOL.authorModeSuggestedBps);
   const [graduateUi, setGraduateUi] = useState<number>(CHAPTER.graduateQuoteUi);
   const [rights, setRights] = useState(false);
+  const [cardPrice, setCardPrice] = useState("5");
+  const [cardMcap, setCardMcap] = useState("25000");
+  const [cardPay, setCardPay] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -62,7 +71,24 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
         return;
       }
       setStatus("Live on Arc.");
-      router.push(`/story/${body.slug}`);
+      if (pairCard && cardPay) {
+        setStatus("Printing paired jacket…");
+        await fetch("/api/cards/spawn", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            ticker,
+            startPriceUi: Number(cardPrice),
+            startMcapUi: Number(cardMcap),
+            flywheel: "pair",
+            creatorPayAddress: cardPay,
+            payNetwork: "arc",
+            storySlug: body.slug,
+          }),
+        });
+      }
+      router.push(pairCard ? `/cards` : `/story/${body.slug}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Arc launch failed.");
     } finally {
@@ -192,6 +218,29 @@ export function ArcLaunchStudio({ handle }: { handle: string | null }) {
           <p className="text-sm text-parchment/70">
             {handle ? `@${handle}` : "Devnet"} · {PAD_NAME} · USDC curve. The funded Arc test wallet signs create.
           </p>
+          {pairCard ? (
+            <div className="space-y-3 rounded-2xl border border-white/10 p-4">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Paired jacket</p>
+              <p className="text-sm text-white/55">
+                After the token prints, we mint a card at ${cardPrice} against ${Number(cardMcap).toLocaleString()} MC.
+                Coin and card stay separate.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Label>Card start price</Label>
+                  <Input className="mt-1" value={cardPrice} onChange={(e) => setCardPrice(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Start MC</Label>
+                  <Input className="mt-1" value={cardMcap} onChange={(e) => setCardMcap(e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <Label>USDC wallet for card buys</Label>
+                <Input className="mt-1" value={cardPay} onChange={(e) => setCardPay(e.target.value)} required={pairCard} />
+              </div>
+            </div>
+          ) : null}
           <label className="flex items-start gap-3 text-sm">
             <Switch checked={rights} onCheckedChange={setRights} />
             <span>{RIGHTS_TICK}</span>
