@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
+import {
+  DescriptionLinksFields,
+  EMPTY_DESCRIPTION_LINKS,
+  type DescriptionLinksValue,
+} from "@/components/launch/description-links-fields";
 import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { readApiJson } from "@/lib/http/read-json";
 import { VANITY_SUFFIX } from "@/lib/solana/vanity";
@@ -13,7 +18,10 @@ import { LaunchLiveCard, type LiveLaunch } from "@/components/launch/launch-live
 export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
-  const [blurb, setBlurb] = useState("");
+  const [links, setLinks] = useState<DescriptionLinksValue>({
+    ...EMPTY_DESCRIPTION_LINKS,
+    twitter: handle ? `@${handle}` : "",
+  });
   const [devBuy, setDevBuy] = useState("0.01");
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [vanity, setVanity] = useState(true);
@@ -37,7 +45,10 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         body: JSON.stringify({
           name,
           symbol,
-          blurb,
+          blurb: links.description,
+          website: links.website,
+          twitter: links.twitter,
+          telegram: links.telegram,
           metadataUri: cover?.imageUri,
           coverUrl: cover?.url,
           devBuySol: Number(devBuy),
@@ -57,7 +68,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         venue: "pumpfun",
         name,
         symbol: symbol.toUpperCase(),
-        blurb,
+        blurb: links.description,
         image: cover?.url ?? cover?.imageUri ?? null,
         mint: body.mint,
         signature: body.signature,
@@ -99,10 +110,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
           <Input className="mt-2" value={symbol} onChange={(e) => setSymbol(e.target.value)} required />
         </div>
       </div>
-      <div>
-        <Label>Blurb</Label>
-        <Input className="mt-2" value={blurb} onChange={(e) => setBlurb(e.target.value)} />
-      </div>
+      <DescriptionLinksFields value={links} onChange={setLinks} />
       <div>
         <Label>Dev buy (SOL)</Label>
         <Input className="mt-2" value={devBuy} onChange={(e) => setDevBuy(e.target.value)} />

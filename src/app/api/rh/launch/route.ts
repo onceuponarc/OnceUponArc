@@ -8,11 +8,28 @@ import { RH } from "@onceupon/config/rh";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+function normalizeUrl(raw: string | undefined, kind: "website" | "twitter" | "telegram", fallback = "") {
+  const value = (raw ?? "").trim();
+  if (!value) return fallback;
+  if (/^https?:\/\//i.test(value)) return value;
+  if (kind === "twitter") return `https://x.com/${value.replace(/^@/, "")}`;
+  if (kind === "telegram") return `https://t.me/${value.replace(/^@/, "")}`;
+  return `https://${value}`;
+}
+
 export async function POST(request: Request) {
   try {
     const { user, profile } = await getSessionUser();
     if (!user) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
-    const body = (await request.json()) as { name?: string; symbol?: string; coverUrl?: string };
+    const body = (await request.json()) as {
+      name?: string;
+      symbol?: string;
+      coverUrl?: string;
+      description?: string;
+      website?: string;
+      twitter?: string;
+      telegram?: string;
+    };
     const name = (body.name ?? "").trim().slice(0, 32);
     const symbol = (body.symbol ?? "").trim().toUpperCase().slice(0, 12);
     if (!name || !symbol) return NextResponse.json({ error: "Name and ticker required." }, { status: 400 });
@@ -33,6 +50,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const description = (body.description ?? "").trim() || "Launched on OrbitX";
+    const twitterFallback = profile?.handle ? `https://x.com/${profile.handle}` : "";
+    const twitter = normalizeUrl(body.twitter, "twitter", twitterFallback);
+    const website = normalizeUrl(body.website, "website", "https://www.orbitx.world");
+    const telegram = normalizeUrl(body.telegram, "telegram");
+
     const salt = keccak256(toHex(`${address}:${name}:${symbol}:${Date.now()}`));
     const data = encodeFunctionData({
       abi: PONS_FACTORY_ABI,
@@ -42,12 +65,12 @@ export async function POST(request: Request) {
           name,
           symbol,
           logo: body.coverUrl ?? "",
-          description: "Launched on OrbitX",
+          description,
           socials: {
-            twitter: profile?.handle ? `https://x.com/${profile.handle}` : "",
-            telegram: "",
+            twitter,
+            telegram,
             discord: "",
-            website: "https://www.orbitx.world",
+            website,
             farcaster: "",
           },
           creatorFeeRecipient: address,

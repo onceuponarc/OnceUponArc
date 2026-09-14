@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
+import {
+  DescriptionLinksFields,
+  EMPTY_DESCRIPTION_LINKS,
+  type DescriptionLinksValue,
+} from "@/components/launch/description-links-fields";
 import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { readApiJson } from "@/lib/http/read-json";
 import { LaunchLiveCard, type LiveLaunch } from "@/components/launch/launch-live-card";
@@ -15,7 +20,10 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
   const mode: Mode = "direct";
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
-  const [xHandle, setXHandle] = useState(handle ? `@${handle}` : "");
+  const [links, setLinks] = useState<DescriptionLinksValue>({
+    ...EMPTY_DESCRIPTION_LINKS,
+    twitter: handle ? `@${handle}` : "",
+  });
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +43,10 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
           symbol,
           mode,
           coverUrl: cover?.url,
-          xHandle,
+          xHandle: links.twitter,
+          description: links.description,
+          website: links.website,
+          telegram: links.telegram,
         }),
       });
       const body = await readApiJson<{ error?: string; hash?: string; creator?: string; token?: string }>(res);
@@ -44,7 +55,7 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
         venue: "uniswap-v4",
         name,
         symbol: symbol.toUpperCase(),
-        blurb: xHandle,
+        blurb: links.description,
         image: cover?.url ?? null,
         mint: body.token || body.creator || body.hash,
         signature: body.hash,
@@ -83,10 +94,7 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
           <Input className="mt-2" value={symbol} onChange={(e) => setSymbol(e.target.value)} required />
         </div>
       </div>
-      <div>
-        <Label>X handle label</Label>
-        <Input className="mt-2" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="@handle" />
-      </div>
+      <DescriptionLinksFields value={links} onChange={setLinks} twitterLabel="X handle label" />
       <Button type="submit" disabled={busy}>
         {busy ? "Signing with your desk…" : "Launch on Uniswap v4"}
       </Button>

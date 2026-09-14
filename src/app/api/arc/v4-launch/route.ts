@@ -7,6 +7,14 @@ import { ARC_V4, FLAUNCH_ZAP_ABI } from "@onceupon/config/ubi-v4";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+function normalizeUrl(raw: string | undefined, kind: "website" | "telegram") {
+  const value = (raw ?? "").trim();
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+  if (kind === "telegram") return `https://t.me/${value.replace(/^@/, "")}`;
+  return `https://${value}`;
+}
+
 export async function POST(request: Request) {
   try {
     const { user, profile } = await getSessionUser();
@@ -17,6 +25,9 @@ export async function POST(request: Request) {
       mode?: "direct" | "fair";
       coverUrl?: string;
       xHandle?: string;
+      description?: string;
+      website?: string;
+      telegram?: string;
     };
     const name = (body.name ?? "").trim();
     const symbol = (body.symbol ?? "").trim().toUpperCase();
@@ -36,8 +47,11 @@ export async function POST(request: Request) {
             name,
             symbol,
             image: body.coverUrl ?? "",
+            description: (body.description ?? "").trim(),
             launchpad: "OrbitX",
             creatorX: body.xHandle ?? (profile?.handle ? `@${profile.handle}` : ""),
+            website: normalizeUrl(body.website, "website"),
+            telegram: normalizeUrl(body.telegram, "telegram"),
             mode,
           }),
           initialTokenFairLaunch: (supply * fairPercent) / 100n,

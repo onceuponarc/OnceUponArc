@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
+import {
+  DescriptionLinksFields,
+  EMPTY_DESCRIPTION_LINKS,
+  type DescriptionLinksValue,
+} from "@/components/launch/description-links-fields";
 import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { readApiJson } from "@/lib/http/read-json";
 import { LaunchLiveCard, type LiveLaunch } from "@/components/launch/launch-live-card";
@@ -12,6 +17,10 @@ import { LaunchLiveCard, type LiveLaunch } from "@/components/launch/launch-live
 export function RhLaunchStudio({ handle }: { handle: string | null }) {
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
+  const [links, setLinks] = useState<DescriptionLinksValue>({
+    ...EMPTY_DESCRIPTION_LINKS,
+    twitter: handle ? `@${handle}` : "",
+  });
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +35,16 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
       const res = await fetch("/api/rh/launch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, symbol, coverUrl: cover?.url, handle }),
+        body: JSON.stringify({
+          name,
+          symbol,
+          coverUrl: cover?.url,
+          handle,
+          description: links.description,
+          website: links.website,
+          twitter: links.twitter,
+          telegram: links.telegram,
+        }),
       });
       const body = await readApiJson<{
         error?: string;
@@ -41,6 +59,7 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
         venue: "pons",
         name,
         symbol: symbol.toUpperCase(),
+        blurb: links.description,
         image: cover?.url ?? null,
         mint: body.token,
         signature: body.hash,
@@ -78,6 +97,7 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
           <Input className="mt-2" value={symbol} onChange={(e) => setSymbol(e.target.value)} required />
         </div>
       </div>
+      <DescriptionLinksFields value={links} onChange={setLinks} />
       <Button type="submit" disabled={busy}>
         {busy ? "Signing with your desk…" : "Launch on Robinhood Chain"}
       </Button>

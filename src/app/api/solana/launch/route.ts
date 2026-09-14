@@ -5,11 +5,29 @@ import { generateVanityMint, VANITY_SUFFIX } from "@/lib/solana/vanity";
 import { pumpCreateTx } from "@/lib/solana/pumpportal";
 import { sendSignedTx, waitForTx, explorerFromSig } from "@/lib/solana/partial-tx";
 import { deskSolanaKey } from "@/lib/wallets/sign-desk";
+import { createClient } from "@/lib/supabase/server";
 import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
 import { PAD_NAME } from "@onceupon/config/launchpad";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+
+function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48);
+}
+
+function normalizeUrl(raw: string | undefined, kind: "website" | "twitter" | "telegram") {
+  const value = (raw ?? "").trim();
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value;
+  if (kind === "twitter") return `https://x.com/${value.replace(/^@/, "")}`;
+  if (kind === "telegram") return `https://t.me/${value.replace(/^@/, "")}`;
+  return `https://${value}`;
+}
 
 export async function POST(request: Request) {
   try {
@@ -19,6 +37,9 @@ export async function POST(request: Request) {
       name?: string;
       symbol?: string;
       blurb?: string;
+      website?: string;
+      twitter?: string;
+      telegram?: string;
       metadataUri?: string;
       coverUrl?: string;
       devBuySol?: number;
@@ -33,15 +54,53 @@ export async function POST(request: Request) {
       body.vanity === false
         ? { keypair: (await import("@solana/web3.js")).Keypair.generate(), tries: 1, vanity: false }
         : generateVanityMint(VANITY_SUFFIX);
+    const mintAddress = minted.keypair.publicKey.toBase58();
     const metadataUri =
-      body.metadataUri || `${PUBLIC_SITE_URL}/api/token/${minted.keypair.publicKey.toBase58()}/metadata`;
+      body.metadataUri || `${PUBLIC_SITE_URL}/api/token/${mintAddress}/metadata`;
+
+    const blurb = (body.blurb ?? "").trim();
+    const websiteUrl = normalizeUrl(body.website, "website");
+    const twitterUrl = normalizeUrl(body.twitter, "twitter");
+    const telegramUrl = normalizeUrl(body.telegram, "telegram");
+
+    // Persist the story record before minting so metadataUri (fetched by pump.fun's
+    // indexer after the tx lands) already resolves to the real name/description/links
+    // instead of falling back to generic branding.
+    try {
+      const supabase = await createClient();
+      const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
+      await supabase.from("stories").insert({
+        slug,
+        title: name,
+        ticker: symbol,
+        blurb,
+        cover_url: body.coverUrl ?? null,
+        image_uri: body.coverUrl ?? null,
+        website_url: websiteUrl,
+        twitter_url: twitterUrl,
+        telegram_url: telegramUrl,
+        author_user_id: user.id,
+        author_wallet: payer.publicKey.toBase58(),
+        engine: "author",
+        status: "live",
+        author_bps: 0,
+        chain: "solana",
+        venue: "pumpfun",
+        pair_class: "sol",
+        pair_label: "SOL",
+        mint_decimals: 6,
+        token_address: mintAddress,
+      });
+    } catch {
+      // Don't block a successful on-chain launch on a DB write failure.
+    }
 
     const built = await pumpCreateTx({
       publicKey: payer.publicKey.toBase58(),
       name,
       symbol,
       metadataUri,
-      mint: minted.keypair.publicKey.toBase58(),
+      mint: mintAddress,
       devBuySol: Number(body.devBuySol ?? 0),
     });
 
@@ -51,7 +110,7 @@ export async function POST(request: Request) {
     await waitForTx(signature).catch(() => undefined);
 
     return NextResponse.json({
-      mint: minted.keypair.publicKey.toBase58(),
+      mint: mintAddress,
       signature,
       explorer: explorerFromSig(signature),
       creator: payer.publicKey.toBase58(),
@@ -61,11 +120,14 @@ export async function POST(request: Request) {
       metadata: {
         name,
         symbol,
-        description: body.blurb || `${name} launched on ${PAD_NAME}.`,
+        description: blurb || `${name} launched on ${PAD_NAME}.`,
         image: body.coverUrl,
         createdOn: PUBLIC_SITE_URL,
         launchpad: PAD_NAME,
         creatorX: profile?.handle ? `@${profile.handle}` : "",
+        website: websiteUrl ?? undefined,
+        twitter: twitterUrl ?? undefined,
+        telegram: telegramUrl ?? undefined,
       },
     });
   } catch (error) {
