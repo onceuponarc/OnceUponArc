@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { readApiJson } from "@/lib/http/read-json";
@@ -11,26 +12,88 @@ type Desk = {
 };
 
 const CHAINS = [
-  { id: "solana", label: "Solana · send SOL here to launch" },
-  { id: "eth", label: "Arc + ETH · send Arc USDC here to launch" },
-  { id: "rh", label: "Robinhood Chain" },
+  { id: "solana", label: "Solana", fund: "Send SOL here to launch" },
+  { id: "eth", label: "Arc + ETH", fund: "Send Arc USDC here to launch" },
+  { id: "rh", label: "Robinhood", fund: "Send RH ETH here to launch" },
 ] as const;
+
+async function loadDesk() {
+  const res = await fetch("/api/wallets/desk", { cache: "no-store" });
+  const body = await readApiJson<Desk & { error?: string }>(res);
+  if (!res.ok) throw new Error(body.error ?? "Desk failed.");
+  return body;
+}
 
 export function WalletDesk() {
   const [desk, setDesk] = useState<Desk | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [secret, setSecret] = useState("");
-  const [shown, setShown] = useState<string | null>(null);
-
-  async function load() {
-    const res = await fetch("/api/wallets/desk", { cache: "no-store" });
-    const body = await readApiJson<Desk & { error?: string }>(res);
-    if (!res.ok) throw new Error(body.error ?? "Desk failed.");
-    setDesk(body);
-  }
+  const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
-    load().catch((err: unknown) => setError(err instanceof Error ? err.message : "Desk failed."));
+    loadDesk()
+      .then(setDesk)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Desk failed."));
+  }, []);
+
+  async function copy(address: string) {
+    await navigator.clipboard.writeText(address);
+    setCopied(address);
+    window.setTimeout(() => setCopied(null), 1400);
+  }
+
+  return (
+    <div className="desk-3d space-y-4 rounded-3xl border border-white/10 p-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Deposit addresses</p>
+          <p className="mt-1 max-w-xl text-sm text-white/55">
+            Fund these. The pad signs with them. Fees land here. Keys stay off this page.
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/wallet/keys">Export keys</Link>
+        </Button>
+      </div>
+      <div className="grid gap-3 md:grid-cols-3">
+        {CHAINS.map((chain) => {
+          const address = desk?.wallets[chain.id];
+          return (
+            <div key={chain.id} className="desk-tile rounded-2xl border border-white/10 p-4">
+              <p className="text-sm font-semibold">{chain.label}</p>
+              <p className="mt-1 text-xs text-white/40">{chain.fund}</p>
+              <p className="mt-3 break-all font-mono text-xs text-white">{address ?? "—"}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button type="button" variant="outline" size="sm" disabled={!address} onClick={() => address && void copy(address)}>
+                  {copied === address ? "Copied" : "Copy address"}
+                </Button>
+                {desk?.explorers[chain.id] ? (
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <a href={desk.explorers[chain.id]!} target="_blank" rel="noreferrer">
+                      Explorer
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+    </div>
+  );
+}
+
+export function WalletKeysDesk() {
+  const [desk, setDesk] = useState<Desk | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [secret, setSecret] = useState("");
+  const [shown, setShown] = useState<string | null>(null);
+  const [unlock, setUnlock] = useState(false);
+
+  useEffect(() => {
+    loadDesk()
+      .then(setDesk)
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Desk failed."));
   }, []);
 
   async function act(chain: string, action: "export" | "import") {
@@ -46,47 +109,54 @@ export function WalletDesk() {
       return;
     }
     if (body.secret) setShown(body.secret);
-    await load().catch(() => undefined);
+    await loadDesk().then(setDesk).catch(() => undefined);
   }
 
   return (
-    <div className="space-y-4 rounded-3xl border border-white/10 p-5">
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Your desk</p>
-      <p className="text-sm text-white/55">
-        Created on first open. This is your dev wallet on every chain. Fund the address, then launch. The pad signs
-        with this key. Fees land here.
+    <div className="space-y-4 rounded-3xl border border-amber-300/20 bg-amber-300/5 p-5">
+      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-amber-200/70">Danger zone</p>
+      <p className="text-sm text-white/60">
+        Exporting a key shows the private secret for that desk wallet. Anyone with it can drain the address. Only do
+        this on a device you trust.
       </p>
-      <div className="grid gap-3 md:grid-cols-3">
-        {CHAINS.map((chain) => (
-          <div key={chain.id} className="rounded-2xl border border-white/10 p-4">
-            <p className="text-sm text-white/45">{chain.label}</p>
-            <p className="mt-2 break-all font-mono text-xs">{desk?.wallets[chain.id] ?? "—"}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button type="button" variant="outline" onClick={() => void act(chain.id, "export")}>
-                Export
-              </Button>
-              {desk?.explorers[chain.id] ? (
-                <Button type="button" variant="outline" asChild>
-                  <a href={desk.explorers[chain.id]!} target="_blank" rel="noreferrer">
-                    Explorer
-                  </a>
+      {!unlock ? (
+        <Button type="button" variant="outline" onClick={() => setUnlock(true)}>
+          I understand — show export
+        </Button>
+      ) : (
+        <>
+          <div className="grid gap-3 md:grid-cols-3">
+            {CHAINS.map((chain) => (
+              <div key={chain.id} className="rounded-2xl border border-white/10 p-4">
+                <p className="text-sm font-semibold">{chain.label}</p>
+                <p className="mt-2 break-all font-mono text-[11px] text-white/45">{desk?.wallets[chain.id] ?? "—"}</p>
+                <Button type="button" className="mt-3" variant="outline" size="sm" onClick={() => void act(chain.id, "export")}>
+                  Reveal key
                 </Button>
-              ) : null}
+              </div>
+            ))}
+          </div>
+          <div>
+            <Input value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="Paste a secret to import" />
+            <div className="mt-2 flex flex-wrap gap-2">
+              {CHAINS.map((chain) => (
+                <Button key={chain.id} type="button" variant="outline" size="sm" onClick={() => void act(chain.id, "import")}>
+                  Import {chain.label}
+                </Button>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-      <div>
-        <Input value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="Paste a secret to import" />
-        <div className="mt-2 flex flex-wrap gap-2">
-          {CHAINS.map((chain) => (
-            <Button key={chain.id} type="button" variant="outline" onClick={() => void act(chain.id, "import")}>
-              Import {chain.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-      {shown ? <p className="break-all rounded-2xl border border-amber-300/20 p-3 font-mono text-xs">{shown}</p> : null}
+          {shown ? (
+            <div className="rounded-2xl border border-amber-300/30 bg-black/40 p-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-200/70">Private key</p>
+              <p className="mt-2 break-all font-mono text-xs">{shown}</p>
+              <Button type="button" className="mt-3" size="sm" variant="outline" onClick={() => void navigator.clipboard.writeText(shown)}>
+                Copy key
+              </Button>
+            </div>
+          ) : null}
+        </>
+      )}
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
     </div>
   );

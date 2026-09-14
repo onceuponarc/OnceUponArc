@@ -63,7 +63,7 @@ export function LaunchLiveCard({ live, onAgain }: { live: LiveLaunch; onAgain: (
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-emerald-400/25 bg-emerald-400/5">
+    <div className="live-pop overflow-hidden rounded-3xl border border-emerald-400/25 bg-emerald-400/5">
       <div className="grid gap-0 md:grid-cols-[220px_1fr]">
         <div className="relative min-h-52 bg-black/40">
           {live.image ? (

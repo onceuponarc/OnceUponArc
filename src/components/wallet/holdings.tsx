@@ -101,9 +101,9 @@ export function HoldingsPanel() {
           Refresh
         </Button>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="desk-3d grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
-          <div key={card.title} className="rounded-2xl border border-white/10 p-4">
+          <div key={card.title} className="desk-tile rounded-2xl border border-white/10 p-4">
             <p className="text-sm font-semibold">{card.title}</p>
             <p className="mt-1 truncate font-mono text-[11px] text-white/40">{card.address ?? "—"}</p>
             <div className="mt-3 space-y-2">

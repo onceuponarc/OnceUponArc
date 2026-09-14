@@ -57,7 +57,7 @@ export function RhLaunchStudio({ handle }: { handle: string | null }) {
   }
 
   return (
-    <form onSubmit={(event) => void launch(event)} className="space-y-5 rounded-3xl border border-white/10 p-5">
+    <form onSubmit={(event) => void launch(event)} className="pad-fade space-y-5 rounded-3xl border border-white/10 p-5">
       <div>
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Robinhood Chain · 4663</p>
         <h2 className="mt-1 text-2xl font-semibold">Pons launch</h2>

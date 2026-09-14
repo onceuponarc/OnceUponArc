@@ -62,7 +62,7 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
   }
 
   return (
-    <form onSubmit={(event) => void launch(event)} className="space-y-5 rounded-3xl border border-white/10 p-5">
+    <form onSubmit={(event) => void launch(event)} className="pad-fade space-y-5 rounded-3xl border border-white/10 p-5">
       <div>
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Arc · Uniswap v4</p>
         <h2 className="mt-1 text-2xl font-semibold">V4 launch desk</h2>
