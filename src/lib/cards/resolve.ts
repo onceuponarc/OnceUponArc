@@ -14,11 +14,12 @@ async function mcapMap() {
 
 export async function viewAllCards(): Promise<CardView[]> {
   const mcaps = await mcapMap();
-  return listCards().map((card) => viewCard(card, card.storySlug ? mcaps.get(card.storySlug) : null));
+  const rows = await listCards();
+  return rows.map((card) => viewCard(card, card.storySlug ? mcaps.get(card.storySlug) : null));
 }
 
 export async function viewOneCard(slug: string): Promise<CardView | null> {
-  const card = getCard(slug);
+  const card = await getCard(slug);
   if (!card) return null;
   const mcaps = await mcapMap();
   return viewCard(card, card.storySlug ? mcaps.get(card.storySlug) : null);

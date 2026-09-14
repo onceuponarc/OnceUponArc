@@ -17,7 +17,13 @@ type Preview = {
   tweetUrl: string;
 };
 
-export function SpawnDesk({ handle }: { handle: string | null }) {
+export function SpawnDesk({
+  handle,
+  mode = "card",
+}: {
+  handle: string | null;
+  mode?: "tweet" | "card";
+}) {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -25,7 +31,7 @@ export function SpawnDesk({ handle }: { handle: string | null }) {
   const [ticker, setTicker] = useState("");
   const [startPriceUi, setStartPriceUi] = useState("5");
   const [startMcapUi, setStartMcapUi] = useState("25000");
-  const [flywheel, setFlywheel] = useState<CardFlywheel>("creator");
+  const [flywheel, setFlywheel] = useState<CardFlywheel>(mode === "tweet" ? "tweet" : "creator");
   const [payAddress, setPayAddress] = useState("");
   const [payNetwork, setPayNetwork] = useState<"arc" | "solana">("arc");
   const [storySlug, setStorySlug] = useState("");
@@ -93,8 +99,22 @@ export function SpawnDesk({ handle }: { handle: string | null }) {
   return (
     <form onSubmit={spawn} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div className="space-y-5">
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
+          {mode === "tweet" ? "Tweet spawn" : "Press card"}
+        </p>
+        {mode === "tweet" || url ? (
         <div>
-          <Label>X post</Label>
+          <Label>{mode === "tweet" ? "X post (required)" : "X post (optional)"}</Label>
+          <div className="mt-2 flex gap-2">
+            <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://x.com/user/status/…" required={mode === "tweet"} />
+            <Button type="button" variant="outline" onClick={() => void loadTweet()} disabled={busy}>
+              Read
+            </Button>
+          </div>
+        </div>
+        ) : (
+        <div>
+          <Label>X post (optional)</Label>
           <div className="mt-2 flex gap-2">
             <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://x.com/user/status/…" />
             <Button type="button" variant="outline" onClick={() => void loadTweet()} disabled={busy}>
@@ -102,6 +122,7 @@ export function SpawnDesk({ handle }: { handle: string | null }) {
             </Button>
           </div>
         </div>
+        )}
         {preview ? (
           <div className="overflow-hidden rounded-3xl border border-white/10">
             {preview.coverUrl ? (

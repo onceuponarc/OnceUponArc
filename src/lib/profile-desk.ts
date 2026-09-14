@@ -180,7 +180,7 @@ export async function loadProfileDesk(handle: string, viewerId?: string | null):
       "/brand/logo.jpg",
     bannerUrl,
     launches,
-    cards: cardsForHandle(user.handle).map((card) => {
+    cards: (await cardsForHandle(user.handle)).map((card) => {
       const view = viewCard(card);
       return {
         slug: card.slug,

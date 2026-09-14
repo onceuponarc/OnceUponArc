@@ -21,7 +21,7 @@ export function LaunchStudio({
       {kind === "chapter" || kind === "pair" ? (
         <ArcLaunchStudio handle={handle} pairCard={kind === "pair"} />
       ) : (
-        <SpawnDesk handle={handle} />
+        <SpawnDesk handle={handle} mode={kind === "tweet" ? "tweet" : "card"} />
       )}
     </div>
   );

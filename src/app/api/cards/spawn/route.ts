@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 const FLY = new Set(CARD_FLYWHEELS.map((row) => row.id));
 
 export async function POST(request: Request) {
+  try {
   const { profile } = await getSessionUser();
   if (!profile) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
   const body = (await request.json()) as {
@@ -63,6 +64,12 @@ export async function POST(request: Request) {
     lastPayTx: null,
     createdAt: new Date().toISOString(),
   };
-  writeCard(card);
+  await writeCard(card);
   return NextResponse.json({ slug: card.slug, card });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Could not print the card." },
+      { status: 400 },
+    );
+  }
 }

@@ -19,6 +19,11 @@ export const CARD_FLYWHEELS = [
     label: "Tweet only",
     hint: "No coin required. Card is the product. Price stays at start until you pair a Chapter.",
   },
+  {
+    id: "pair",
+    label: "Paired Chapter",
+    hint: "Jacket tracks the linked token MC. Coin tape stays on the curve.",
+  },
 ] as const;
 
 export type CardFlywheel = (typeof CARD_FLYWHEELS)[number]["id"];
