@@ -83,7 +83,7 @@ export const CHAINS: ChainCard[] = [
     caip2: "eip155:5042002",
     accent: "from-[#00e5c3]/45 to-[#3d7cff]/30",
     printNote:
-      "Native Chapter Curve on Arc. MockUSDC (Devnet) or Circle USDC (Testnet) is the quote. You do not seed an AMM at print. Your USDC stays in the book until graduation.",
+      "Native Chapter Curve on Arc. MockUSDC (Devnet) or Circle USDC (Testnet) is the quote. Buy and sell anytime. You do not seed an AMM at print. Graduation seeds the deeper pool from the book.",
   },
 ];
 

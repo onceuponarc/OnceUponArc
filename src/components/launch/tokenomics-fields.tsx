@@ -108,7 +108,7 @@ export function TokenomicsFields({
       </p>
       <p className="text-xs text-parchment/55">
         Preview to target: buyers fill {graduationUi.toLocaleString("en-US")} {symbol} into the vault. The Author does
-        not deposit inventory. Your {symbol} stays in the book until graduation.
+        not deposit inventory. Buyers can sell anytime. Remaining {symbol} in the book seeds the graduated pool.
       </p>
     </div>
   );

@@ -61,7 +61,7 @@ export function feesForVenue(venue: LaunchVenue, engine: "author" | "onceuponers
     snipeTaxBps: 0,
     lpBps: 0,
     headline: "OnceUpon Chapter fees",
-    note: "Author mode pushes your cut to your Arc wallet on every buy and sell. Holder-claim mode takes only the 0.20% protocol cut on trades — you fund the holder pool yourself. Buyers’ USDC stays in the vault until graduation.",
+    note: "Author mode pushes your cut to your Arc wallet on every buy and sell. Holder-claim mode takes only the 0.20% protocol cut on trades — you fund the holder pool yourself. Buy and sell anytime; the book seeds the graduated pool.",
   };
 }
 

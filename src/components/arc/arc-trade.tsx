@@ -26,16 +26,26 @@ export function ArcTrade({
   const [tokenUi, setTokenUi] = useState<number | null>(null);
   const [usdcUi, setUsdcUi] = useState<number | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
+  const [bookUi, setBookUi] = useState<number | null>(null);
+  const [targetUi, setTargetUi] = useState<number | null>(null);
   const router = useRouter();
 
   async function refresh() {
     const res = await fetch(`/api/arc/stories?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
     const body = await readApiJson<{
-      onchain?: { tokenUi?: number; usdcUi?: number; progressBps?: number };
+      onchain?: {
+        tokenUi?: number;
+        usdcUi?: number;
+        progressBps?: number;
+        realQuote?: number;
+        target?: number;
+      };
     }>(res);
     setTokenUi(body.onchain?.tokenUi ?? null);
     setUsdcUi(body.onchain?.usdcUi ?? null);
     setProgress(body.onchain?.progressBps ?? null);
+    setBookUi(body.onchain?.realQuote ?? null);
+    setTargetUi(body.onchain?.target ?? null);
   }
 
   useEffect(() => {
@@ -121,8 +131,13 @@ export function ArcTrade({
         </div>
       ) : null}
       <p className="text-xs text-parchment/55">
-        Test wallet {usdcUi != null ? `${formatUsd(usdcUi)} USDC` : ""}
-        {tokenUi != null ? ` · ${formatCompact(tokenUi)} tokens` : ""}. Your USDC stays in the book until graduation.
+        Book {bookUi != null ? formatUsd(bookUi) : "—" }
+        {targetUi != null ? ` / ${formatUsd(targetUi)} to graduate` : ""}.
+        Buy and sell anytime. Graduation seeds a deeper pool from this book.
+      </p>
+      <p className="text-xs text-parchment/40">
+        Pad signer {usdcUi != null ? `${formatUsd(usdcUi)} USDC` : ""}
+        {tokenUi != null ? ` · ${formatCompact(tokenUi)} tokens` : ""}.
       </p>
       <div className="flex flex-wrap gap-2">
         <Button type="button" onClick={submit} disabled={busy} className="rounded-full">

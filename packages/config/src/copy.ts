@@ -67,7 +67,7 @@ export const PAIR_TYPES = [
     id: "usdc" as const,
     label: "USDC",
     listed: true,
-    body: "Native Arc quote. Launches clear in USDC on the curve. Your USDC stays in the vault until graduation.",
+    body: "Native Arc quote. Buy and sell the curve anytime. When the book hits the target, remaining USDC and reserved tokens seed the graduated pool.",
   },
   {
     id: "curve" as const,
@@ -90,7 +90,7 @@ export const PAIR_TYPES = [
 ] as const;
 
 export const BONDING_COPY =
-  "Arc launches open a curve the instant create lands. Buyers pay USDC into the vault — you do not seed an AMM at launch. Default start cap is about $3,000. Graduate target is $5,000. 80% of supply trades on the curve; 20% is reserved for the pool at graduation.";
+  "Arc launches open a curve the instant create lands. Buy and sell anytime. You do not seed an AMM at print. Buys and sells fill the book; when the $5,000 target hits, remaining quote plus reserved supply seed the deeper pool. 80% of supply trades on the curve; 20% is reserved for graduation.";
 
 export const PIECE_EXPLAINER =
   "Holder claims pay a share of a rewards pool the creator deposits. The share is proportional to current holdings. It is not a dividend, not profit-sharing, and not a return on investment.";
@@ -105,11 +105,11 @@ export const MARGIN_DISCLAIMER =
   "Margin is not the OnceUpon book. OnceUpon does not custody margin, does not run a matching engine, and does not set your leverage.";
 
 export const QUOTE_DISCLAIMER =
-  "Launches quote USDC on Arc. Your USDC stays in the vault until graduation. A familiar ticker is a name, not studio equity.";
+  "Launches quote USDC on Arc. Trade the curve anytime. Graduation seeds a deeper pool from the book. A familiar ticker is a name, not studio equity.";
 
 export const RWA_GATE = "The curve quotes USDC. A gated name is not a waitlist for shares.";
 
-export const CHAPTER_BUYER_NOTE = "Your USDC stays in the vault until graduation.";
+export const CHAPTER_BUYER_NOTE = "Buy and sell anytime. USDC in the book seeds the graduated pool when the target hits.";
 
 export function humanizeJupiterQuoteError(raw: { error?: unknown; errorCode?: unknown }): string {
   const code = String(raw.errorCode ?? "");

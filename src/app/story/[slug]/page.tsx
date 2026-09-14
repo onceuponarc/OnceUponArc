@@ -273,8 +273,8 @@ export default async function StoryPage({
               <CardTitle>Trade</CardTitle>
               <CardDescription>
                 {chain === "arc"
-                  ? "The funded Arc test wallet signs buy and sell on the curve. Your USDC stays in the vault until graduation."
-                  : "Bonding buys use the curve. Your quote stays in the vault until graduation."}
+                  ? "Buy and sell the curve anytime. When the book hits the target, remaining USDC and reserved tokens seed the graduated AMM."
+                  : "Buy and sell the curve anytime. Graduation seeds a deeper pool from the book."}
               </CardDescription>
             </CardHeader>
             <CardContent>
