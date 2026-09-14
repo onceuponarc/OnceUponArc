@@ -93,10 +93,30 @@ export function isListedLaunch(item: FeedLaunch & { quoteAddress?: string | null
   return item.status === "live" || item.status === "graduated";
 }
 
+/** 0.5 volume + 0.3 unique holders + 0.2 curve progress. */
+export function deskScore(launch: FeedLaunch): number {
+  const vol = Math.log10(1 + Math.max(0, launch.volumeUi));
+  const crowd = Math.log10(1 + Math.max(0, launch.holders));
+  const curve = Math.min(1, Math.max(0, launch.progressBps / 10_000));
+  return 0.5 * vol + 0.3 * crowd + 0.2 * curve * 3;
+}
+
 export function tokenOfTheDay(launches: FeedLaunch[]): FeedLaunch | null {
   const listed = launches.filter(isListedLaunch);
   if (!listed.length) return null;
-  return [...listed].sort((a, b) => b.volumeUi - a.volumeUi || +new Date(b.createdAt) - +new Date(a.createdAt))[0] ?? null;
+  return (
+    [...listed].sort(
+      (a, b) => deskScore(b) - deskScore(a) || b.volumeUi - a.volumeUi || +new Date(b.createdAt) - +new Date(a.createdAt),
+    )[0] ?? null
+  );
+}
+
+export function weekBoard(launches: FeedLaunch[]): FeedLaunch[] {
+  const listed = launches.filter(isListedLaunch);
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recent = listed.filter((row) => +new Date(row.createdAt) >= weekAgo);
+  const pool = recent.length ? recent : listed;
+  return [...pool].sort((a, b) => deskScore(b) - deskScore(a)).slice(0, 8);
 }
 
 export function tickerHue(ticker: string): number {

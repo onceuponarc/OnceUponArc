@@ -206,9 +206,15 @@ export default async function StoryPage({
 
   return (
     <div className="space-y-8">
-      <LiveRefresh />
+      <LiveRefresh intervalMs={2000} />
+      {story.status === "graduated" ? (
+        <div className="rounded-3xl border border-white bg-white px-5 py-4 text-center text-black">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-black/45">Graduation</p>
+          <p className="mt-1 text-xl font-semibold">The pool is open. Reserved supply seeded the book.</p>
+        </div>
+      ) : null}
       <section
-        className="relative overflow-hidden rounded-2xl border border-white/10 p-6 sm:p-10"
+        className="relative overflow-hidden rounded-3xl border border-white/10 p-6 sm:p-10"
         style={{
           background: `linear-gradient(135deg, hsl(${hue} 8% 8%), #000)`,
         }}
@@ -273,8 +279,9 @@ export default async function StoryPage({
               <CardTitle>Trade</CardTitle>
               <CardDescription>
                 {chain === "arc"
-                  ? "Buy and sell the curve anytime. When the book hits the target, remaining USDC and reserved tokens seed the graduated AMM."
+                  ? "Buy and sell the curve in USDC anytime. Graduation seeds the deeper pool from the book."
                   : "Buy and sell the curve anytime. Graduation seeds a deeper pool from the book."}
+                {snipeTax > 0 ? ` Opening tax ${ (snipeTax / 100).toFixed(2) }% on early buys.` : ""}
               </CardDescription>
             </CardHeader>
             <CardContent>

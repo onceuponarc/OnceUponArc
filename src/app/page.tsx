@@ -8,6 +8,8 @@ import { PROTOCOL } from "@onceupon/config/arc";
 import { tokenOfTheDay } from "@/lib/feed";
 import { formatUsd } from "@/lib/format";
 import Link from "next/link";
+import { ArcDeskBar } from "@/components/pad/arc-desk-bar";
+import { KingBanner } from "@/components/pad/king-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,8 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-6">
-      <LiveRefresh />
+      <LiveRefresh intervalMs={2000} />
+      <ArcDeskBar />
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black p-5 sm:p-7">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -72,25 +75,7 @@ export default async function HomePage() {
         <p className="mt-1 text-lg font-semibold">75 / 25 fee split. CA only from official channels when the chain is live.</p>
       </Link>
 
-      {totd ? (
-        <Link
-          href={`/story/${totd.slug}`}
-          className="block rounded-2xl border border-white bg-white px-5 py-4 text-black transition-transform hover:-translate-y-0.5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-black/50">Token of the day</p>
-              <p className="mt-1 text-2xl font-semibold tracking-tight">
-                ${totd.ticker} <span className="text-black/45">{totd.title}</span>
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-black/45">Volume</p>
-              <p className="text-2xl font-semibold tabular-nums">{formatUsd(totd.volumeUi)}</p>
-            </div>
-          </div>
-        </Link>
-      ) : null}
+      {totd ? <KingBanner launch={totd} /> : null}
 
       <LiveTape initial={tape} />
       <FeedBoard launches={launches} />

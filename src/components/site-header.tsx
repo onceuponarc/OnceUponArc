@@ -39,6 +39,9 @@ export function SiteHeader({
           <Link href="/params" className="transition-colors hover:text-white">
             Token
           </Link>
+          <Link href="/week" className="transition-colors hover:text-white">
+            Week
+          </Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <p className="hidden font-mono text-[11px] text-white/35 lg:block">{onlineCount} online</p>
