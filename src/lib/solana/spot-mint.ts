@@ -68,7 +68,7 @@ export async function buildSpotMintTx(input: {
   );
   if (program === "token2022" && taxBps > 0) {
     tx.add(
-      createInitializeTransferFeeConfigInstruction(mint, protocol, protocol, taxBps, supply, TOKEN_2022_PROGRAM_ID),
+      createInitializeTransferFeeConfigInstruction(mint, payer, payer, taxBps, supply, TOKEN_2022_PROGRAM_ID),
     );
   }
   if (program === "token2022" && mode === "fair") {

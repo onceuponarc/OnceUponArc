@@ -1,6 +1,6 @@
 import "server-only";
 
-import { formatUnits, parseEther, parseUnits, zeroHash } from "viem";
+import { encodeFunctionData, formatUnits, parseEther, parseUnits, zeroHash } from "viem";
 import { CHAPTER } from "@onceupon/config/chapter";
 import { isPublicArc } from "@onceupon/config/arc";
 import { curveAbi, erc20Abi, factoryAbi } from "@/lib/arc/abi";
@@ -172,6 +172,54 @@ export async function dripFaucet(to?: `0x${string}`) {
   return { hash, amountUi: 500, address: trader, gas };
 }
 
+export function prepareUserCreate(input: {
+  title: string;
+  ticker: string;
+  blurb: string;
+  engine: "author" | "onceuponers";
+  authorBps: number;
+  graduateUi: number;
+  creator: `0x${string}`;
+  coverUrl?: string | null;
+}) {
+  const net = loadArcNetwork();
+  if (!net?.factory) throw new Error("Set ARC_FACTORY after the factory is deployed.");
+  const ticker = input.ticker.trim().toUpperCase().slice(0, 12);
+  const title = input.title.trim();
+  const graduate = parseUnits(String(input.graduateUi || CHAPTER.graduateQuoteUi), 6);
+  const authorBps = Math.min(Math.max(50, input.authorBps), 980);
+  const data = encodeFunctionData({
+    abi: factoryAbi,
+    functionName: "createStory",
+    args: [
+      {
+        name: title.slice(0, 32),
+        symbol: ticker.slice(0, 10),
+        uri: input.coverUrl || "https://www.orbitx.world/onceupon-cover.svg",
+        quote: net.usdc,
+        engine: input.engine === "onceuponers" ? 1 : 0,
+        authorBps,
+        protocolBps: 0,
+        pieceBps: 0,
+        graduateQuoteTarget: graduate,
+        feeRecipient: input.creator,
+        seedQuote: 0n,
+        minBaseOut: 0n,
+      },
+    ],
+  });
+  return {
+    to: net.factory,
+    data,
+    chainId: net.chainId,
+    feeRecipient: input.creator,
+    authorBps,
+    protocolBps: 0,
+    ticker,
+    title,
+  };
+}
+
 export async function launchOnArc(input: {
   title: string;
   ticker: string;
@@ -182,7 +230,20 @@ export async function launchOnArc(input: {
   handle: string | null;
   coverUrl?: string | null;
   userId?: string | null;
+  creator?: `0x${string}`;
 }) {
+  if (input.creator) {
+    return prepareUserCreate({
+      title: input.title,
+      ticker: input.ticker,
+      blurb: input.blurb,
+      engine: input.engine,
+      authorBps: input.authorBps,
+      graduateUi: input.graduateUi,
+      creator: input.creator,
+      coverUrl: input.coverUrl,
+    });
+  }
   await ensureArcDevnet();
   const net = requireArcNetwork();
   const pub = publicArc(net);

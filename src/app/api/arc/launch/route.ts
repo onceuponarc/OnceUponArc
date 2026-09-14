@@ -18,6 +18,7 @@ export async function POST(request: Request) {
       graduateUi?: number;
       coverUrl?: string | null;
       rightsAttested?: boolean;
+      creator?: string;
     };
     if (!body.title || !body.ticker) {
       return NextResponse.json({ error: "Name and ticker are required." }, { status: 400 });
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
       handle: profile?.handle ?? "devnet",
       coverUrl: body.coverUrl ?? null,
       userId: profile?.id ?? null,
+      creator: body.creator?.startsWith("0x") ? (body.creator as `0x${string}`) : undefined,
     });
     return NextResponse.json(result);
   } catch (error) {

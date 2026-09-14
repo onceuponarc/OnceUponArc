@@ -64,6 +64,11 @@ export function ArcLaunchStudio({
     setError(null);
       setStatus("Launching on Arc…");
     try {
+      const eth = (window as Window & { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
+      if (!eth) throw new Error("Connect MetaMask or Rabby. You pay gas. You get the fees.");
+      const accounts = (await eth.request({ method: "eth_requestAccounts" })) as string[];
+      const creator = accounts[0];
+      if (!creator) throw new Error("No wallet.");
       const res = await fetch("/api/arc/launch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -76,12 +81,27 @@ export function ArcLaunchStudio({
           graduateUi,
           coverUrl: cover?.url,
           rightsAttested: rights,
+          creator,
         }),
       });
-      const body = await readApiJson<{ error?: string; slug?: string; mint?: string }>(res);
+      const body = await readApiJson<{
+        error?: string;
+        slug?: string;
+        mint?: string;
+        to?: string;
+        data?: string;
+      }>(res);
+      if (body.to && body.data) {
+        const hash = (await eth.request({
+          method: "eth_sendTransaction",
+          params: [{ from: creator, to: body.to, data: body.data }],
+        })) as string;
+        setStatus(`You paid gas. Fees route to ${creator}. ${hash}`);
+        return;
+      }
       if (!res.ok || !body.slug) {
         const msg = body.error ?? "Arc launch failed.";
-        if (/StoryFactory has no code|ARC_FACTORY/i.test(msg)) {
+        if (/StoryFactory has no code|ARC_FACTORY|Set ARC_FACTORY/i.test(msg)) {
           setUseV4(true);
           return;
         }

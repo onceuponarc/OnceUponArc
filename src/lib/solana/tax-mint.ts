@@ -57,8 +57,8 @@ export async function buildTaxMintTx(input: {
     }),
     createInitializeTransferFeeConfigInstruction(
       mint,
-      protocol,
-      protocol,
+      payer,
+      payer,
       taxBps,
       maxFee,
       TOKEN_2022_PROGRAM_ID,

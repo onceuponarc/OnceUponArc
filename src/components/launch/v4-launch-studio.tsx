@@ -75,7 +75,7 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
             fairLaunchDuration,
             premineAmount: 0n,
             creator: creator as `0x${string}`,
-            creatorFeeAllocation: 8000,
+            creatorFeeAllocation: 10000,
             flaunchAt: 0n,
             initialPriceParams,
             feeCalculatorParams,
@@ -100,8 +100,8 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Arc · Uniswap v4</p>
         <h2 className="mt-1 text-2xl font-semibold">V4 launch desk</h2>
         <p className="mt-2 text-sm text-white/55">
-          Same rails as UBI / eve on Arc mainnet 5042. Direct = live book from block one. Fair = same price window +
-          anti-snipe. Creator slice can forward to an X handle. Pair is USDC. LP on Uniswap v4.
+          You are the dev. Your wallet pays gas and is the fee recipient. Trading fees route to the address that
+          signs. Direct = book from block one. Fair = anti-snipe window. Optional X handle is just a label.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
