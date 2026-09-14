@@ -10,6 +10,7 @@ import { formatUsd } from "@/lib/format";
 import Link from "next/link";
 import { ArcDeskBar } from "@/components/pad/arc-desk-bar";
 import { KingBanner } from "@/components/pad/king-banner";
+import { LivePulse } from "@/components/pad/live-pulse";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
       <LiveRefresh intervalMs={2000} />
+      <LivePulse />
       <ArcDeskBar />
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
         <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black p-5 sm:p-7">

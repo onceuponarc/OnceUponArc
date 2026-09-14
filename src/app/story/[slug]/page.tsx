@@ -10,7 +10,6 @@ import { PAD_NAME, PUMPFUN_CURVE_REFERENCE, feesForVenue, venueLabel } from "@on
 import { catalogByCaip2, explorerUrlForPool } from "@onceupon/config/pools";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { tickerHue } from "@/lib/feed";
 import { explorerAddress, explorerTx } from "@/lib/solana/explorer";
 import { LaunchLinks } from "@/components/story/launch-links";
 import { LinkLp } from "@/components/story/link-lp";
@@ -19,6 +18,8 @@ import { ArcDevnetWallet } from "@/components/arc/devnet-wallet";
 import { HoldersTable, PriceChart, StoryTape, type ChartTrade } from "@/components/story/market-panel";
 import { getLocalArcStory } from "@/lib/arc/store";
 import { LiveRefresh } from "@/components/pad/live-refresh";
+import { ChapterJacket } from "@/components/story/chapter-jacket";
+import { ShareChapter } from "@/components/story/share-chapter";
 import { loadArcStory } from "@/lib/arc/persist";
 import { chapterStartPriceUi, virtualQuoteUiFor } from "@onceupon/config/chapter";
 
@@ -190,7 +191,6 @@ export default async function StoryPage({
   if (!story) notFound();
 
   const author = Array.isArray(story.users) ? story.users[0] : story.users;
-  const hue = tickerHue(story.ticker);
   const engineLabel = story.engine === "author" ? "Creator fees" : "Holder claims";
   const statusLabel = story.status === "graduated" ? "Bonded" : story.status;
   const chain = story.chain ?? "arc";
@@ -208,58 +208,43 @@ export default async function StoryPage({
     <div className="space-y-8">
       <LiveRefresh intervalMs={2000} />
       {story.status === "graduated" ? (
-        <div className="rounded-3xl border border-white bg-white px-5 py-4 text-center text-black">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-black/45">Graduation</p>
-          <p className="mt-1 text-xl font-semibold">The pool is open. Reserved supply seeded the book.</p>
+        <div className="rounded-3xl border border-white bg-white px-5 py-6 text-center text-black">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-black/45">Graduation ceremony</p>
+          <p className="mt-2 text-2xl font-semibold">The curve closed. Reserved supply seeded the pool.</p>
+          <p className="mt-1 text-sm text-black/55">Buys and sells now print on the deeper book.</p>
         </div>
       ) : null}
-      <section
-        className="relative overflow-hidden rounded-3xl border border-white/10 p-6 sm:p-10"
-        style={{
-          background: `linear-gradient(135deg, hsl(${hue} 8% 8%), #000)`,
-        }}
-      >
-        {coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coverUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-35"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgb(201_162_39_/_25%),transparent_40%)]" />
-        )}
-        <div className="relative flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-arc">
-              {PAD_NAME} · ${story.ticker}
-            </p>
-            <h1 className="font-heading mt-2 text-4xl font-extrabold sm:text-5xl">{story.title}</h1>
-            <p className="mt-3 max-w-2xl text-parchment/75">{story.blurb}</p>
-            {story.token_address ? (
-              <div className="mt-4">
-                <LaunchLinks
-                  mint={story.token_address}
-                  venue={story.venue}
-                  chain={chain}
-                  twitterUrl={twitterUrl}
-                  telegramUrl={telegramUrl}
-                  websiteUrl={websiteUrl}
-                  metadataUri={metadataUri}
-                />
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge>{PAD_NAME}</Badge>
-            <Badge variant="outline">{venueLabel(story.venue, chain)}</Badge>
-            <Badge>{engineLabel}</Badge>
-            <Badge variant="outline">{story.pair_label}</Badge>
-            <Badge variant="secondary">{statusLabel}</Badge>
-            <Badge variant="outline">{chainCard?.title ?? chain}</Badge>
-          </div>
+      <ChapterJacket
+        ticker={story.ticker}
+        title={story.title}
+        blurb={story.blurb ?? ""}
+        coverUrl={coverUrl ?? null}
+        status={String(story.status)}
+        handle={author && typeof author === "object" ? (author as { handle?: string }).handle : null}
+        snipeTaxBps={snipeTax}
+      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          <Badge>{PAD_NAME}</Badge>
+          <Badge variant="outline">{venueLabel(story.venue, chain)}</Badge>
+          <Badge>{engineLabel}</Badge>
+          <Badge variant="outline">{story.pair_label}</Badge>
+          <Badge variant="secondary">{statusLabel}</Badge>
+          <Badge variant="outline">{chainCard?.title ?? chain}</Badge>
         </div>
-      </section>
+        <ShareChapter ticker={story.ticker} slug={slug} />
+      </div>
+      {story.token_address ? (
+        <LaunchLinks
+          mint={story.token_address}
+          venue={story.venue}
+          chain={chain}
+          twitterUrl={twitterUrl}
+          telegramUrl={telegramUrl}
+          websiteUrl={websiteUrl}
+          metadataUri={metadataUri}
+        />
+      ) : null}
 
       {chain !== "arc" ? (
         <div className="glass rounded-2xl border border-arc/25 px-4 py-3 text-sm text-parchment/75">
