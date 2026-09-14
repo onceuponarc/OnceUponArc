@@ -41,10 +41,10 @@ export default async function LaunchChainPage({ params }: Props) {
         </h1>
         <p className="relative mt-3 max-w-2xl text-white/60">
           {solana
-            ? "Pump.fun curve. OrbitX metadata. Custom …obx mint. Sign in Phantom."
+            ? "pump.fun. Tradable at create. Jupiter buy/sell. Fees to your in-app Solana wallet."
             : robinhood
-              ? "No curve. Fund the in-app RH wallet with ETH. That key mints, pays gas, and takes fees."
-              : "Chapter token, tweet spawn, press card, or token + card. Coin and jacket stay separate when you pair them."}
+              ? "Pons v2. Tradable at create. Volume feeds the Uniswap v4 LP. Fees to your in-app RH wallet."
+              : "Uniswap v4 on Arc. Tradable from block one. Fund the in-app wallet with USDC."}
         </p>
         <div className="relative mt-5">
           <LaunchChainSwitch

@@ -39,7 +39,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
   const [devBuy, setDevBuy] = useState("0.01");
   const [seedSol, setSeedSol] = useState("0.05");
   const [cover, setCover] = useState<CoverPick | null>(null);
-  const [mode, setMode] = useState<Mode>("pump");
+  const mode: Mode = "pump";
   const [program, setProgram] = useState<Program>("token2022");
   const [taxBps, setTaxBps] = useState("100");
   const [vanity, setVanity] = useState(true);
@@ -166,17 +166,7 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         <div className="mt-4">
           <DevFundBanner chain="solana" />
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button type="button" variant={mode === "direct" ? "default" : "outline"} onClick={() => setMode("direct")}>
-            Direct Launch
-          </Button>
-          <Button type="button" variant={mode === "fair" ? "default" : "outline"} onClick={() => setMode("fair")}>
-            Fair Launch · anti-snipe
-          </Button>
-          <Button type="button" variant={mode === "pump" ? "default" : "outline"} onClick={() => setMode("pump")}>
-            Pump.fun curve
-          </Button>
-        </div>
+
       </div>
       {mode !== "pump" ? (
         <div className="flex flex-wrap gap-2">

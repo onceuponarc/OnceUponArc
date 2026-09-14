@@ -12,7 +12,7 @@ import { ARC_V4 } from "@onceupon/config/ubi-v4";
 type Mode = "direct" | "fair";
 
 export function V4LaunchStudio({ handle }: { handle: string | null }) {
-  const [mode, setMode] = useState<Mode>("direct");
+  const mode: Mode = "direct";
   const [name, setName] = useState("");
   const [symbol, setSymbol] = useState("");
   const [xHandle, setXHandle] = useState(handle ? `@${handle}` : "");
@@ -59,14 +59,6 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
         </p>
       </div>
       <DevFundBanner chain="arc" />
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant={mode === "direct" ? "default" : "outline"} onClick={() => setMode("direct")}>
-          Direct Launch
-        </Button>
-        <Button type="button" variant={mode === "fair" ? "default" : "outline"} onClick={() => setMode("fair")}>
-          Fair Launch · anti-snipe
-        </Button>
-      </div>
       <CoverField value={cover} onChange={setCover} />
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
