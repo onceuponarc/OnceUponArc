@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation";
 import { Home, Layers3, Rocket, Sparkles, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const TABS = [
-  { href: "/", label: "Board", icon: Home },
+const TABS: { href: string; label: string; icon: typeof Home; match: string }[] = [
+  { href: "/", label: "Board", icon: Home, match: "/" },
   { href: "/launch/arc", label: "Launch", icon: Rocket, match: "/launch" },
   { href: "/cards", label: "Cards", icon: Layers3, match: "/cards" },
   { href: "/drop", label: "Drop", icon: Sparkles, match: "/drop" },
   { href: "/you", label: "You", icon: UserRound, match: "/you" },
-] as const;
+];
 
 export function TabBar() {
   const pathname = usePathname() ?? "/";
@@ -25,9 +25,9 @@ export function TabBar() {
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const active =
-            tab.href === "/"
+            tab.match === "/"
               ? pathname === "/"
-              : pathname === tab.href || pathname.startsWith(`${tab.match ?? tab.href}/`) || pathname === (tab.match ?? tab.href);
+              : pathname === tab.href || pathname === tab.match || pathname.startsWith(`${tab.match}/`);
           const launch = tab.href === "/launch/arc";
           return (
             <Link
