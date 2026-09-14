@@ -22,6 +22,8 @@ import { ChapterJacket } from "@/components/story/chapter-jacket";
 import { ShareChapter } from "@/components/story/share-chapter";
 import { loadArcStory } from "@/lib/arc/persist";
 import { chapterStartPriceUi, virtualQuoteUiFor } from "@onceupon/config/chapter";
+import { viewCardsForStory } from "@/lib/cards/resolve";
+import { CardRail } from "@/components/cards/card-rail";
 
 const STORY_SELECT =
   "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
@@ -203,6 +205,7 @@ export default async function StoryPage({
   const metadataUri = (story as { metadata_uri?: string | null }).metadata_uri ?? null;
   const snipeTax = Number((story as { snipe_tax_bps?: number | null }).snipe_tax_bps ?? 0);
   const venueFees = feesForVenue((story.venue as LaunchVenue) ?? "spl", story.engine);
+  const jackets = await viewCardsForStory(slug).catch(() => []);
 
   return (
     <div className="space-y-8">
@@ -234,6 +237,16 @@ export default async function StoryPage({
         </div>
         <ShareChapter ticker={story.ticker} slug={slug} />
       </div>
+      {jackets.length ? (
+        <CardRail cards={jackets} title="Paired jackets" />
+      ) : (
+        <Link
+          href={`/cards/new?story=${encodeURIComponent(slug)}&ticker=${encodeURIComponent(String(story.ticker))}&title=${encodeURIComponent(String(story.title))}`}
+          className="block rounded-2xl border border-white/10 px-5 py-4 text-sm text-white/60"
+        >
+          Print a press card on ${String(story.ticker)}. Coin and jacket stay separate. Card value tracks this MC.
+        </Link>
+      )}
       {story.token_address ? (
         <LaunchLinks
           mint={story.token_address}

@@ -11,6 +11,8 @@ import Link from "next/link";
 import { ArcDeskBar } from "@/components/pad/arc-desk-bar";
 import { KingBanner } from "@/components/pad/king-banner";
 import { LivePulse } from "@/components/pad/live-pulse";
+import { viewAllCards } from "@/lib/cards/resolve";
+import { CardRail } from "@/components/cards/card-rail";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ export default async function HomePage() {
   const bondedCount = launches.filter((item) => item.status === "graduated").length;
   const volume = launches.reduce((sum, item) => sum + item.volumeUi, 0);
   const totd = tokenOfTheDay(launches);
+  const cards = await viewAllCards().catch(() => []);
 
   return (
     <div className="space-y-6">
@@ -47,7 +50,7 @@ export default async function HomePage() {
           </p>
           <div className="relative mt-5 flex flex-wrap gap-2">
             <Button asChild>
-              <Link href="/launch/arc">Launch token</Link>
+              <Link href="/launch/arc">Launch</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/wallet">Import wallet</Link>
@@ -69,10 +72,14 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <Link href="/cards" className="block rounded-2xl border border-white/10 px-5 py-4">
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Press cards</p>
-        <p className="mt-1 text-lg font-semibold">3D jackets that track Chapter MC. Coin and card stay separate.</p>
-      </Link>
+      {cards.length ? (
+        <CardRail cards={cards.slice(0, 12)} />
+      ) : (
+        <Link href="/cards/new" className="block rounded-2xl border border-white/10 px-5 py-4">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Press cards</p>
+          <p className="mt-1 text-lg font-semibold">Print a 3D jacket from a tweet or pair one to a Chapter.</p>
+        </Link>
+      )}
       <Link
         href="/params"
         className="block rounded-2xl border border-amber-300/25 bg-amber-300/[0.05] px-5 py-4 text-center sm:text-left"

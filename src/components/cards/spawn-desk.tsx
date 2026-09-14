@@ -20,21 +20,29 @@ type Preview = {
 export function SpawnDesk({
   handle,
   mode = "card",
+  storySlug: initialStory,
+  ticker: initialTicker,
+  title: initialTitle,
 }: {
   handle: string | null;
   mode?: "tweet" | "card";
+  storySlug?: string;
+  ticker?: string;
+  title?: string;
 }) {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
-  const [title, setTitle] = useState("");
-  const [ticker, setTicker] = useState("");
+  const [title, setTitle] = useState(initialTitle ?? "");
+  const [ticker, setTicker] = useState((initialTicker ?? "").toUpperCase());
   const [startPriceUi, setStartPriceUi] = useState("5");
   const [startMcapUi, setStartMcapUi] = useState("25000");
-  const [flywheel, setFlywheel] = useState<CardFlywheel>(mode === "tweet" ? "tweet" : "creator");
+  const [flywheel, setFlywheel] = useState<CardFlywheel>(
+    initialStory ? "pair" : mode === "tweet" ? "tweet" : "creator",
+  );
   const [payAddress, setPayAddress] = useState("");
   const [payNetwork, setPayNetwork] = useState<"arc" | "solana">("arc");
-  const [storySlug, setStorySlug] = useState("");
+  const [storySlug, setStorySlug] = useState(initialStory ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

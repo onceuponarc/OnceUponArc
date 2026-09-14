@@ -87,6 +87,12 @@ export async function getCard(slug: string): Promise<PressCard | null> {
   return loadFile().find((row) => row.slug === slug) ?? null;
 }
 
+export async function cardsForStory(storySlug: string): Promise<PressCard[]> {
+  const needle = storySlug.toLowerCase();
+  const rows = await listCards();
+  return rows.filter((row) => (row.storySlug ?? "").toLowerCase() === needle);
+}
+
 export async function cardsForHandle(handle: string): Promise<PressCard[]> {
   const needle = handle.replace(/^@/, "").toLowerCase();
   const rows = await listCards();

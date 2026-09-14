@@ -3,6 +3,8 @@ import Link from "next/link";
 import { viewOneCard } from "@/lib/cards/resolve";
 import { CardJacket } from "@/components/cards/card-jacket";
 import { ClaimDesk } from "@/components/cards/claim-desk";
+import { OwnerDesk } from "@/components/cards/owner-desk";
+import { getSessionUser } from "@/lib/auth";
 import { formatUsd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +13,8 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const card = await viewOneCard(slug);
   if (!card) notFound();
+  const { profile } = await getSessionUser();
+  const isOwner = Boolean(profile && profile.handle.toLowerCase() === card.ownerHandle.toLowerCase());
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -49,7 +53,7 @@ export default async function CardPage({ params }: { params: Promise<{ slug: str
             Source post
           </a>
         ) : null}
-        <ClaimDesk card={card} />
+        {isOwner ? <OwnerDesk card={card} /> : <ClaimDesk card={card} />}
       </div>
     </div>
   );
