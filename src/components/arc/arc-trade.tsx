@@ -89,12 +89,22 @@ export function ArcTrade({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug, side, amount: Number(amount) }),
       });
-      const body = await readApiJson<{ error?: string; hash?: string; priceUsd?: number }>(res);
+      const body = await readApiJson<{
+        error?: string;
+        hash?: string;
+        priceUsd?: number;
+        quoteUi?: number;
+        tokensUi?: number;
+      }>(res);
       if (!res.ok) {
         setError(body.error ?? "Trade failed.");
         return;
       }
-      setResult(`Landed ${body.hash?.slice(0, 10)}… · ${formatUsd(body.priceUsd ?? 0, 6)} / token`);
+      setResult(
+        side === "sell"
+          ? `Sold ${formatCompact(body.tokensUi ?? Number(amount))} tokens for ${formatUsd(body.quoteUi ?? 0, 6)} USDC`
+          : `Bought ${formatCompact(body.tokensUi ?? 0)} tokens for ${formatUsd(body.quoteUi ?? Number(amount))} · ${formatUsd(body.priceUsd ?? 0, 6)} / token`,
+      );
       await refresh();
       pingMarket();
       router.refresh();
@@ -108,16 +118,32 @@ export function ArcTrade({
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
-        <Button type="button" variant={side === "buy" ? "default" : "outline"} onClick={() => setSide("buy")}>
+        <Button type="button" variant={side === "buy" ? "default" : "outline"} onClick={() => { setSide("buy"); setAmount("25"); setQuote(null); }}>
           Buy
         </Button>
-        <Button type="button" variant={side === "sell" ? "default" : "outline"} onClick={() => setSide("sell")}>
+        <Button type="button" variant={side === "sell" ? "default" : "outline"} onClick={() => { setSide("sell"); if (tokenUi && tokenUi > 0) setAmount(String(tokenUi)); setQuote(null); }}>
           Sell
         </Button>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="arc-amt">{side === "buy" ? `${pairLabel} in` : "Tokens in"}</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="arc-amt">{side === "buy" ? `${pairLabel} in` : "Tokens in"}</Label>
+          {side === "sell" && tokenUi != null ? (
+            <button
+              type="button"
+              className="text-[11px] uppercase tracking-wide text-arc"
+              onClick={() => setAmount(String(tokenUi))}
+            >
+              Max {formatCompact(tokenUi)}
+            </button>
+          ) : null}
+        </div>
         <Input id="arc-amt" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        {side === "sell" ? (
+          <p className="text-[11px] text-parchment/45">
+            Sell is token amount, not USDC. 16 tokens ≈ dust. Use Max to unwind the bag.
+          </p>
+        ) : null}
       </div>
       {progress != null ? (
         <div>

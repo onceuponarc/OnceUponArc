@@ -376,7 +376,7 @@ export async function tradeOnArc(slug: string, side: "buy" | "sell", amountUi: n
   };
   const updated = appendLocalArcTrade(slug, trade, patch);
   await persistArcTrade(slug, trade, patch);
-  return { hash, amountOut: amountOut.toString(), priceUsd, story: updated ?? (await loadArcStory(slug)) };
+  return { hash, amountOut: amountOut.toString(), quoteUi, tokensUi, priceUsd, story: updated ?? (await loadArcStory(slug)) };
 }
 
 export async function arcSnapshot(slug: string) {
