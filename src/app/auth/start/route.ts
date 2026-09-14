@@ -10,6 +10,7 @@ export async function GET(request: Request) {
       provider: "x",
       options: {
         redirectTo: `${origin}/auth/callback`,
+        scopes: "tweet.read users.read follows.read follows.write offline.access",
       },
     });
 

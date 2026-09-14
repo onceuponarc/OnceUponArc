@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SignOutButton } from "@/components/sign-in-button";
+import { FollowXButton } from "@/components/shelf/follow-x-button";
 import { Button } from "@/components/ui/button";
 import { formatCompact, formatUsd, timeAgo } from "@/lib/format";
 import type { ProfileDesk } from "@/lib/profile-types";
@@ -106,11 +107,7 @@ export function ProfileDeskView({
                     <SignOutButton />
                   </>
                 ) : (
-                  <Button asChild>
-                    <a href={`https://x.com/${desk.handle}`} target="_blank" rel="noreferrer">
-                      Follow on X
-                    </a>
-                  </Button>
+                  <FollowXButton handle={desk.handle} />
                 )}
             </div>
 

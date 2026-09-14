@@ -4,6 +4,7 @@ export type XPublicProfile = {
   bio: string;
   avatarUrl: string | null;
   bannerUrl: string | null;
+  xUserId: string | null;
 };
 
 function upgradeAvatar(url: string | null | undefined) {
@@ -31,6 +32,7 @@ export async function fetchXProfile(handle: string): Promise<XPublicProfile | nu
     if (!res.ok) return null;
     const json = (await res.json()) as {
       user?: {
+        id?: string;
         screen_name?: string;
         name?: string;
         description?: string;
@@ -46,6 +48,7 @@ export async function fetchXProfile(handle: string): Promise<XPublicProfile | nu
       bio: user.description || "",
       avatarUrl: upgradeAvatar(user.avatar_url) ?? user.avatar_url ?? null,
       bannerUrl: upgradeBanner(user.banner_url),
+      xUserId: user.id ?? null,
     };
   } catch {
     return {
@@ -54,6 +57,7 @@ export async function fetchXProfile(handle: string): Promise<XPublicProfile | nu
       bio: "",
       avatarUrl: `https://unavatar.io/twitter/${encodeURIComponent(clean)}`,
       bannerUrl: null,
+      xUserId: null,
     };
   }
 }
