@@ -56,6 +56,7 @@ export async function listDeskWallets(userId: string, created: DeskChain[] = [])
       solana: rows.find((row) => row.chain === "solana")?.address ?? null,
       eth: rows.find((row) => row.chain === "eth")?.address ?? null,
       rh: rows.find((row) => row.chain === "rh")?.address ?? null,
+      arc: rows.find((row) => row.chain === "eth")?.address ?? null,
     },
     explorers: {
       solana: rows.find((row) => row.chain === "solana")?.address

@@ -10,10 +10,10 @@ export default function WalletPage() {
     <div className="space-y-6">
       <section className="rounded-2xl border border-white/10 p-6 sm:p-8">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Wallet</p>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight">Your keys</h1>
+        <h1 className="mt-2 text-4xl font-semibold tracking-tight">Your dev wallet</h1>
         <p className="mt-3 max-w-2xl text-white/60">
-          Solana, Ethereum, Robinhood Chain, and Arc keys for this account. Phantom pays Solana gas. Export is only
-          visible to you.
+          This is the wallet that launches and trades. Fund it. Arc uses USDC on the EVM address. Solana uses SOL on
+          the Solana address. That same address receives trading fees. You do not connect Phantom or MetaMask to print.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Button asChild>

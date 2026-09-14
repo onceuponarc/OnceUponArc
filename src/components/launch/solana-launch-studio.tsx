@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
+import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
 import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
 import { readApiJson } from "@/lib/http/read-json";
 import { VANITY_SUFFIX } from "@/lib/solana/vanity";
@@ -159,9 +160,12 @@ export function SolanaLaunchStudio({ handle }: { handle: string | null }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Solana</p>
         <h2 className="mt-1 text-2xl font-semibold">Print on Solana</h2>
         <p className="mt-2 text-sm text-white/55">
-          Direct and Fair are spot tokens. No bonding curve. Pump.fun is the only curve. Token-2022 can tax every
-          transfer, including off-platform.
+          Fund your in-app Solana wallet with SOL. That key is the dev wallet: it pays gas, signs the mint, and
+          collects fees. Phantom is optional. Pump.fun is the only bonding curve.
         </p>
+        <div className="mt-4">
+          <DevFundBanner chain="solana" />
+        </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button type="button" variant={mode === "direct" ? "default" : "outline"} onClick={() => setMode("direct")}>
             Direct Launch

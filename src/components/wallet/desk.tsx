@@ -7,13 +7,13 @@ import { readApiJson } from "@/lib/http/read-json";
 import { useSolanaWallet } from "@/components/wallet/solana-wallet-provider";
 
 type Desk = {
-  wallets: { solana: string | null; eth: string | null; rh: string | null };
+  wallets: { solana: string | null; eth: string | null; rh: string | null; arc?: string | null };
   explorers: { solana: string | null; eth: string | null; rh: string | null };
 };
 
 const CHAINS = [
-  { id: "solana", label: "Solana" },
-  { id: "eth", label: "Ethereum" },
+  { id: "solana", label: "Solana · send SOL here to launch" },
+  { id: "eth", label: "Arc + ETH · send Arc USDC here to launch" },
   { id: "rh", label: "Robinhood Chain" },
 ] as const;
 
@@ -55,7 +55,8 @@ export function WalletDesk() {
     <div className="space-y-4 rounded-3xl border border-white/10 p-5">
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Your desk</p>
       <p className="text-sm text-white/55">
-        Created on first open. Only this account can export. Connect Phantom separately to pay Solana gas.
+        Created on first open. This is your dev wallet on every chain. Fund the address, then launch. The pad signs
+        with this key. Fees land here.
       </p>
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" onClick={() => void injected.connect()}>

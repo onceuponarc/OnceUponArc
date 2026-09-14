@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { encodeFunctionData, encodeAbiParameters, parseAbiParameters } from "viem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CoverField, type CoverPick } from "@/components/launch/cover-field";
-import { ARC_V4, FLAUNCH_ZAP_ABI } from "@onceupon/config/ubi-v4";
+import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
+import { readApiJson } from "@/lib/http/read-json";
+import { ARC_V4 } from "@onceupon/config/ubi-v4";
 
 type Mode = "direct" | "fair";
 
@@ -26,67 +27,20 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
     setError(null);
     setTxHash(null);
     try {
-      const eth = (window as Window & { ethereum?: { request: (args: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
-      if (!eth) throw new Error("Connect MetaMask or Rabby on Arc (5042).");
-      const accounts = (await eth.request({ method: "eth_requestAccounts" })) as string[];
-      const creator = accounts[0];
-      if (!creator) throw new Error("No wallet.");
-      try {
-        await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: ARC_V4.hexChainId }] });
-      } catch {
-        await eth.request({
-          method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainId: ARC_V4.hexChainId,
-              chainName: "Arc",
-              nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
-              rpcUrls: ["https://rpc.arc-scan.org"],
-              blockExplorerUrls: [ARC_V4.explorer],
-            },
-          ],
-        });
-      }
-
-      const fairPercent = mode === "fair" ? 50n : 0n;
-      const supply = 1_000_000_000n * 10n ** 18n;
-      const initialTokenFairLaunch = (supply * fairPercent) / 100n;
-      const fairLaunchDuration = mode === "fair" ? 30n * 60n : 0n;
-      const tokenUri = JSON.stringify({
-        name,
-        symbol,
-        image: cover?.url ?? "",
-        launchpad: "OrbitX",
-        creatorX: xHandle.trim(),
-        mode,
-        antiSnipe: mode === "fair",
+      const res = await fetch("/api/arc/v4-launch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          symbol,
+          mode,
+          coverUrl: cover?.url,
+          xHandle,
+        }),
       });
-      const initialPriceParams = encodeAbiParameters(parseAbiParameters("uint256"), [6_900n * 10n ** 6n]);
-      const feeCalculatorParams = mode === "fair" ? encodeAbiParameters(parseAbiParameters("bool"), [true]) : "0x";
-      const data = encodeFunctionData({
-        abi: FLAUNCH_ZAP_ABI,
-        functionName: "flaunch",
-        args: [
-          {
-            name,
-            symbol,
-            tokenUri,
-            initialTokenFairLaunch,
-            fairLaunchDuration,
-            premineAmount: 0n,
-            creator: creator as `0x${string}`,
-            creatorFeeAllocation: 10000,
-            flaunchAt: 0n,
-            initialPriceParams,
-            feeCalculatorParams,
-          },
-        ],
-      });
-      const hash = (await eth.request({
-        method: "eth_sendTransaction",
-        params: [{ from: creator, to: ARC_V4.flaunchZap, data, value: "0x0" }],
-      })) as string;
-      setTxHash(hash);
+      const body = await readApiJson<{ error?: string; hash?: string; creator?: string }>(res);
+      if (!res.ok || !body.hash) throw new Error(body.error ?? "V4 launch failed. Fund your in-app Arc wallet with USDC.");
+      setTxHash(body.hash);
     } catch (err) {
       setError(err instanceof Error ? err.message : "V4 launch failed.");
     } finally {
@@ -100,10 +54,11 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Arc · Uniswap v4</p>
         <h2 className="mt-1 text-2xl font-semibold">V4 launch desk</h2>
         <p className="mt-2 text-sm text-white/55">
-          You are the dev. Your wallet pays gas and is the fee recipient. Trading fees route to the address that
-          signs. Direct = book from block one. Fair = anti-snipe window. Optional X handle is just a label.
+          Your in-app wallet is the dev wallet. Fund it with USDC on Arc. It pays gas, signs the print, and receives
+          trading fees. No MetaMask.
         </p>
       </div>
+      <DevFundBanner chain="arc" />
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant={mode === "direct" ? "default" : "outline"} onClick={() => setMode("direct")}>
           Direct Launch
@@ -112,11 +67,6 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
           Fair Launch · anti-snipe
         </Button>
       </div>
-      <p className="text-sm text-white/50">
-        {mode === "direct"
-          ? "Price discovery from block one. Full float on a v4 USDC pool."
-          : "Everyone enters at the same price for 30 minutes. Bid wall + anti-snipe before the book opens."}
-      </p>
       <CoverField value={cover} onChange={setCover} />
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
@@ -129,11 +79,11 @@ export function V4LaunchStudio({ handle }: { handle: string | null }) {
         </div>
       </div>
       <div>
-        <Label>Forward creator rewards to X</Label>
+        <Label>X handle label</Label>
         <Input className="mt-2" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="@handle" />
       </div>
       <Button type="submit" disabled={busy}>
-        {busy ? "Confirm in wallet…" : mode === "fair" ? "Fair launch on v4" : "Direct launch on v4"}
+        {busy ? "Signing with your desk…" : mode === "fair" ? "Fair launch on v4" : "Direct launch on v4"}
       </Button>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       {txHash ? (
