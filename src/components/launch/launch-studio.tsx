@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArcLaunchStudio } from "@/components/launch/arc-launch-studio";
+import { V4LaunchStudio } from "@/components/launch/v4-launch-studio";
 import { SpawnDesk } from "@/components/cards/spawn-desk";
 import { LaunchKindPicker, type LaunchKind } from "@/components/launch/launch-kind";
 import type { PrintableChain } from "@onceupon/config/solana";
