@@ -1,5 +1,6 @@
 import { ArcWalletDesk } from "@/components/arc/arc-wallet-desk";
 import { WalletDesk } from "@/components/wallet/desk";
+import { HoldingsPanel } from "@/components/wallet/holdings";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -21,6 +22,7 @@ export default function WalletPage() {
           </Button>
         </div>
       </section>
+      <HoldingsPanel />
       <WalletDesk />
       <ArcWalletDesk />
     </div>
