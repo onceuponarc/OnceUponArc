@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 const LANES = [
   { href: "/launch/arc", label: "Arc" },
   { href: "/launch/solana", label: "Solana" },
+  { href: "/launch/robinhood", label: "Robinhood" },
 ];
 
 export function LaunchChainSwitch({ current }: { current: string }) {

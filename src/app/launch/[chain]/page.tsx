@@ -1,5 +1,6 @@
 import { LaunchStudio } from "@/components/launch/launch-studio";
 import { SolanaLaunchStudio } from "@/components/launch/solana-launch-studio";
+import { RhLaunchStudio } from "@/components/launch/rh-launch-studio";
 import { LaunchChainSwitch } from "@/components/launch/chain-switch";
 import { getSessionUser } from "@/lib/auth";
 import { findChain, isPrintableChain } from "@onceupon/config/solana";
@@ -20,6 +21,7 @@ export default async function LaunchChainPage({ params }: Props) {
   if (!isPrintableChain(chain)) redirect("/launch");
   const { profile } = await getSessionUser();
   const solana = chain === "solana";
+  const robinhood = chain === "robinhood";
 
   return (
     <div className="space-y-6">
@@ -31,23 +33,29 @@ export default async function LaunchChainPage({ params }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo.jpg" alt="" className="size-12 rounded-xl border border-white/15 object-cover" />
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
-            Launch · {solana ? "Solana" : "Arc"}
+            Launch · {solana ? "Solana" : robinhood ? "Robinhood Chain" : "Arc"}
           </p>
         </div>
         <h1 className="relative mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          {solana ? "Launch on Solana" : "Launch on Arc"}
+          {solana ? "Launch on Solana" : robinhood ? "Launch on Robinhood Chain" : "Launch on Arc"}
         </h1>
         <p className="relative mt-3 max-w-2xl text-white/60">
           {solana
             ? "Pump.fun curve. OrbitX metadata. Custom …obx mint. Sign in Phantom."
-            : "Chapter token, tweet spawn, press card, or token + card. Coin and jacket stay separate when you pair them."}
+            : robinhood
+              ? "No curve. Fund the in-app RH wallet with ETH. That key mints, pays gas, and takes fees."
+              : "Chapter token, tweet spawn, press card, or token + card. Coin and jacket stay separate when you pair them."}
         </p>
         <div className="relative mt-5">
-          <LaunchChainSwitch current={solana ? "/launch/solana" : "/launch/arc"} />
+          <LaunchChainSwitch
+            current={solana ? "/launch/solana" : robinhood ? "/launch/robinhood" : "/launch/arc"}
+          />
         </div>
       </section>
       {solana ? (
         <SolanaLaunchStudio handle={profile?.handle ?? null} />
+      ) : robinhood ? (
+        <RhLaunchStudio handle={profile?.handle ?? null} />
       ) : (
         <LaunchStudio chain="arc" handle={profile?.handle ?? null} signedIn={Boolean(profile)} />
       )}

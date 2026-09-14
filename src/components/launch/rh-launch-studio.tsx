@@ -1,0 +1,83 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { CoverField, type CoverPick } from "@/components/launch/cover-field";
+import { DevFundBanner } from "@/components/wallet/dev-fund-banner";
+import { readApiJson } from "@/lib/http/read-json";
+
+export function RhLaunchStudio({ handle }: { handle: string | null }) {
+  const [name, setName] = useState("");
+  const [symbol, setSymbol] = useState("");
+  const [cover, setCover] = useState<CoverPick | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ hash: string; token: string; explorer: string } | null>(null);
+
+  async function launch(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch("/api/rh/launch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, symbol, coverUrl: cover?.url, handle }),
+      });
+      const body = await readApiJson<{
+        error?: string;
+        hash?: string;
+        token?: string;
+        explorer?: string;
+      }>(res);
+      if (!res.ok || !body.token || !body.hash) {
+        throw new Error(body.error ?? "Fund your in-app Robinhood wallet with ETH, then launch.");
+      }
+      setResult({ hash: body.hash, token: body.token, explorer: body.explorer ?? "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Robinhood launch failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={(event) => void launch(event)} className="space-y-5 rounded-3xl border border-white/10 p-5">
+      <div>
+        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Robinhood Chain · 4663</p>
+        <h2 className="mt-1 text-2xl font-semibold">Spot launch</h2>
+        <p className="mt-2 text-sm text-white/55">
+          No bonding curve. Your in-app RH wallet is the dev wallet. Fund it with ETH. It pays gas, signs the mint,
+          holds the 1B supply, and receives fees. Token is transferable the second the tx lands.
+        </p>
+      </div>
+      <DevFundBanner chain="rh" />
+      <CoverField value={cover} onChange={setCover} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label>Name</Label>
+          <Input className="mt-2" value={name} onChange={(e) => setName(e.target.value)} required />
+        </div>
+        <div>
+          <Label>Ticker</Label>
+          <Input className="mt-2" value={symbol} onChange={(e) => setSymbol(e.target.value)} required />
+        </div>
+      </div>
+      <Button type="submit" disabled={busy}>
+        {busy ? "Signing with your desk…" : "Launch on Robinhood Chain"}
+      </Button>
+      {error ? <p className="text-sm text-red-400">{error}</p> : null}
+      {result ? (
+        <p className="break-all text-sm text-white/70">
+          Token{" "}
+          <a className="underline" href={result.explorer} target="_blank" rel="noreferrer">
+            {result.token}
+          </a>
+        </p>
+      ) : null}
+    </form>
+  );
+}

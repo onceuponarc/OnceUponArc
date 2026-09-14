@@ -14,6 +14,12 @@ const LANES = [
     status: "Live",
     body: "IPFS art, …obx vanity, Phantom gas, claim creator fees.",
   },
+  {
+    href: "/launch/robinhood",
+    label: "Robinhood Chain",
+    status: "Spot · no curve",
+    body: "Fund the in-app RH wallet with ETH. Print a token. Tradable, no bonding curve.",
+  },
 ];
 
 export const metadata = { title: "Launch" };

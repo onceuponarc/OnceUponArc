@@ -32,7 +32,7 @@ export const ROBINHOOD_CHAIN = {
   caip2: "eip155:4663",
   explorer: "https://robinhoodchain.blockscout.com",
   rpcUrl: "https://rpc.mainnet.chain.robinhood.com",
-  note: "Pons v2 factory lives here. OrbitX does not print on Robinhood Chain.",
+  note: "OrbitX prints spot tokens on Robinhood Chain. No bonding curve.",
   ponsFactory: "0x7ed598bcef8bd9edd8c97a195c6d13f40801ec7e",
   ponsRouter: "0xe33e9e479df8802cb0866d5d05258bec4cf62948",
 } as const;
@@ -54,11 +54,11 @@ export const BASE = {
 } as const;
 
 export type LaunchChain = "arc" | "solana" | "robinhood";
-export type PrintableChain = "arc" | "solana";
+export type PrintableChain = "arc" | "solana" | "robinhood";
 export type LaunchVenue = "spl" | "nft" | "pumpfun" | "pons";
 export type QuoteKind = "sol" | "usdc" | "meme" | "stock" | "etf" | "treasury" | "bond" | "custom";
 
-export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = ["arc", "solana"];
+export const PRINTABLE_CHAIN_IDS: readonly PrintableChain[] = ["arc", "solana", "robinhood"];
 
 export type ChainCard = {
   id: LaunchChain;
@@ -95,6 +95,17 @@ export const CHAINS: ChainCard[] = [
     caip2: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
     accent: "from-[#22d3ee]/45 to-[#ffffff]/10",
     printNote: "Pump.fun curve. OrbitX metadata on every mint. Vanity suffix obx.",
+  },
+  {
+    id: "robinhood",
+    title: "Robinhood Chain",
+    live: true,
+    prints: true,
+    badge: "Spot · no curve",
+    body: "Fund your in-app RH wallet with ETH. Print a spot token. No bonding curve. Supply sits in your desk. Tradable as soon as you seed the WETH book.",
+    caip2: "eip155:4663",
+    accent: "from-[#00c805]/40 to-white/10",
+    printNote: "ERC-20 on chain 4663. Your desk pays gas and receives fees.",
   },
 ];
 
