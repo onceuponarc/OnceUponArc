@@ -1,5 +1,6 @@
 import { LaunchStudio } from "@/components/launch/launch-studio";
 import { SolanaLaunchStudio } from "@/components/launch/solana-launch-studio";
+import { LaunchChainSwitch } from "@/components/launch/chain-switch";
 import { getSessionUser } from "@/lib/auth";
 import { findChain, isPrintableChain } from "@onceupon/config/solana";
 import { redirect } from "next/navigation";
@@ -41,6 +42,9 @@ export default async function LaunchChainPage({ params }: Props) {
             ? "Pump.fun curve. OrbitX metadata. Custom …obx mint. Sign in Phantom."
             : "Chapter token, tweet spawn, press card, or token + card. Coin and jacket stay separate when you pair them."}
         </p>
+        <div className="relative mt-5">
+          <LaunchChainSwitch current={solana ? "/launch/solana" : "/launch/arc"} />
+        </div>
       </section>
       {solana ? (
         <SolanaLaunchStudio handle={profile?.handle ?? null} />

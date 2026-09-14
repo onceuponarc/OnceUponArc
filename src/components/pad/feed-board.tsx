@@ -123,7 +123,7 @@ export function FeedBoard({ launches }: { launches: FeedLaunch[] }) {
           />
           <div className="flex justify-center">
             <Button asChild>
-              <Link href="/launch/arc">Launch a token</Link>
+              <Link href="/launch">Launch a token</Link>
             </Button>
           </div>
         </div>

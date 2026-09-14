@@ -40,15 +40,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: "/press", destination: "/launch/arc", permanent: false },
+      { source: "/press", destination: "/launch", permanent: false },
       { source: "/desk", destination: "/", permanent: false },
       { source: "/claims", destination: "/ledger", permanent: false },
       { source: "/trade", destination: "/wallet", permanent: false },
-      { source: "/write", destination: "/launch/arc", permanent: false },
+      { source: "/write", destination: "/launch", permanent: false },
       { source: "/bindings/link", destination: "/bindings", permanent: false },
-      { source: "/launch/solana", destination: "/launch/arc", permanent: false },
-      { source: "/launch/robinhood", destination: "/launch/arc", permanent: false },
-      { source: "/launch/rh", destination: "/launch/arc", permanent: false },
     ];
   },
 };

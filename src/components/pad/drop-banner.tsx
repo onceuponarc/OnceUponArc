@@ -16,7 +16,7 @@ export function DropBanner() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/launch/arc" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black">
+          <Link href="/launch" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black">
             Launch
           </Link>
           <Link href="/cards/new" className="rounded-full border border-white/20 px-4 py-2 text-sm text-white">

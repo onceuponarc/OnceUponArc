@@ -5,7 +5,7 @@ const COLS = [
     title: "Desk",
     links: [
       { href: "/", label: "Board" },
-      { href: "/launch/arc", label: "Launch" },
+      { href: "/launch", label: "Launch" },
       { href: "/cards", label: "Cards" },
       { href: "/drop", label: "Drop" },
     ],

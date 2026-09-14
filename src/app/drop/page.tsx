@@ -60,7 +60,7 @@ export default async function DropPage() {
             Two books. One story.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/launch/arc" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black">
+            <Link href="/launch" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black">
               Launch now
             </Link>
             <Link href="/cards/new" className="rounded-full border border-white/25 px-6 py-3 text-sm">
