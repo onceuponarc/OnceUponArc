@@ -33,8 +33,8 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
   const chain = launchChainLabel(launch.chain);
   const offPlatform = launch.chain !== "arc";
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg border border-transparent px-2.5 py-1.5 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_88px]">
-      <Link href={dest.href} className="flex min-w-0 items-center gap-2.5">
+    <div className="flex items-center gap-2 rounded-lg border border-transparent px-2.5 py-1.5 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:gap-3">
+      <Link href={dest.href} className="flex min-w-0 flex-1 items-center gap-2.5">
         <Avatar launch={launch} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -57,13 +57,15 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
           </p>
         </div>
       </Link>
-      <Sparkline points={launch.spark} up={up} className="hidden sm:block" />
-      <Link href={dest.href} className="text-right">
+      <Sparkline points={launch.spark} up={up} className="hidden shrink-0 sm:block" />
+      <Link href={dest.href} className="shrink-0 text-right">
         <p className="text-sm font-medium tabular-nums">{formatUsd(launch.priceUi, 4)}</p>
         <p className={cn("text-[11px] tabular-nums", up ? "text-buy" : "text-sell")}>{formatPct(launch.changePct)}</p>
       </Link>
-      <p className="hidden text-right text-sm tabular-nums text-parchment/80 sm:block">{formatUsd(launch.volumeUi)}</p>
-      <div className="flex flex-col items-end gap-1">
+      <p className="hidden w-20 shrink-0 text-right text-sm tabular-nums text-parchment/80 sm:block">
+        {formatUsd(launch.volumeUi)}
+      </p>
+      <div className="flex shrink-0 flex-col items-end gap-1">
         <WatchButton slug={launch.slug} />
         <Link
           href={offPlatform ? dest.href : `/story/${launch.slug}?buy=1`}
