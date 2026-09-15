@@ -25,6 +25,7 @@ import { CardRail } from "@/components/cards/card-rail";
 import { DexScreenerEmbed } from "@/components/token/dexscreener-embed";
 import { TokenChat } from "@/components/token/token-chat";
 import { TradePanel } from "@/components/token/trade-panel";
+import { ClaimFeesButton } from "@/components/token/claim-fees-button";
 
 const STORY_SELECT =
   "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
@@ -371,8 +372,17 @@ export default async function StoryPage({
                 ).toLocaleString("en-US", { maximumFractionDigits: 6 })}{" "}
                 {story.pair_label}. Author funds it. Holders claim by share of circulating supply.
               </p>
-            ) : (
+            ) : chain === "arc" ? (
               <p>No claim button. Creator fees push on each swap.</p>
+            ) : (
+              <div className="space-y-2">
+                <p>
+                  Solana creator fees accrue on pump.fun&apos;s side and are <strong className="text-white">not</strong>{" "}
+                  pushed automatically — you have to claim them yourself. This claims every pump.fun token your
+                  account created in one transaction, not just this one.
+                </p>
+                <ClaimFeesButton signedIn={Boolean(profile)} />
+              </div>
             )}
             {(story as { supply?: number | string | null }).supply ? (
               <p>
