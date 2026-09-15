@@ -1,50 +1,17 @@
 import Link from "next/link";
 import { formatUsd } from "@/lib/format";
-import { ChainSystems, type ChainWorld } from "@/components/pad/chain-systems";
 
 export function OrbitHero({
   liveCount,
   bondedCount,
   volumeUi,
   handle,
-  chainCounts,
 }: {
   liveCount: number;
   bondedCount: number;
   volumeUi: number;
   handle: string | null;
-  chainCounts: { solana: number; arc: number; robinhood: number };
 }) {
-  const worlds: ChainWorld[] = [
-    {
-      id: "solana",
-      label: "Solana",
-      note: "pump.fun bonding curve",
-      count: chainCounts.solana,
-      xPct: 0.5,
-      yPct: 0.5,
-      hue: ["219,234,254", "96,165,250", "30,64,175"],
-    },
-    {
-      id: "arc",
-      label: "Arc",
-      note: "Uniswap v4 · USDC",
-      count: chainCounts.arc,
-      xPct: 0.5,
-      yPct: 0.5,
-      hue: ["191,219,254", "59,130,246", "30,58,138"],
-    },
-    {
-      id: "robinhood",
-      label: "Robinhood Chain",
-      note: "Pons v2 spot",
-      count: chainCounts.robinhood,
-      xPct: 0.5,
-      yPct: 0.5,
-      hue: ["147,197,253", "37,99,235", "23,37,84"],
-    },
-  ];
-
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent">
       <div
@@ -91,20 +58,6 @@ export function OrbitHero({
             <dd className="font-display mt-1 text-3xl text-gold">{formatUsd(volumeUi)}</dd>
           </div>
         </dl>
-
-        <div className="mt-10 grid gap-3 sm:grid-cols-3">
-          {worlds.map((world) => (
-            <div key={world.id} className="rounded-2xl border border-white/10 bg-black/20 p-3">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
-                <ChainSystems worlds={[world]} className="absolute inset-0 h-full w-full" />
-              </div>
-              <p className="mt-3 text-sm font-medium text-white/85">{world.label}</p>
-              <p className="text-[11px] text-white/40">
-                {world.note} · {world.count} live
-              </p>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

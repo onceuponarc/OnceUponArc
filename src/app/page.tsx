@@ -17,11 +17,6 @@ export default async function HomePage() {
   const liveCount = launches.filter((item) => item.status === "live").length;
   const bondedCount = launches.filter((item) => item.status === "graduated").length;
   const volume = launches.reduce((sum, item) => sum + item.volumeUi, 0);
-  const chainCounts = {
-    solana: launches.filter((item) => item.chain === "solana").length,
-    arc: launches.filter((item) => !item.chain || item.chain === "arc").length,
-    robinhood: launches.filter((item) => item.chain === "robinhood").length,
-  };
   const totd = tokenOfTheDay(launches);
   const cards = await viewAllCards().catch(() => []);
 
@@ -34,7 +29,6 @@ export default async function HomePage() {
         bondedCount={bondedCount}
         volumeUi={volume}
         handle={profile?.handle ?? null}
-        chainCounts={chainCounts}
       />
       <FeedBoard launches={launches} king={totd} />
       {cards.length ? <CardRail cards={cards.slice(0, 12)} /> : null}
