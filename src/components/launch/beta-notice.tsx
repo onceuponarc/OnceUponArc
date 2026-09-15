@@ -12,7 +12,15 @@ export function BetaNotice({ chain }: { chain: "arc" | "robinhood" }) {
   );
 }
 
-export function RiskFeeNotice() {
+export function RiskFeeNotice({ variant = "launch" }: { variant?: "launch" | "trade" }) {
+  if (variant === "trade") {
+    return (
+      <div className="rounded-2xl border border-white/10 px-4 py-3 text-xs leading-relaxed text-white/45">
+        This isn&apos;t financial advice. Any token can go to $0 — only risk what you&apos;re willing to lose.
+        Network and swap fees for a trade are shown live in the quote above before you confirm.
+      </div>
+    );
+  }
   return (
     <div className="rounded-2xl border border-white/10 px-4 py-3 text-xs leading-relaxed text-white/45">
       This isn&apos;t financial advice. Any token can go to $0 — only risk what you&apos;re willing to lose.

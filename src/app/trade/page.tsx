@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import { createServiceClient } from "@/lib/supabase/service";
 import { TradePanel } from "@/components/token/trade-panel";
 import { OFFICIAL_TOKEN } from "@/lib/official-token";
+import { RiskFeeNotice } from "@/components/launch/beta-notice";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,7 @@ export default async function TradePage({
 
         <TradePanel tokenMint={activeMint} tokenSymbol={activeSymbol} signedIn={Boolean(profile)} />
       </div>
+      <RiskFeeNotice variant="trade" />
     </div>
   );
 }

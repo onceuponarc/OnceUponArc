@@ -25,6 +25,7 @@ import { CardRail } from "@/components/cards/card-rail";
 import { DexScreenerEmbed } from "@/components/token/dexscreener-embed";
 import { TokenChat } from "@/components/token/token-chat";
 import { TradePanel } from "@/components/token/trade-panel";
+import { RiskFeeNotice } from "@/components/launch/beta-notice";
 import { ClaimFeesButton } from "@/components/token/claim-fees-button";
 
 const STORY_SELECT =
@@ -280,7 +281,10 @@ export default async function StoryPage({
             <DexScreenerEmbed chain={chain} tokenAddress={story.token_address ?? null} />
           </div>
           {chain === "solana" && story.token_address ? (
-            <TradePanel tokenMint={story.token_address} tokenSymbol={story.ticker} signedIn={Boolean(profile)} />
+            <div className="space-y-3">
+              <TradePanel tokenMint={story.token_address} tokenSymbol={story.ticker} signedIn={Boolean(profile)} />
+              <RiskFeeNotice variant="trade" />
+            </div>
           ) : (
             <div className="flex h-fit flex-col items-center justify-center gap-2 rounded-3xl border border-white/10 p-6 text-center text-sm text-white/45">
               <p>In-app trading isn&apos;t wired up for Robinhood Chain yet.</p>
