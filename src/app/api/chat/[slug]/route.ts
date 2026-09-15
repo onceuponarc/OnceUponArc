@@ -56,8 +56,8 @@ export async function POST(request: Request, context: { params: Promise<{ slug: 
     try {
       const payer = await deskSolanaKey(user.id);
       const lamports = await lamportsForUsd(BURN_USD);
-      const { instruction, expectedBase } = await buildOrbitxBurnIx(payer, lamports);
-      const tx = new Transaction().add(instruction);
+      const { instructions, expectedBase } = await buildOrbitxBurnIx(payer, lamports);
+      const tx = new Transaction().add(...instructions);
       const latest = await fetchLatestBlockhash(serverSolanaRpcs());
       tx.feePayer = payer.publicKey;
       tx.recentBlockhash = latest.blockhash;

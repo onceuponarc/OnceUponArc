@@ -354,7 +354,7 @@ export async function confirmPumpSwapPair(opts: {
   if (!opts.pool) throw new Error("Confirmation needs the PumpSwap pool address.");
 
   if (opts.signature && opts.signature.length >= 64 && opts.signature !== "existing") {
-    await waitForTx(opts.signature).catch(() => undefined);
+    await waitForTx(opts.signature);
   }
 
   let poolKey: PublicKey;

@@ -1,9 +1,9 @@
 import "server-only";
 
 import BN from "bn.js";
-import { Keypair, PublicKey } from "@solana/web3.js";
-import { MintLayout } from "@solana/spl-token";
-import { OnlinePumpAmmSdk, buyQuoteInput } from "@pump-fun/pump-swap-sdk";
+import { Keypair, PublicKey, ComputeBudgetProgram } from "@solana/web3.js";
+import { createBurnInstruction } from "@solana/spl-token";
+import { OnlinePumpAmmSdk, PUMP_AMM_SDK, buyQuoteInput } from "@pump-fun/pump-swap-sdk";
 import { solanaConnection } from "@/lib/solana/connection";
 import { OFFICIAL_TOKEN } from "@/lib/official-token";
 
@@ -43,44 +43,63 @@ export async function lamportsForUsd(usd: number): Promise<number> {
 }
 
 /**
- * Builds the single on-chain instruction that buys $ORBITX with `lamports` of
- * SOL and burns everything it receives — PumpSwap's own boost-buy-and-burn
- * primitive, not a hand-assembled buy+burn pair. `minBaseAmountBurned` is
- * derived from the pool's live reserves with an 8% slippage floor so this
- * still reverts cleanly (spending nothing) if the price moved hard between
- * quoting and sending, rather than silently burning less than expected.
+ * Builds the instructions that buy $ORBITX with `lamports` of SOL and then
+ * burn everything received, as two ordinary, well-trodden operations in one
+ * transaction — a standard PumpSwap buy (the same instruction path a real
+ * pump.fun buy uses) followed by a standard SPL burn of the tokens it lands
+ * in. This replaced an earlier version built on PumpSwap's boostBuyAndBurn
+ * primitive, which turned out to always fail on-chain for this pool
+ * (AccountNotInitialized on `boost_vault` — that feature was never set up
+ * for $ORBITX, confirmed by inspecting a failed transaction directly on
+ * Solscan) — a bug that shipped a design I hadn't actually watched succeed
+ * on-chain. This version only uses instruction paths real trades already
+ * exercise every day.
+ *
+ * The burn amount is the slippage-protected minimum from the buy (`minOut`),
+ * never the optimistic estimate — the buy instruction itself guarantees at
+ * least that many tokens land in the account, so the burn can never try to
+ * burn more than what's actually there.
  */
 export async function buildOrbitxBurnIx(payer: Keypair, lamports: number) {
-  const sdk = amm();
-  const pool = await sdk.fetchPool(ORBITX_POOL);
-  const globalConfig = await sdk.fetchGlobalConfigAccount();
-  const feeConfig = await sdk.fetchFeeConfigAccount().catch(() => null);
-  const [baseAccount, quoteAccount, baseMintInfo] = await Promise.all([
-    solanaConnection().getTokenAccountBalance(pool.poolBaseTokenAccount),
-    solanaConnection().getTokenAccountBalance(pool.poolQuoteTokenAccount),
-    solanaConnection().getAccountInfo(pool.baseMint),
-  ]);
-  if (!baseMintInfo) throw new Error("Could not read the $ORBITX mint account.");
-  const baseMintAccount = MintLayout.decode(baseMintInfo.data);
+  const online = amm();
+  const state = await online.swapSolanaState(ORBITX_POOL, payer.publicKey);
 
   const quote = new BN(lamports);
   const preview = buyQuoteInput({
     quote,
     slippage: SLIPPAGE_PCT,
-    baseReserve: new BN(baseAccount.value.amount),
-    quoteReserve: new BN(quoteAccount.value.amount),
-    virtualQuoteReserves: pool.virtualQuoteReserves,
-    globalConfig,
-    baseMintAccount,
-    baseMint: pool.baseMint,
-    coinCreator: pool.coinCreator,
-    creator: pool.creator,
-    feeConfig,
-    isMayhemMode: pool.isMayhemMode,
-    creatorFeeBps: pool.creatorFeeBps,
+    baseReserve: state.poolBaseAmount,
+    quoteReserve: state.poolQuoteAmount,
+    virtualQuoteReserves: state.pool.virtualQuoteReserves,
+    globalConfig: state.globalConfig,
+    baseMintAccount: state.baseMintAccount,
+    baseMint: state.baseMint,
+    coinCreator: state.pool.coinCreator,
+    creator: state.pool.creator,
+    feeConfig: state.feeConfig,
+    isMayhemMode: state.pool.isMayhemMode,
+    creatorFeeBps: state.pool.creatorFeeBps,
   });
+  const minOut = preview.base.muln(100 - SLIPPAGE_PCT).divn(100);
 
-  const minBaseAmountBurned = preview.base.muln(100 - SLIPPAGE_PCT).divn(100);
-  const ix = await sdk.boostBuyAndBurnInstruction(ORBITX_POOL, payer.publicKey, quote, minBaseAmountBurned);
-  return { instruction: ix, expectedBase: preview.base, mint: ORBITX_MINT };
+  const buyIxs = await PUMP_AMM_SDK.buyQuoteInput(state, quote, SLIPPAGE_PCT);
+  const burnIx = createBurnInstruction(
+    state.userBaseTokenAccount,
+    state.baseMint,
+    payer.publicKey,
+    BigInt(minOut.toString()),
+    [],
+    state.baseTokenProgram,
+  );
+
+  return {
+    instructions: [
+      ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }),
+      ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50_000 }),
+      ...buyIxs,
+      burnIx,
+    ],
+    expectedBase: preview.base,
+    mint: ORBITX_MINT,
+  };
 }

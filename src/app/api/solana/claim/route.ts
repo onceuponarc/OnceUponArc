@@ -17,7 +17,7 @@ export async function POST() {
     const tx = VersionedTransaction.deserialize(Buffer.from(built, "base64"));
     tx.sign([payer]);
     const signature = await sendSignedTx(Buffer.from(tx.serialize()).toString("base64"));
-    await waitForTx(signature).catch(() => undefined);
+    await waitForTx(signature);
     return NextResponse.json({ signature, explorer: explorerFromSig(signature), creator: payer.publicKey.toBase58() });
   } catch (error) {
     return NextResponse.json(

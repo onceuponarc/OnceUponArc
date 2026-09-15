@@ -32,6 +32,7 @@ function normalizeUrl(raw: string | undefined, kind: "website" | "twitter" | "te
 }
 
 export async function POST(request: Request) {
+  let slug: string | undefined;
   try {
     const { user, profile } = await getSessionUser();
     if (!user) return NextResponse.json({ error: "Sign in with X first." }, { status: 401 });
@@ -75,7 +76,7 @@ export async function POST(request: Request) {
     const twitterUrl = normalizeUrl(body.twitter, "twitter");
     const telegramUrl = normalizeUrl(body.telegram, "telegram");
 
-    const slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
+    slug = `${slugify(name) || slugify(symbol) || "token"}-${Math.random().toString(36).slice(2, 6)}`;
 
     // Persist the story record before minting so metadataUri (fetched by pump.fun's
     // indexer after the tx lands) already resolves to the real name/description/links
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
     built.tx.sign(minted.keypair, payer);
     const raw = built.tx.serialize();
     const signature = await sendSignedTx(raw.toString("base64"));
-    await waitForTx(signature).catch(() => undefined);
+    await waitForTx(signature);
 
     return NextResponse.json({
       mint: mintAddress,
@@ -162,6 +163,18 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    // If we already inserted a "live" stories row optimistically (so the metadata
+    // endpoint would resolve before pump.fun's indexer asked for it) and the mint
+    // transaction itself then failed on-chain, that row would otherwise sit on the
+    // feed forever as a live token with nothing behind it. Archive it.
+    if (typeof slug === "string") {
+      try {
+        const supabase = createServiceClient();
+        await supabase.from("stories").update({ status: "archived" }).eq("slug", slug).eq("status", "live");
+      } catch {
+        // best-effort cleanup only
+      }
+    }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Could not launch on Solana." },
       { status: 400 },

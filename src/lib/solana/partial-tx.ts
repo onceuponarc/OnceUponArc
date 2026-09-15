@@ -58,7 +58,14 @@ export async function waitForTx(signature: string) {
   for (const connection of solanaConnections()) {
     try {
       const latest = await connection.getLatestBlockhash("confirmed");
-      await connection.confirmTransaction({ signature, ...latest }, "confirmed");
+      const result = await connection.confirmTransaction({ signature, ...latest }, "confirmed");
+      // confirmTransaction resolves once the network has a final status for the
+      // signature — including a FAILED one. It only throws on timeout/expiry, so
+      // a reverted instruction was silently treated as success everywhere this
+      // was called until this check existed.
+      if (result.value.err) {
+        throw new Error(`Transaction failed on-chain: ${JSON.stringify(result.value.err)}`);
+      }
       return;
     } catch (error) {
       lastError = error;

@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     tx.recentBlockhash = latest.blockhash;
     tx.sign(assetKeypair, creatorKey);
     mintSignature = await sendSignedTx(tx.serialize().toString("base64"));
-    await waitForTx(mintSignature).catch(() => undefined);
+    await waitForTx(mintSignature);
     nftMint = assetKeypair.publicKey.toBase58();
     await writeCard({ ...saved, nftMint });
     await logActivity({

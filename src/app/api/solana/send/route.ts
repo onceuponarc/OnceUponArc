@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     }
 
     const signature = await sendSignedTx(body.signedTx);
-    await waitForTx(signature).catch(() => undefined);
+    await waitForTx(signature);
     return NextResponse.json({ signature, explorer: explorerFromSig(signature) });
   } catch (error) {
     console.error("solana send failed", error);
