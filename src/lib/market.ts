@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { listLocalArcStories, localTape } from "@/lib/arc/store";
 import { enrichLaunch, feedFromArc, isListedLaunch, type FeedLaunch, type RawTrade, type TapeItem } from "@/lib/feed";
+import { getPumpBondingProgress } from "@/lib/solana/pump-progress";
 
 type StoryRow = {
   id: string;
@@ -94,34 +95,46 @@ export async function loadPadMarket(): Promise<{ launches: FeedLaunch[]; tape: T
       }
     }
 
-    const remote: FeedLaunch[] = stories.map((row) => {
-      const author = Array.isArray(row.users) ? row.users[0] : row.users;
-      const qDec = Number(row.quote_decimals ?? 9);
-      return enrichLaunch(
-        {
-          slug: row.slug,
-          title: row.title,
-          ticker: row.ticker,
-          blurb: row.blurb ?? "",
-          engine: row.engine,
-          pairLabel: row.pair_label,
-          authorBps: row.author_bps,
-          status: row.status,
-          coverUrl: row.cover_url,
-          handle: author && "handle" in author ? String(author.handle) : null,
-          createdAt: row.created_at,
-          chain: row.chain ?? "arc",
-          venue: row.venue ?? "spl",
-          tokenAddress: row.token_address ?? null,
-          quoteAddress: row.quote_address ?? row.quote_mint ?? null,
-        },
-        tradesByStory.get(row.id) ?? [],
-        {
-          curveQuoteUi: Number(row.curve_quote_lamports ?? 0) / 10 ** qDec,
-          graduateUi: Number(row.graduation_quote_raw ?? 0) / 10 ** qDec,
-        },
-      );
-    });
+    const remote: FeedLaunch[] = await Promise.all(
+      stories.map(async (row) => {
+        const author = Array.isArray(row.users) ? row.users[0] : row.users;
+        const qDec = Number(row.quote_decimals ?? 9);
+        const launch = enrichLaunch(
+          {
+            slug: row.slug,
+            title: row.title,
+            ticker: row.ticker,
+            blurb: row.blurb ?? "",
+            engine: row.engine,
+            pairLabel: row.pair_label,
+            authorBps: row.author_bps,
+            status: row.status,
+            coverUrl: row.cover_url,
+            handle: author && "handle" in author ? String(author.handle) : null,
+            createdAt: row.created_at,
+            chain: row.chain ?? "arc",
+            venue: row.venue ?? "spl",
+            tokenAddress: row.token_address ?? null,
+            quoteAddress: row.quote_address ?? row.quote_mint ?? null,
+          },
+          tradesByStory.get(row.id) ?? [],
+          {
+            curveQuoteUi: Number(row.curve_quote_lamports ?? 0) / 10 ** qDec,
+            graduateUi: Number(row.graduation_quote_raw ?? 0) / 10 ** qDec,
+          },
+        );
+        // Solana tokens trade on pump.fun's own bonding curve, not ours — pull
+        // the real graduation progress from pump.fun rather than showing 0%.
+        if (row.chain === "solana" && row.token_address) {
+          const bonding = await getPumpBondingProgress(row.token_address).catch(() => null);
+          if (bonding) {
+            launch.progressBps = bonding.progressBps;
+            if (bonding.graduated) launch.status = "graduated";
+          }
+        }
+        return launch;
+      }),
+    );
 
     const seen = new Set(remote.map((item) => item.slug));
     const merged = [...local.filter((item) => !seen.has(item.slug)), ...remote].sort(

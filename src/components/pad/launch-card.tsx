@@ -54,11 +54,8 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
             {" · "}
             {timeAgo(launch.createdAt)}
           </p>
-          {offPlatform ? (
-            <p className="mt-2 text-[11px] text-white/35">Live chart &amp; trades on the token page</p>
-          ) : (
-            <CurveMeter progressBps={launch.progressBps} graduated={launch.status === "graduated"} className="mt-2 max-w-48" />
-          )}
+          <CurveMeter progressBps={launch.progressBps} graduated={launch.status === "graduated"} className="mt-2 max-w-48" />
+          {offPlatform ? <p className="mt-1 text-[11px] text-white/35">Via pump.fun · full chart on the token page</p> : null}
         </div>
       </Link>
       <Sparkline points={launch.spark} up={up} className="hidden sm:block" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,16 @@ type Preview = {
   text: string;
   coverUrl: string | null;
   tweetUrl: string;
+};
+
+type MyToken = {
+  slug: string;
+  title: string;
+  ticker: string;
+  chain: string;
+  coverUrl: string | null;
+  progressBps: number;
+  graduated: boolean;
 };
 
 export function SpawnDesk({
@@ -44,9 +54,23 @@ export function SpawnDesk({
   const [payAddress, setPayAddress] = useState("");
   const [payNetwork, setPayNetwork] = useState<"arc" | "solana">("arc");
   const [storySlug, setStorySlug] = useState(initialStory ?? "");
+  const [myTokens, setMyTokens] = useState<MyToken[] | null>(null);
   const [cover, setCover] = useState<CoverPick | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let live = true;
+    fetch("/api/stories/mine", { cache: "no-store" })
+      .then((res) => readApiJson<{ tokens?: MyToken[] }>(res))
+      .then((body) => {
+        if (live) setMyTokens(body.tokens ?? []);
+      })
+      .catch(() => live && setMyTokens([]));
+    return () => {
+      live = false;
+    };
+  }, []);
 
   async function loadTweet() {
     setBusy(true);
@@ -170,16 +194,45 @@ export function SpawnDesk({
           </div>
         </div>
         <div>
-          <Label>Pair Chapter slug (optional)</Label>
-          <Input
-            className="mt-2"
-            value={storySlug}
-            onChange={(e) => setStorySlug(e.target.value)}
-            placeholder="leave empty for card-only"
-          />
-          <p className="mt-2 text-xs text-white/40">
-            Card and coin stay separate. If you pair a live Chapter, card value = start price × (live MC / start MC).
+          <Label>Link a token you launched (optional)</Label>
+          <p className="mt-1 text-xs text-white/40">
+            Card and coin stay separate. If you pair a live token, card value = start price × (live MC / start MC).
+            You can only link tokens your own account launched.
           </p>
+          {myTokens === null ? (
+            <p className="mt-2 text-xs text-white/40">Loading your launched tokens…</p>
+          ) : myTokens.length === 0 ? (
+            <p className="mt-2 text-xs text-white/40">You haven&apos;t launched any tokens that can be linked yet.</p>
+          ) : (
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+              <button
+                type="button"
+                onClick={() => setStorySlug("")}
+                className={cn(
+                  "shrink-0 rounded-xl border px-3 py-2 text-sm",
+                  storySlug === "" ? "border-white bg-white/10" : "border-white/10 text-white/50",
+                )}
+              >
+                Card only
+              </button>
+              {myTokens.map((t) => (
+                <button
+                  key={t.slug}
+                  type="button"
+                  onClick={() => setStorySlug(t.slug)}
+                  className={cn(
+                    "shrink-0 rounded-xl border px-3 py-2 text-left text-sm",
+                    storySlug === t.slug ? "border-white bg-white/10" : "border-white/10 text-white/60",
+                  )}
+                >
+                  <p className="font-medium">${t.ticker}</p>
+                  <p className="text-[10px] uppercase text-white/35">
+                    {t.chain} · {t.graduated ? "graduated" : `${(t.progressBps / 100).toFixed(0)}%`}
+                  </p>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div>
           <Label>USDC receive wallet</Label>
