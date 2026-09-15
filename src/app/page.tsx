@@ -1,5 +1,4 @@
 import { FeedBoard } from "@/components/pad/feed-board";
-import { LiveTape } from "@/components/pad/live-tape";
 import { LiveRefresh } from "@/components/pad/live-refresh";
 import { OrbitHero } from "@/components/pad/orbit-hero";
 import { loadPadMarket } from "@/lib/market";
@@ -15,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const { profile } = await getSessionUser();
-  const { launches, tape } = await loadPadMarket();
+  const { launches } = await loadPadMarket();
   const liveCount = launches.filter((item) => item.status === "live").length;
   const bondedCount = launches.filter((item) => item.status === "graduated").length;
   const volume = launches.reduce((sum, item) => sum + item.volumeUi, 0);
@@ -39,7 +38,6 @@ export default async function HomePage() {
         chainCounts={chainCounts}
       />
       {cards.length ? <CardRail cards={cards.slice(0, 12)} /> : null}
-      <LiveTape initial={tape} />
       <FeedBoard launches={launches} king={totd} />
       <FlywheelRow />
       <Link

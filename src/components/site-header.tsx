@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { SignInButton } from "@/components/sign-in-button";
 import { NetworkChip } from "@/components/arc/devnet-wallet";
 import { BrandMark } from "@/components/brand-mark";
+import { LiveTape } from "@/components/pad/live-tape";
 import type { OrbitXer } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -84,6 +85,7 @@ export function SiteHeader({
           <SignInButton profile={profile} />
         </div>
       </div>
+      <LiveTape compact />
     </header>
   );
 }

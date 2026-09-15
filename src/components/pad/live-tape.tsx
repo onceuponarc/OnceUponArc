@@ -7,7 +7,7 @@ import type { TapeItem } from "@/lib/feed";
 import { cn } from "@/lib/utils";
 import { MARKET_EVENT } from "@/lib/live-market";
 
-export function LiveTape({ initial }: { initial: TapeItem[] }) {
+export function LiveTape({ initial = [], compact = false }: { initial?: TapeItem[]; compact?: boolean }) {
   const [tape, setTape] = useState(initial);
 
   useEffect(() => {
@@ -29,9 +29,32 @@ export function LiveTape({ initial }: { initial: TapeItem[] }) {
   }, []);
 
   if (!tape.length) {
+    if (compact) return null;
     return (
       <div className="glass overflow-hidden rounded-2xl border border-arc/20 px-4 py-3 text-center text-sm text-parchment/55">
         Live tape is quiet. Launch a token and the first buy prints here.
+      </div>
+    );
+  }
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2 overflow-x-auto border-t border-white/5 px-4 py-1.5 [scrollbar-width:none]">
+        <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-buy" />
+        {tape.map((item) => (
+          <Link
+            key={`${item.txHash ?? item.at}-${item.slug}-${item.trader}`}
+            href={`/story/${item.slug}`}
+            className="flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] transition-colors hover:bg-white/5"
+          >
+            <span className={cn("font-semibold uppercase", item.side === "buy" ? "text-buy" : "text-sell")}>
+              {item.side}
+            </span>
+            <span className="font-heading font-bold">${item.ticker}</span>
+            <span className="text-parchment/60">{formatUsd(item.quoteUi)}</span>
+            <span className="text-parchment/35">{timeAgo(item.at)}</span>
+          </Link>
+        ))}
       </div>
     );
   }
