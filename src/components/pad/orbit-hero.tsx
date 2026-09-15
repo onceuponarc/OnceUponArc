@@ -1,36 +1,50 @@
 import Link from "next/link";
 import { formatUsd } from "@/lib/format";
-
-const CHAINS = [
-  { id: "solana", label: "Solana", note: "pump.fun bonding curve", radiusPct: 48, angleDeg: -90, accent: "arc" as const },
-  { id: "arc", label: "Arc", note: "Uniswap v4 · USDC", radiusPct: 32, angleDeg: 30, accent: "gold" as const },
-  { id: "robinhood", label: "Robinhood Chain", note: "Pons v2 spot", radiusPct: 16, angleDeg: 150, accent: "nebula" as const },
-].map((chain) => {
-  const rad = (chain.angleDeg * Math.PI) / 180;
-  return {
-    ...chain,
-    left: 50 + chain.radiusPct * Math.cos(rad),
-    top: 50 + chain.radiusPct * Math.sin(rad),
-  };
-});
-
-const ACCENT_TEXT: Record<string, string> = {
-  arc: "text-arc",
-  gold: "text-gold",
-  nebula: "text-nebula",
-};
+import { ChainSystems, type ChainWorld } from "@/components/pad/chain-systems";
 
 export function OrbitHero({
   liveCount,
   bondedCount,
   volumeUi,
   handle,
+  chainCounts,
 }: {
   liveCount: number;
   bondedCount: number;
   volumeUi: number;
   handle: string | null;
+  chainCounts: { solana: number; arc: number; robinhood: number };
 }) {
+  const worlds: ChainWorld[] = [
+    {
+      id: "solana",
+      label: "Solana",
+      note: "pump.fun bonding curve",
+      count: chainCounts.solana,
+      xPct: 0.5,
+      yPct: 0.24,
+      hue: ["219,234,254", "96,165,250", "30,64,175"],
+    },
+    {
+      id: "robinhood",
+      label: "Robinhood Chain",
+      note: "Pons v2 spot",
+      count: chainCounts.robinhood,
+      xPct: 0.26,
+      yPct: 0.66,
+      hue: ["147,197,253", "37,99,235", "23,37,84"],
+    },
+    {
+      id: "arc",
+      label: "Arc",
+      note: "Uniswap v4 · USDC",
+      count: chainCounts.arc,
+      xPct: 0.76,
+      yPct: 0.72,
+      hue: ["191,219,254", "59,130,246", "30,58,138"],
+    },
+  ];
+
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent">
       <div
@@ -66,7 +80,7 @@ export function OrbitHero({
           </div>
           <dl className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/10 pt-6">
             <div>
-              <dt className="text-xs text-white/40">Live on Arc</dt>
+              <dt className="text-xs text-white/40">Live now</dt>
               <dd className="font-display mt-1 text-3xl">{liveCount}</dd>
             </div>
             <div>
@@ -80,23 +94,18 @@ export function OrbitHero({
           </dl>
         </div>
 
-        <div className="orbit-stage mx-auto aspect-square w-full max-w-sm">
-          <div className="orbit-ring" data-spin="slow" style={{ inset: "0%" }} />
-          <div className="orbit-ring" data-spin="med" style={{ inset: "16%" }} />
-          <div className="orbit-ring" style={{ inset: "32%" }} />
-          <div
-            className="absolute inset-[42%] rounded-full"
-            style={{ background: "conic-gradient(from 140deg, var(--color-arc), var(--color-nebula), var(--color-gold), var(--color-arc))" }}
-          />
-          {CHAINS.map((chain) => (
+        <div className="relative mx-auto aspect-square w-full max-w-md">
+          <ChainSystems worlds={worlds} className="absolute inset-0 h-full w-full" />
+          {worlds.map((world) => (
             <div
-              key={chain.id}
-              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5 text-center"
-              style={{ left: `${chain.left}%`, top: `${chain.top}%` }}
+              key={world.id}
+              className="pointer-events-none absolute flex -translate-x-1/2 flex-col items-center gap-1 text-center"
+              style={{ left: `${world.xPct * 100}%`, top: `${world.yPct * 100 + 14}%` }}
             >
-              <span className={`orbit-node size-2.5 ${ACCENT_TEXT[chain.accent]}`} />
-              <span className="whitespace-nowrap text-[11px] font-medium text-white/80">{chain.label}</span>
-              <span className="whitespace-nowrap text-[10px] text-white/35">{chain.note}</span>
+              <span className="whitespace-nowrap text-[11px] font-medium text-white/85">{world.label}</span>
+              <span className="whitespace-nowrap text-[10px] text-white/40">
+                {world.note} · {world.count} live
+              </span>
             </div>
           ))}
         </div>
