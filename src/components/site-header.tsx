@@ -21,6 +21,7 @@ const MORE = [
   { href: "/wallet", label: "Wallet" },
   { href: "/week", label: "Week" },
   { href: "/params", label: "Token" },
+  { href: "/whitepaper", label: "Whitepaper" },
   { href: "/tools", label: "Tools" },
   { href: "/links", label: "Links" },
 ] as const;

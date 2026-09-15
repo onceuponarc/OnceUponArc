@@ -13,8 +13,10 @@ export default function TermsPage() {
         investment adviser. Tokens on this pad are not shares, notes, or claims on any issuer.
       </p>
       <p className="text-white/65">
-        You are responsible for wallets, keys, gas, and on-chain actions. Private keys shown in the wallet desk never
-        leave your browser. If you export them, you own the risk of loss, theft, and irreversible transfers.
+        Launches sign from an in-app desk wallet OrbitX generates and holds server-side on your behalf — that&apos;s what
+        lets you launch and trade without a separate wallet extension. You can export that wallet&apos;s private key
+        from Wallet → Export keys at any time. Once exported, or if you send funds to any address, you own the risk
+        of loss, theft, and irreversible transfers.
       </p>
       <p className="text-white/65">
         Curves can go to zero. Graduation is not a listing guarantee. Creator fees are swap fees, not dividends. Holder
