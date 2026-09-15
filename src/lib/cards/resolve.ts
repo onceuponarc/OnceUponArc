@@ -15,12 +15,14 @@ async function mcapMap() {
 export async function viewAllCards(): Promise<CardView[]> {
   const mcaps = await mcapMap();
   const rows = await listCards();
-  return rows.map((card) => viewCard(card, card.storySlug ? mcaps.get(card.storySlug) : null));
+  return rows
+    .filter((card) => card.visibility !== "hidden")
+    .map((card) => viewCard(card, card.storySlug ? mcaps.get(card.storySlug) : null));
 }
 
 export async function viewOneCard(slug: string): Promise<CardView | null> {
   const card = await getCard(slug);
-  if (!card) return null;
+  if (!card || card.visibility === "hidden") return null;
   const mcaps = await mcapMap();
   return viewCard(card, card.storySlug ? mcaps.get(card.storySlug) : null);
 }
@@ -28,7 +30,9 @@ export async function viewOneCard(slug: string): Promise<CardView | null> {
 export async function viewCardsForStory(storySlug: string): Promise<CardView[]> {
   const mcaps = await mcapMap();
   const rows = await cardsForStory(storySlug);
-  return rows.map((card) => viewCard(card, mcaps.get(storySlug) ?? card.startMcapUi));
+  return rows
+    .filter((card) => card.visibility !== "hidden")
+    .map((card) => viewCard(card, mcaps.get(storySlug) ?? card.startMcapUi));
 }
 
 export function previewCard(card: PressCard, mcap?: number) {

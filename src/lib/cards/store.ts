@@ -62,6 +62,7 @@ function fromRow(row: Record<string, unknown>): PressCard {
     rarity: (row.rarity as string) || "common",
     editionIndex: Number(row.edition_index ?? 1),
     editionTotal: Number(row.edition_total ?? 1),
+    visibility: row.visibility === "hidden" ? "hidden" : "public",
   };
 }
 
@@ -135,6 +136,7 @@ export async function writeCard(card: PressCard) {
         rarity: card.rarity,
         edition_index: card.editionIndex,
         edition_total: card.editionTotal,
+        visibility: card.visibility,
       },
       { onConflict: "slug" },
     );

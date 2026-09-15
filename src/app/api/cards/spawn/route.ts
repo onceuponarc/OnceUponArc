@@ -10,6 +10,7 @@ import { sendSignedTx, waitForTx, explorerFromSig } from "@/lib/solana/partial-t
 import { fetchLatestBlockhash } from "@/lib/solana/blockhash";
 import { serverSolanaRpcs } from "@/lib/solana/rpc-urls";
 import { PUBLIC_SITE_URL } from "@onceupon/config/urls";
+import { createServiceClient } from "@/lib/supabase/service";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,25 @@ export async function POST(request: Request) {
   const pay = (body.creatorPayAddress ?? "").trim();
   if (!pay) return NextResponse.json({ error: "Paste the USDC wallet that receives card buys." }, { status: 400 });
 
+  // Fairness rule: a card can only be linked to a token the same account launched.
+  // Verified server-side against the stories table — never trust a frontend selection,
+  // since anyone could otherwise paste any other creator's slug into the request body.
+  const storySlug = (body.storySlug ?? "").trim() || null;
+  if (storySlug) {
+    const db = createServiceClient();
+    const { data: story } = await db
+      .from("stories")
+      .select("author_user_id")
+      .eq("slug", storySlug)
+      .maybeSingle();
+    if (!story || story.author_user_id !== user.id) {
+      return NextResponse.json(
+        { error: "This token cannot be linked to this NFT. You can only link cards to tokens launched by your own account." },
+        { status: 403 },
+      );
+    }
+  }
+
   const card: PressCard = {
     id: crypto.randomUUID(),
     slug: slugifyCard(ticker),
@@ -64,7 +84,7 @@ export async function POST(request: Request) {
     startPriceUi,
     startMcapUi,
     flywheel,
-    storySlug: body.storySlug || null,
+    storySlug,
     creatorHandle: profile.handle,
     creatorPayAddress: pay,
     payNetwork: body.payNetwork === "solana" ? "solana" : "arc",
@@ -77,6 +97,7 @@ export async function POST(request: Request) {
     rarity: "common",
     editionIndex: 1,
     editionTotal: 1,
+    visibility: "public",
   };
   await writeCard(card);
   const saved = (await getCard(card.slug)) ?? card;

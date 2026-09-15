@@ -54,6 +54,7 @@ export type PressCard = {
   rarity: string;
   editionIndex: number;
   editionTotal: number;
+  visibility: "public" | "hidden";
 };
 
 export const OFFER_STATES = [

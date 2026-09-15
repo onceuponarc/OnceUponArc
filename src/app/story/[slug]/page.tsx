@@ -24,6 +24,7 @@ import { viewCardsForStory } from "@/lib/cards/resolve";
 import { CardRail } from "@/components/cards/card-rail";
 import { DexScreenerEmbed } from "@/components/token/dexscreener-embed";
 import { TokenChat } from "@/components/token/token-chat";
+import { TradePanel } from "@/components/token/trade-panel";
 
 const STORY_SELECT =
   "id, title, ticker, blurb, engine, status, pair_label, author_bps, protocol_bps, snipe_tax_bps, vault_address, token_address, chain, venue, mint_decimals, created_tx, curve_quote_lamports, curve_token_raw, auto_buy_rewards, quote_decimals, graduation_quote_raw, author_user_id, cover_url, jacket_url, twitter_url, telegram_url, website_url, image_uri, metadata_uri, supply, reward_vault_lamports, quote_mint, linked_pool_address, linked_pool_dex, linked_pool_label, users:author_user_id(handle, display_name, portrait_url)";
@@ -260,21 +261,40 @@ export default async function StoryPage({
       ) : null}
 
       {chain !== "arc" ? (
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/50">
-            <p>Live chart, price, and buys/sells straight from the chain via DexScreener.</p>
-            {story.token_address ? (
-              <a
-                href={`https://www.geckoterminal.com/${chain === "solana" ? "solana" : "eth"}/tokens/${story.token_address}`}
-                target="_blank"
-                rel="noreferrer"
-                className="shrink-0 underline"
-              >
-                Also view on GeckoTerminal
-              </a>
-            ) : null}
+        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-white/50">
+              <p>Live chart, price, and buys/sells straight from the chain via DexScreener.</p>
+              {story.token_address ? (
+                <a
+                  href={`https://www.geckoterminal.com/${chain === "solana" ? "solana" : "eth"}/tokens/${story.token_address}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="shrink-0 underline"
+                >
+                  Also view on GeckoTerminal
+                </a>
+              ) : null}
+            </div>
+            <DexScreenerEmbed chain={chain} tokenAddress={story.token_address ?? null} />
           </div>
-          <DexScreenerEmbed chain={chain} tokenAddress={story.token_address ?? null} />
+          {chain === "solana" && story.token_address ? (
+            <TradePanel tokenMint={story.token_address} tokenSymbol={story.ticker} signedIn={Boolean(profile)} />
+          ) : (
+            <div className="flex h-fit flex-col items-center justify-center gap-2 rounded-3xl border border-white/10 p-6 text-center text-sm text-white/45">
+              <p>In-app trading isn&apos;t wired up for Robinhood Chain yet.</p>
+              {story.token_address ? (
+                <a
+                  href={`https://explorer.robinhood.com/address/${story.token_address}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline"
+                >
+                  Trade on the Robinhood Chain explorer
+                </a>
+              ) : null}
+            </div>
+          )}
         </div>
       ) : null}
 

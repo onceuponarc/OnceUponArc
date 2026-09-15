@@ -43,7 +43,6 @@ const nextConfig: NextConfig = {
       { source: "/press", destination: "/launch", permanent: false },
       { source: "/desk", destination: "/", permanent: false },
       { source: "/claims", destination: "/ledger", permanent: false },
-      { source: "/trade", destination: "/wallet", permanent: false },
       { source: "/write", destination: "/launch", permanent: false },
       { source: "/bindings/link", destination: "/bindings", permanent: false },
     ];
