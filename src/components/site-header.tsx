@@ -6,6 +6,7 @@ import { SignInButton } from "@/components/sign-in-button";
 import { NetworkChip } from "@/components/arc/devnet-wallet";
 import { BrandMark } from "@/components/brand-mark";
 import { LiveTape } from "@/components/pad/live-tape";
+import { ChainStatusBanner } from "@/components/pad/chain-status-banner";
 import type { OrbitXer } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -87,6 +88,7 @@ export function SiteHeader({
         </div>
       </div>
       <LiveTape compact />
+      <ChainStatusBanner />
     </header>
   );
 }
