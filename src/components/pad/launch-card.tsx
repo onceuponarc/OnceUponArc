@@ -69,7 +69,7 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
         <WatchButton slug={launch.slug} />
         <Link
           href={offPlatform ? dest.href : `/story/${launch.slug}?buy=1`}
-          className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-black"
+          className="rounded-full bg-white px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-black"
         >
           {offPlatform ? "View" : "Buy"}
         </Link>

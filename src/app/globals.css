@@ -118,11 +118,14 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-black text-foreground antialiased;
-  }
   html {
     @apply font-sans;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-black text-foreground antialiased;
+    overscroll-behavior-y: none;
   }
   h1,
   h2,

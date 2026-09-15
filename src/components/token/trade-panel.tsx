@@ -123,7 +123,7 @@ export function TradePanel({
                 type="button"
                 onClick={() => setQuoteAsset(a)}
                 className={cn(
-                  "rounded-full border px-2.5 py-1 text-[11px] uppercase",
+                  "rounded-full border px-3 py-1.5 text-[11px] uppercase",
                   quoteAsset === a ? "border-arc/50 text-arc" : "border-white/10 text-white/50",
                 )}
               >

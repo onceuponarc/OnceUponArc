@@ -16,6 +16,7 @@ export function readWatch(): string[] {
 export function WatchButton({ slug }: { slug: string }) {
   const [on, setOn] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOn(readWatch().includes(slug));
   }, [slug]);
 
@@ -32,7 +33,7 @@ export function WatchButton({ slug }: { slug: string }) {
     <button
       type="button"
       onClick={toggle}
-      className={`rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] ${
+      className={`rounded-full border px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] ${
         on ? "border-white bg-white text-black" : "border-white/20 text-white/50"
       }`}
     >
