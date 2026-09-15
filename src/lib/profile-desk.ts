@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { bannerFromCover, hiResPortrait, publicMediaUrl, xAvatarFallback } from "@/lib/media";
+import { hiResPortrait, publicMediaUrl, xAvatarFallback } from "@/lib/media";
 import { fetchXProfile } from "@/lib/x-profile";
 
 import type { ProfileDesk, ProfileFill, ProfileHold, ProfileLaunch } from "@/lib/profile-types";
@@ -163,11 +163,7 @@ export async function loadProfileDesk(handle: string, viewerId?: string | null):
   const volumeUi = launches.reduce((sum, row) => sum + row.volumeUi, 0);
   const feesUi = launches.reduce((sum, row) => sum + row.feesUi, 0);
   const tradedUi = fills.reduce((sum, row) => sum + row.quoteUi, 0);
-  const bannerUrl =
-    publicMediaUrl(x?.bannerUrl) ||
-    publicMediaUrl(user.banner_url) ||
-    bannerFromCover(launches.find((row) => row.coverUrl)?.coverUrl) ||
-    "/brand/banner.jpg";
+  const bannerUrl = publicMediaUrl(x?.bannerUrl) || publicMediaUrl(user.banner_url) || "/brand/banner.jpg";
 
   return {
     id: user.id,

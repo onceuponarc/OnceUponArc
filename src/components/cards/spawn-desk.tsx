@@ -28,6 +28,29 @@ type MyToken = {
   graduated: boolean;
 };
 
+function Step({
+  n,
+  title,
+  hint,
+  children,
+}: {
+  n: string;
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-3xl border border-white/10 p-5">
+      <div className="flex items-baseline gap-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-arc/70">{n}</span>
+        <h3 className="text-lg font-semibold">{title}</h3>
+      </div>
+      {hint ? <p className="mt-1 text-xs text-white/40">{hint}</p> : null}
+      <div className="mt-4 space-y-4">{children}</div>
+    </div>
+  );
+}
+
 export function SpawnDesk({
   handle,
   mode = "card",
@@ -136,75 +159,74 @@ export function SpawnDesk({
   const futureValue = (Number(startPriceUi) || 5) * multipleExample;
 
   return (
-    <form onSubmit={spawn} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="space-y-5">
+    <form onSubmit={spawn} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="space-y-4">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
-          {mode === "tweet" ? "Tweet spawn" : "Press card"}
+          {mode === "tweet" ? "Tweet card" : "Press card"}
         </p>
-        {mode === "tweet" || url ? (
-        <div>
-          <Label>{mode === "tweet" ? "X post (required)" : "X post (optional)"}</Label>
-          <div className="mt-2 flex gap-2">
-            <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://x.com/user/status/…" required={mode === "tweet"} />
-            <Button type="button" variant="outline" onClick={() => void loadTweet()} disabled={busy}>
-              Read
-            </Button>
-          </div>
-        </div>
-        ) : (
-        <div>
-          <Label>X post (optional)</Label>
-          <div className="mt-2 flex gap-2">
-            <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://x.com/user/status/…" />
-            <Button type="button" variant="outline" onClick={() => void loadTweet()} disabled={busy}>
-              Read
-            </Button>
-          </div>
-        </div>
-        )}
-        {preview ? (
-          <div className="overflow-hidden rounded-3xl border border-white/10">
-            {preview.coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview.coverUrl} alt="" className="h-40 w-full object-cover" />
-            ) : null}
-            <div className="p-4">
-              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">@{preview.handle}</p>
-              <p className="mt-2 text-sm text-white/70">{preview.text}</p>
+
+        <Step n="01" title="Content" hint="A tweet, an image, or both.">
+          <div>
+            <Label>{mode === "tweet" ? "X post (required)" : "X post (optional)"}</Label>
+            <div className="mt-2 flex gap-2">
+              <Input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://x.com/user/status/…"
+                required={mode === "tweet"}
+              />
+              <Button type="button" variant="outline" onClick={() => void loadTweet()} disabled={busy}>
+                Read
+              </Button>
             </div>
           </div>
-        ) : null}
-        <CoverField value={cover} onChange={setCover} />
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <Label>Name</Label>
-            <Input className="mt-2" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          {preview ? (
+            <div className="overflow-hidden rounded-2xl border border-white/10">
+              {preview.coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={preview.coverUrl} alt="" className="h-32 w-full object-cover" />
+              ) : null}
+              <div className="p-3">
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">@{preview.handle}</p>
+                <p className="mt-1 text-sm text-white/70">{preview.text}</p>
+              </div>
+            </div>
+          ) : null}
+          <CoverField value={cover} onChange={setCover} />
+        </Step>
+
+        <Step n="02" title="Identity & starting price">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label>Name</Label>
+              <Input className="mt-2" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            </div>
+            <div>
+              <Label>Ticker</Label>
+              <Input className="mt-2" value={ticker} onChange={(e) => setTicker(e.target.value)} required />
+            </div>
+            <div>
+              <Label>Start card price (USDC)</Label>
+              <Input className="mt-2" value={startPriceUi} onChange={(e) => setStartPriceUi(e.target.value)} />
+            </div>
+            <div>
+              <Label>Start MC (token)</Label>
+              <Input className="mt-2" value={startMcapUi} onChange={(e) => setStartMcapUi(e.target.value)} />
+            </div>
           </div>
-          <div>
-            <Label>Ticker</Label>
-            <Input className="mt-2" value={ticker} onChange={(e) => setTicker(e.target.value)} required />
-          </div>
-          <div>
-            <Label>Start card price (USDC)</Label>
-            <Input className="mt-2" value={startPriceUi} onChange={(e) => setStartPriceUi(e.target.value)} />
-          </div>
-          <div>
-            <Label>Start MC (token)</Label>
-            <Input className="mt-2" value={startMcapUi} onChange={(e) => setStartMcapUi(e.target.value)} />
-          </div>
-        </div>
-        <div>
-          <Label>Link a token you launched (optional)</Label>
-          <p className="mt-1 text-xs text-white/40">
-            Card and coin stay separate. If you pair a live token, card value = start price × (live MC / start MC).
-            You can only link tokens your own account launched.
-          </p>
+        </Step>
+
+        <Step
+          n="03"
+          title="Link a token (optional)"
+          hint="Card and coin stay separate — pairing just makes the card's value track the token's MC. Only tokens your own account launched are selectable."
+        >
           {myTokens === null ? (
-            <p className="mt-2 text-xs text-white/40">Loading your launched tokens…</p>
+            <p className="text-xs text-white/40">Loading your launched tokens…</p>
           ) : myTokens.length === 0 ? (
-            <p className="mt-2 text-xs text-white/40">You haven&apos;t launched any tokens that can be linked yet.</p>
+            <p className="text-xs text-white/40">You haven&apos;t launched any tokens that can be linked yet.</p>
           ) : (
-            <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               <button
                 type="button"
                 onClick={() => setStorySlug("")}
@@ -233,56 +255,64 @@ export function SpawnDesk({
               ))}
             </div>
           )}
-        </div>
-        <div>
-          <Label>USDC receive wallet</Label>
-          <Input className="mt-2" value={payAddress} onChange={(e) => setPayAddress(e.target.value)} required />
-          <div className="mt-2 flex gap-2">
-            {(["arc", "solana"] as const).map((net) => (
+        </Step>
+
+        <Step n="04" title="Payout wallet" hint="Where you receive offer settlements when someone buys this card.">
+          <div>
+            <Label>USDC receive wallet</Label>
+            <Input className="mt-2" value={payAddress} onChange={(e) => setPayAddress(e.target.value)} required />
+            <div className="mt-2 flex gap-2">
+              {(["arc", "solana"] as const).map((net) => (
+                <button
+                  key={net}
+                  type="button"
+                  onClick={() => setPayNetwork(net)}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-sm capitalize",
+                    payNetwork === net ? "border-white bg-white text-black" : "border-white/15 text-white/60",
+                  )}
+                >
+                  {net}
+                </button>
+              ))}
+            </div>
+          </div>
+        </Step>
+
+        <Step n="05" title="Pricing mode" hint="How this card's value behaves over time.">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {CARD_FLYWHEELS.map((row) => (
               <button
-                key={net}
+                key={row.id}
                 type="button"
-                onClick={() => setPayNetwork(net)}
+                onClick={() => setFlywheel(row.id)}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-sm capitalize",
-                  payNetwork === net ? "border-white bg-white text-black" : "border-white/15 text-white/60",
+                  "rounded-2xl border px-4 py-3 text-left",
+                  flywheel === row.id ? "border-white bg-white/10" : "border-white/10 text-white/70",
                 )}
               >
-                {net}
+                <p className="font-semibold">{row.label}</p>
+                <p className="mt-1 text-xs text-white/45">{row.hint}</p>
               </button>
             ))}
           </div>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {CARD_FLYWHEELS.map((row) => (
-            <button
-              key={row.id}
-              type="button"
-              onClick={() => setFlywheel(row.id)}
-              className={cn(
-                "rounded-2xl border px-4 py-3 text-left",
-                flywheel === row.id ? "border-white bg-white/10" : "border-white/10 text-white/70",
-              )}
-            >
-              <p className="font-semibold">{row.label}</p>
-              <p className="mt-1 text-xs text-white/45">{row.hint}</p>
-            </button>
-          ))}
-        </div>
+        </Step>
+
         {error ? <p className="text-sm text-red-400">{error}</p> : null}
-        <Button type="submit" disabled={busy}>
-          {busy ? "Printing…" : "Print card"}
+        <Button type="submit" disabled={busy} className="w-full">
+          {busy ? "Minting…" : "Mint card"}
         </Button>
       </div>
-      <aside className="rounded-3xl border border-white/10 p-5">
+
+      <aside className="h-fit rounded-3xl border border-white/10 p-5">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">Example</p>
         <p className="mt-3 text-sm text-white/65">
-          Start ${startPriceUi} at {Number(startMcapUi).toLocaleString()} MC. If the paired Chapter hits $100k MC, this
-          card prints {formatLoose(futureValue)}.
+          Start ${startPriceUi} at {Number(startMcapUi).toLocaleString()} MC. If the paired token hits $100k MC,
+          this card&apos;s reference value becomes {formatLoose(futureValue)}.
         </p>
         <p className="mt-4 text-sm text-white/50">
-          Buyer sends that USDC to your {payNetwork} wallet. You keep the coin tape separate. After they paste the
-          transfer proof, the jacket moves to their profile.
+          This mints a real, transferable NFT to your desk wallet. When someone buys it, they send an offer, you
+          accept, and settlement happens automatically as one on-chain transaction — no manual payment-proof step.
         </p>
       </aside>
     </form>

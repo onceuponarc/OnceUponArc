@@ -58,7 +58,12 @@ export async function POST(request: Request) {
 
     const poolPair: PoolPairChoice = body.poolPair === "usdc" || body.poolPair === "custom" ? body.poolPair : "sol";
     const quoteMint = parseQuoteMintChoice(poolPair, body.customQuoteMint);
-    const mayhemMode = Boolean(body.mayhemMode);
+    // Disabled server-side too: we haven't been able to confirm this works
+    // correctly on-chain (built from real SDK types but never watched succeed
+    // on a live transaction), so it's hard-blocked regardless of what a
+    // direct API call requests, not just hidden in the UI.
+    const mayhemMode = false;
+    void body.mayhemMode;
     const holderReward = body.rewardsTo === "holders";
     const requestedFeeBps = Math.max(0, Math.min(300, Math.round(Number(body.creatorFeeBps ?? 0))));
 

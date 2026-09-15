@@ -1,19 +1,26 @@
+import { XIcon, Send, LineChart, ArrowLeftRight, Compass } from "lucide-react";
 import { OFFICIAL_TOKEN } from "@/lib/official-token";
+import { LinkButton } from "@/components/links/link-button";
+
+const ICON: Record<string, typeof XIcon> = {
+  X: XIcon,
+  Updates: Send,
+  Telegram: Send,
+  Chart: LineChart,
+  Buy: ArrowLeftRight,
+  Solscan: Compass,
+};
 
 export function ChannelStrip() {
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="flex flex-wrap justify-center gap-2.5">
       {OFFICIAL_TOKEN.channels.map((link) => (
-        <a
+        <LinkButton
           key={link.href}
           href={link.href}
-          target="_blank"
-          rel="noreferrer"
-          className="rounded-3xl border border-white/10 px-5 py-4 hover:border-white/30"
-        >
-          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">{link.label}</p>
-          <p className="mt-1 truncate text-lg font-semibold">{link.href.replace("https://", "")}</p>
-        </a>
+          label={link.label}
+          Icon={ICON[link.label] ?? Compass}
+        />
       ))}
     </div>
   );

@@ -39,8 +39,6 @@ export function AdvancedLaunchFields({
     onChange({ ...value, [key]: next });
   }
 
-  const mayhemBlocked = value.poolPair === "custom";
-
   return (
     <div className="space-y-5 rounded-2xl border border-white/10 p-4">
       <div>
@@ -108,30 +106,35 @@ export function AdvancedLaunchFields({
           ))}
         </div>
         {value.poolPair === "custom" ? (
-          <Input
-            className="mt-2"
-            value={value.customQuoteMint}
-            onChange={(e) => set("customQuoteMint", e.target.value)}
-            placeholder="Custom quote mint address"
-          />
+          <div className="mt-2 space-y-1">
+            <Input
+              value={value.customQuoteMint}
+              onChange={(e) => set("customQuoteMint", e.target.value)}
+              placeholder="Custom quote mint address"
+            />
+            <p className="text-xs text-white/45">
+              Must already be a pump.fun-whitelisted quote mint — right now that&apos;s SOL and USDC platform-wide.
+              Pasting an arbitrary token here will fail; pump.fun approves custom quote assets case by case, not
+              OrbitX.
+            </p>
+          </div>
         ) : null}
       </div>
 
-      <div className="rounded-xl border border-white/10 p-3">
+      <div className="rounded-xl border border-white/10 p-3 opacity-60">
         <label className="flex items-center justify-between gap-3">
           <span>
-            <span className="block text-sm font-semibold">Mayhem Mode</span>
+            <span className="block text-sm font-semibold">
+              Mayhem Mode <span className="text-white/40">· Coming soon</span>
+            </span>
             <span className="block text-xs text-white/45">Randomized bonding-curve parameters. Permanent once set.</span>
           </span>
-          <input
-            type="checkbox"
-            checked={value.mayhemMode && !mayhemBlocked}
-            disabled={mayhemBlocked}
-            onChange={(e) => set("mayhemMode", e.target.checked)}
-            className="size-5 shrink-0 disabled:opacity-40"
-          />
+          <input type="checkbox" checked={false} disabled className="size-5 shrink-0 disabled:opacity-40" />
         </label>
-        <p className="mt-2 text-xs text-white/45">Mayhem mode is only available with SOL or USDC pairs.</p>
+        <p className="mt-2 text-xs text-white/45">
+          Not available yet — we haven&apos;t been able to confirm this works correctly on-chain, so it&apos;s off until
+          we have.
+        </p>
       </div>
     </div>
   );

@@ -74,7 +74,7 @@ export function CoverField({
     <div className="space-y-3">
       <Label htmlFor="cover">Coin image {required ? "(required)" : ""}</Label>
       <p className="text-sm text-parchment/60">
-        Jacket art. Upload a PNG/JPEG/WebP, or paste an IPFS CID. We pin to IPFS when a pin token is
+        Cover art. Upload a PNG/JPEG/WebP, or paste an IPFS CID. We pin to IPFS when a pin token is
         configured; otherwise the cover is public on the pad and the metadata JSON still carries the
         image.
       </p>
