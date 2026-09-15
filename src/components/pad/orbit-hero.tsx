@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { formatUsd } from "@/lib/format";
-import { SpaceCanvas } from "@/components/pad/space-canvas";
 
 const CHAINS = [
   { id: "solana", label: "Solana", note: "pump.fun bonding curve", radiusPct: 48, angleDeg: -90, accent: "arc" as const },
@@ -34,12 +33,11 @@ export function OrbitHero({
 }) {
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.04] via-transparent to-transparent">
-      <SpaceCanvas className="absolute inset-0 h-full w-full opacity-80" />
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(60% 60% at 80% 10%, rgb(124 108 240 / 12%), transparent 70%), radial-gradient(50% 50% at 10% 100%, rgb(232 184 75 / 10%), transparent 70%)",
+            "radial-gradient(60% 60% at 80% 10%, rgb(29 78 216 / 14%), transparent 70%), radial-gradient(50% 50% at 10% 100%, rgb(96 165 250 / 12%), transparent 70%)",
         }}
       />
       <div className="relative z-10 grid gap-10 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:p-14">
