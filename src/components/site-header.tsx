@@ -43,7 +43,7 @@ export function SiteHeader({
 
   return (
     <header className="glass-nav sticky top-0 z-50">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
+      <div className="mx-auto grid h-14 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4">
         <Link href="/" className="flex min-w-0 items-center gap-2">
           <BrandMark className="size-8 rounded-md border border-white/15" />
           <span className="font-display text-xl text-white">OrbitX</span>
@@ -51,7 +51,7 @@ export function SiteHeader({
             Arc
           </span>
         </Link>
-        <nav className="ml-4 hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center justify-center gap-1 lg:flex">
           {PRIMARY.map((item) => (
             <Link
               key={item.href}
@@ -80,7 +80,7 @@ export function SiteHeader({
             </Link>
           ))}
         </nav>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2">
           <p className="hidden font-mono text-[11px] text-white/35 xl:block">{onlineCount} desks</p>
           <NetworkChip />
           <SignInButton profile={profile} />
