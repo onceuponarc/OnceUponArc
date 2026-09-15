@@ -2,6 +2,7 @@ import { LaunchStudio } from "@/components/launch/launch-studio";
 import { SolanaLaunchStudio } from "@/components/launch/solana-launch-studio";
 import { RhLaunchStudio } from "@/components/launch/rh-launch-studio";
 import { LaunchChainSwitch } from "@/components/launch/chain-switch";
+import { BetaNotice, RiskFeeNotice } from "@/components/launch/beta-notice";
 import { getSessionUser } from "@/lib/auth";
 import { findChain, isPrintableChain } from "@onceupon/config/solana";
 import { redirect } from "next/navigation";
@@ -52,6 +53,8 @@ export default async function LaunchChainPage({ params }: Props) {
           />
         </div>
       </section>
+      {!solana ? <BetaNotice chain={robinhood ? "robinhood" : "arc"} /> : null}
+      <RiskFeeNotice />
       {solana ? (
         <SolanaLaunchStudio handle={profile?.handle ?? null} />
       ) : robinhood ? (

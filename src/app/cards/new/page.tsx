@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getSessionUser } from "@/lib/auth";
 import { SpawnDesk } from "@/components/cards/spawn-desk";
+import { RiskFeeNotice } from "@/components/launch/beta-notice";
 
 export const metadata: Metadata = { title: "Print a card" };
 
@@ -17,6 +18,7 @@ export default async function NewCardPage({
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/40">Spawn</p>
         <h1 className="mt-2 text-4xl font-semibold tracking-tight">Print a press card</h1>
       </div>
+      <RiskFeeNotice />
       <SpawnDesk
         handle={profile?.handle ?? null}
         mode={query.story ? "card" : "tweet"}
