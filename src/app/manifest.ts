@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "OrbitX — Arc launchpad",
+    name: "OrbitX — multi-chain launchpad",
     short_name: "OrbitX",
     description:
-      "Token launchpad on Arc. Launch a USDC curve, trade live, graduate the pool.",
+      "Launch, trade, and mint NFT press cards across Solana, Arc, and Robinhood Chain — one in-app desk wallet, no extension.",
     start_url: "/",
     scope: "/",
     display: "standalone",

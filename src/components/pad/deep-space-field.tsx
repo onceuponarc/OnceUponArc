@@ -183,9 +183,21 @@ export function DeepSpaceField({ className }: { className?: string }) {
       resize();
       if (reduceMotion) drawStatic();
     };
+    // Real apps stop animating when backgrounded — pausing the loop here
+    // saves battery/CPU instead of drawing frames nobody can see.
+    const onVisibility = () => {
+      if (document.hidden) {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      } else if (!reduceMotion && !raf) {
+        raf = requestAnimationFrame(frame);
+      }
+    };
     window.addEventListener("resize", onResize);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibility);
       if (raf) cancelAnimationFrame(raf);
     };
   }, []);

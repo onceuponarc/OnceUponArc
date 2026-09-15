@@ -122,6 +122,7 @@
     @apply font-sans;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   body {
     @apply bg-black text-foreground antialiased;
