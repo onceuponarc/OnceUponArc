@@ -36,15 +36,8 @@ export default async function HomePage() {
         handle={profile?.handle ?? null}
         chainCounts={chainCounts}
       />
-      {cards.length ? <CardRail cards={cards.slice(0, 12)} /> : null}
       <FeedBoard launches={launches} king={totd} />
-      <Link
-        href="/params"
-        className="block rounded-2xl border border-gold/20 bg-gold/[0.04] px-5 py-4 transition-colors hover:border-gold/35"
-      >
-        <p className="text-sm font-medium text-gold">Official token · $ORBITX live</p>
-        <p className="mt-1 text-base text-white/75">CA 13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9 · Friday Arc mainnet.</p>
-      </Link>
+      {cards.length ? <CardRail cards={cards.slice(0, 12)} /> : null}
       <Link
         href="/whitepaper"
         className="block rounded-2xl border border-white/10 px-5 py-4 text-center text-sm text-white/60 transition-colors hover:border-white/25 hover:text-white"

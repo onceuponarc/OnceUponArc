@@ -11,14 +11,14 @@ function Avatar({ launch }: { launch: FeedLaunch }) {
   const hue = tickerHue(launch.ticker);
   return (
     <div
-      className="relative size-11 shrink-0 overflow-hidden rounded-2xl border border-white/10"
+      className="relative size-9 shrink-0 overflow-hidden rounded-xl border border-white/10"
       style={{ background: `linear-gradient(135deg, hsl(${hue} 70% 42%), hsl(${(hue + 40) % 360} 60% 18%))` }}
     >
       {launch.coverUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={launch.coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <span className="flex h-full items-center justify-center font-heading text-sm font-bold">
+        <span className="flex h-full items-center justify-center font-heading text-xs font-bold">
           {launch.ticker.slice(0, 3)}
         </span>
       )}
@@ -33,14 +33,15 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
   const chain = launchChainLabel(launch.chain);
   const offPlatform = launch.chain !== "arc";
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-transparent px-3 py-3 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_88px]">
-      <Link href={dest.href} className="flex min-w-0 items-center gap-3">
+    <div className="grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg border border-transparent px-2.5 py-1.5 transition-colors hover:border-white/15 hover:bg-white/[0.04] sm:grid-cols-[minmax(0,1.4fr)_90px_minmax(72px,0.7fr)_minmax(64px,0.55fr)_88px]">
+      <Link href={dest.href} className="flex min-w-0 items-center gap-2.5">
         <Avatar launch={launch} />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <p className="truncate text-base font-semibold tracking-tight">${launch.ticker}</p>
-            <Badge variant="outline">{launch.status === "graduated" ? "Graduated" : "Live"}</Badge>
-            {launch.chain && launch.chain !== "arc" ? <Badge variant="outline">{chain}</Badge> : null}
+            <p className="truncate text-sm font-semibold tracking-tight">${launch.ticker}</p>
+            {launch.chain && launch.chain !== "arc" ? (
+              <span className="text-[10px] uppercase text-white/40">{chain}</span>
+            ) : null}
             {hot ? <Badge>Hot</Badge> : null}
             {launch.lastSide ? (
               <span className={launch.lastSide === "buy" ? "text-[10px] uppercase text-buy" : "text-[10px] uppercase text-sell"}>
@@ -48,27 +49,25 @@ export function TokenRow({ launch }: { launch: FeedLaunch }) {
               </span>
             ) : null}
           </div>
-          <p className="truncate text-xs text-parchment/55">
+          <p className="truncate text-[11px] text-parchment/45">
             {launch.title}
             {launch.handle ? ` · @${launch.handle}` : ""}
             {" · "}
             {timeAgo(launch.createdAt)}
           </p>
-          <CurveMeter progressBps={launch.progressBps} graduated={launch.status === "graduated"} className="mt-2 max-w-48" />
-          {offPlatform ? <p className="mt-1 text-[11px] text-white/35">Via pump.fun · full chart on the token page</p> : null}
         </div>
       </Link>
       <Sparkline points={launch.spark} up={up} className="hidden sm:block" />
       <Link href={dest.href} className="text-right">
-        <p className="font-medium tabular-nums">{formatUsd(launch.priceUi, 4)}</p>
-        <p className={cn("text-xs tabular-nums", up ? "text-buy" : "text-sell")}>{formatPct(launch.changePct)}</p>
+        <p className="text-sm font-medium tabular-nums">{formatUsd(launch.priceUi, 4)}</p>
+        <p className={cn("text-[11px] tabular-nums", up ? "text-buy" : "text-sell")}>{formatPct(launch.changePct)}</p>
       </Link>
       <p className="hidden text-right text-sm tabular-nums text-parchment/80 sm:block">{formatUsd(launch.volumeUi)}</p>
       <div className="flex flex-col items-end gap-1">
         <WatchButton slug={launch.slug} />
         <Link
           href={offPlatform ? dest.href : `/story/${launch.slug}?buy=1`}
-          className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-black"
+          className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-black"
         >
           {offPlatform ? "View" : "Buy"}
         </Link>

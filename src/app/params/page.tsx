@@ -5,7 +5,7 @@ import { exampleDay, FEE_WATERFALL, FEE_WATERFALL_BPS, OFFICIAL_TOKEN } from "@/
 export const metadata: Metadata = {
   title: "Params · official token",
   description:
-    "OrbitX creator-fee split. $ORBITX is live on Solana. Arc mainnet launch window is Friday.",
+    "OrbitX creator-fee split. $ORBITX is live on Solana. Arc mainnet is live.",
 };
 
 export default function ParamsPage() {
@@ -25,7 +25,7 @@ export default function ParamsPage() {
         <p className="relative font-mono text-[11px] uppercase tracking-[0.22em] text-white/45">/params</p>
         <h1 className="relative mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">Official token + fee split</h1>
         <p className="relative mx-auto mt-4 max-w-2xl text-base text-white/70">
-          Pad creator fees follow a locked 75 / 25 waterfall. The official token uses this same loop. It is live on Solana. Arc mainnet prints Friday.
+          Pad creator fees follow a locked 75 / 25 waterfall. The official token uses this same loop. It is live on Solana and Arc mainnet.
         </p>
         <p className="relative mx-auto mt-4 inline-block rounded-full border border-amber-300/40 bg-amber-300/10 px-4 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-amber-200">
           Live · $ORBITX

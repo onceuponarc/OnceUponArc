@@ -9,7 +9,7 @@ export function CardRail({ cards, title = "Press cards" }: { cards: CardView[]; 
       <div className="flex items-end justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">{title}</p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight">Jackets</h2>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight">NFT Cards</h2>
         </div>
         <Link href="/cards" className="text-sm text-white/50 underline">
           All cards

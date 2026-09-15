@@ -5,7 +5,7 @@ export const OFFICIAL_TOKEN = {
   mint: "13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
   chain: "solana",
   liveRule:
-    "Ignore anywhere else. Anyone posting a mint, “stealth CA,” or “official ticker live” outside X @orbitx_wrld and the Telegram rooms is not us. $ORBITX CA is posted below. Arc mainnet prints Friday.",
+    "Ignore anywhere else. Anyone posting a mint, “stealth CA,” or “official ticker live” outside X @orbitx_wrld and the Telegram rooms is not us. $ORBITX CA is posted below.",
   buyUrl: "https://jup.ag/swap/SOL-13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
   chartUrl: "https://dexscreener.com/solana/13H4WJvGEg4xrrBwWn2vsQgz7xhmhxgNdw19i1QsxPX9",
   channels: [

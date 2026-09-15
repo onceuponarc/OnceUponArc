@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     default: "OrbitX — multi-chain launchpad",
     template: "%s · OrbitX",
   },
-  description: "OrbitX multi-chain launchpad. Solana token live. Arc mainnet Friday. Launch, trade, graduate.",
+  description: "OrbitX multi-chain launchpad. Solana, Arc, and Robinhood Chain are all live. Launch, trade, graduate.",
   applicationName: "OrbitX",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

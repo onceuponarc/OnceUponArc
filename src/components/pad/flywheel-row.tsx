@@ -10,7 +10,7 @@ const STEPS = [
   {
     href: "/cards/new",
     kicker: "02",
-    title: "Jacket",
+    title: "NFT Card",
     body: "3D card from a tweet or ticker. Price tracks that Chapter MC.",
   },
   {

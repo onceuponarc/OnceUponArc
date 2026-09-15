@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OFFICIAL_TOKEN } from "@/lib/official-token";
 
 const COLS = [
   {
@@ -48,6 +49,13 @@ export function SiteFooter() {
             Multi-chain launchpad — Solana, Arc, and Robinhood Chain. Every launch signs from your in-app desk
             wallet. Press Cards mint as real on-chain NFTs. Official token CA only from official channels.
           </p>
+          <Link
+            href="/params"
+            className="mt-4 block max-w-xs rounded-xl border border-arc/20 bg-arc/[0.05] px-3 py-2 hover:border-arc/40"
+          >
+            <p className="text-xs font-medium text-arc">Official token · $ORBITX live</p>
+            <p className="mt-1 break-all font-mono text-[11px] text-white/45">{OFFICIAL_TOKEN.mint}</p>
+          </Link>
         </div>
         {COLS.map((col) => (
           <div key={col.title}>
